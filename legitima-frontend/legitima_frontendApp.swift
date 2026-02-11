@@ -11,7 +11,7 @@ import SwiftUI
 struct legitima_frontendApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContexteEntretienScreen()
         }
     }
 }
