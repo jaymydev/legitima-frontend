@@ -61,7 +61,8 @@ struct ZonesSensiblesScreen: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Identifier vos zones sensibles")
-                .font(.largeTitle.bold())
+                .font(.largeTitle)
+                .fontWeight(.bold)
                 .foregroundStyle(Color(hex: "2F3131"))
 
             Text("Pour transformer les fragilités en maîtrise narrative.")
@@ -80,37 +81,29 @@ struct ZonesSensiblesScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.headline)
+                .fontWeight(.semibold)
                 .foregroundStyle(Color(hex: "2F3131"))
 
             Text(description)
                 .font(.subheadline)
                 .foregroundStyle(Color(hex: "5B5F5F"))
 
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: text)
-                    .frame(minHeight: 120)
-                    .padding(8)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(hex: "DDE3E3"), lineWidth: 1)
-                    )
-
-                if text.wrappedValue.isEmpty {
-                    Text(placeholder)
-                        .font(.subheadline)
-                        .foregroundStyle(Color(hex: "8A8F8F"))
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 16)
-                        .allowsHitTesting(false)
-                }
-            }
+            PlaceholderTextEditor(
+                placeholder: placeholder,
+                text: text,
+                primaryColor: Color(hex: "2F3131"),
+                minHeight: 120
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color(hex: "DDE3E3"), lineWidth: 1)
+            )
 
             if text.wrappedValue.count < 30 {
                 Text(warning)
                     .font(.caption)
                     .foregroundStyle(.orange)
+                    .padding(.top, 4)
             }
         }
         .padding(16)

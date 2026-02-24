@@ -24,153 +24,116 @@ struct ParcoursProfessionnelScreen: View {
             .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("Parcours professionnel")
-                            .font(.title2.weight(.semibold))
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
                             .foregroundColor(primaryTextColor)
 
                         Text("Décrivez votre trajectoire de façon stratégique pour mettre en avant les choix, acquis et évolutions qui servent votre positionnement.")
-                            .font(.body)
+                            .font(.subheadline)
                             .foregroundColor(secondaryTextColor)
-
-                        Rectangle()
-                            .fill(secondaryTextColor)
-                            .frame(height: 1)
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Poste actuel ou dernier poste")
                             .font(.headline)
+                            .fontWeight(.semibold)
                             .foregroundColor(primaryTextColor)
 
                         TextField("Ex : Senior PLM Engineer – Pilotage migration 3DEXPERIENCE – Management transverse", text: $posteActuel)
-                            .font(.body)
+                            .font(.subheadline)
                             .foregroundColor(primaryTextColor)
-                            .padding(12)
+                            .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.white.opacity(0.8))
-                            .cornerRadius(10)
+                            .background(Color.white)
+                            .cornerRadius(12)
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
-                    .cornerRadius(12)
+                    .cornerRadius(16)
+                    .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
 
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Expériences précédentes")
                             .font(.headline)
+                            .fontWeight(.semibold)
                             .foregroundColor(primaryTextColor)
 
-                        ZStack(alignment: .topLeading) {
-                            if experiences.isEmpty {
-                                Text(
-                                    """
-                                    2018–2021 : Développeuse backend – Secteur bancaire
-                                    • Refonte API REST
-                                    • Coordination équipe de 4 personnes
-                                    • Amélioration performance +30%
+                        PlaceholderTextEditor(
+                            placeholder:
+                                """
+                                2018–2021 : Développeuse backend – Secteur bancaire
+                                • Refonte API REST
+                                • Coordination équipe de 4 personnes
+                                • Amélioration performance +30%
 
-                                    2021–2022 : Formation Data
-                                    • Certification Python
-                                    • Projet personnel IA
-                                    """
-                                )
-                                .font(.body)
-                                .foregroundColor(secondaryTextColor.opacity(0.65))
-                                .padding(.horizontal, 13)
-                                .padding(.vertical, 16)
-                                .allowsHitTesting(false)
-                            }
-
-                            TextEditor(text: $experiences)
-                                .font(.body)
-                                .foregroundColor(primaryTextColor)
-                                .scrollContentBackground(.hidden)
-                                .frame(minHeight: 120)
-                                .padding(8)
-                                .background(Color.white.opacity(0.8))
-                                .cornerRadius(10)
-                        }
+                                2021–2022 : Formation Data
+                                • Certification Python
+                                • Projet personnel IA
+                                """,
+                            text: $experiences,
+                            primaryColor: primaryTextColor,
+                            minHeight: 120
+                        )
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
-                    .cornerRadius(12)
+                    .cornerRadius(16)
+                    .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
 
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Éléments clés du parcours")
                             .font(.headline)
+                            .fontWeight(.semibold)
                             .foregroundColor(primaryTextColor)
 
-                        ZStack(alignment: .topLeading) {
-                            if elementsCles.isEmpty {
-                                Text(
-                                    """
-                                    • Montée progressive en responsabilités
-                                    • Spécialisation sur les environnements complexes
-                                    • Capacité à gérer des contextes instables
-                                    • Leadership transverse
-                                    """
-                                )
-                                .font(.body)
-                                .foregroundColor(secondaryTextColor.opacity(0.65))
-                                .padding(.horizontal, 13)
-                                .padding(.vertical, 16)
-                                .allowsHitTesting(false)
-                            }
-
-                            TextEditor(text: $elementsCles)
-                                .font(.body)
-                                .foregroundColor(primaryTextColor)
-                                .scrollContentBackground(.hidden)
-                                .frame(minHeight: 100)
-                                .padding(8)
-                                .background(Color.white.opacity(0.8))
-                                .cornerRadius(10)
-                        }
+                        PlaceholderTextEditor(
+                            placeholder:
+                                """
+                                • Montée progressive en responsabilités
+                                • Spécialisation sur les environnements complexes
+                                • Capacité à gérer des contextes instables
+                                • Leadership transverse
+                                """,
+                            text: $elementsCles,
+                            primaryColor: primaryTextColor,
+                            minHeight: 100
+                        )
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
-                    .cornerRadius(12)
+                    .cornerRadius(16)
+                    .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
 
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Transitions ou ruptures")
                             .font(.headline)
+                            .fontWeight(.semibold)
                             .foregroundColor(primaryTextColor)
 
-                        ZStack(alignment: .topLeading) {
-                            if transitions.isEmpty {
-                                Text(
-                                    """
-                                    2022 : Période de bench (6 mois)
-                                    → Formation stratégique
-                                    → Clarification positionnement
-                                    → Choix assumé d’évolution
-                                    """
-                                )
-                                .font(.body)
-                                .foregroundColor(secondaryTextColor.opacity(0.65))
-                                .padding(.horizontal, 13)
-                                .padding(.vertical, 16)
-                                .allowsHitTesting(false)
-                            }
-
-                            TextEditor(text: $transitions)
-                                .font(.body)
-                                .foregroundColor(primaryTextColor)
-                                .scrollContentBackground(.hidden)
-                                .frame(minHeight: 100)
-                                .padding(8)
-                                .background(Color.white.opacity(0.8))
-                                .cornerRadius(10)
-                        }
+                        PlaceholderTextEditor(
+                            placeholder:
+                                """
+                                2022 : Période de bench (6 mois)
+                                → Formation stratégique
+                                → Clarification positionnement
+                                → Choix assumé d’évolution
+                                """,
+                            text: $transitions,
+                            primaryColor: primaryTextColor,
+                            minHeight: 100
+                        )
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
-                    .cornerRadius(12)
+                    .cornerRadius(16)
+                    .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
 
                     Button(action: {
                         if posteActuel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -191,7 +154,9 @@ struct ParcoursProfessionnelScreen: View {
                             .cornerRadius(12)
                     }
                 }
-                .padding(24)
+                .padding(.horizontal, 20)
+                .padding(.top, 30)
+                .padding(.bottom, 24)
             }
         }
         .alert("Informations manquantes", isPresented: $showIncompleteAlert) {

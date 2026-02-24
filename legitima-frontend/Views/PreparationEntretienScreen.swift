@@ -22,7 +22,8 @@ struct PreparationEntretienScreen: View {
                 VStack(alignment: .leading, spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Préparer votre entretien")
-                            .font(.largeTitle.bold())
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
                             .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
                         Text("Clarifier les points sensibles et structurer vos réponses stratégiques.")
@@ -80,36 +81,29 @@ struct PreparationEntretienScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.headline)
+                .fontWeight(.semibold)
                 .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
             Text(description)
                 .font(.subheadline)
                 .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
 
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: text)
-                    .frame(minHeight: 120)
-                    .padding(8)
-                    .background(Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(red: 224 / 255, green: 231 / 255, blue: 231 / 255), lineWidth: 1)
-                    )
-
-                if text.wrappedValue.isEmpty {
-                    Text(placeholder)
-                        .font(.subheadline)
-                        .foregroundColor(Color(red: 157 / 255, green: 163 / 255, blue: 163 / 255))
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 16)
-                        .allowsHitTesting(false)
-                }
-            }
+            PlaceholderTextEditor(
+                placeholder: placeholder,
+                text: text,
+                primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
+                minHeight: 120
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color(red: 224 / 255, green: 231 / 255, blue: 231 / 255), lineWidth: 1)
+            )
 
             if text.wrappedValue.count < 40 {
                 Text(warning)
                     .font(.caption)
                     .foregroundColor(.orange)
+                    .padding(.top, 4)
             }
         }
         .padding(16)

@@ -8,6 +8,8 @@ struct ContexteEntretienScreen: View {
     @State private var posteActuelOuDernier = ""
     @State private var showIncompleteAlert = false
     private let selectionBlue = Color(red: 118 / 255, green: 157 / 255, blue: 189 / 255)
+    private let primaryTextColor = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
+    private let secondaryTextColor = Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255)
     
     var isIncomplete: Bool {
         typeEntretien.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -28,30 +30,28 @@ struct ContexteEntretienScreen: View {
             .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("Contexte de l’entretien")
-                            .font(.title2.weight(.semibold))
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(primaryTextColor)
 
                         Text("Ces informations permettent de situer précisément le cadre de l’entretien avant de travailler le discours.")
-                            .font(.body)
-                            .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
-
-                        Rectangle()
-                            .fill(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
-                            .frame(height: 1)
+                            .font(.subheadline)
+                            .foregroundColor(secondaryTextColor)
                     }
 
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("Type d’entretien")
                             .font(.headline)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .fontWeight(.semibold)
+                            .foregroundColor(primaryTextColor)
 
                         VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if typeEntretien == "Recrutement" {
@@ -61,7 +61,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("Recrutement")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -70,7 +70,7 @@ struct ContexteEntretienScreen: View {
 
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if typeEntretien == "Mobilité interne" {
@@ -80,7 +80,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("Mobilité interne")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -89,7 +89,7 @@ struct ContexteEntretienScreen: View {
 
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if typeEntretien == "Évolution de poste" {
@@ -99,7 +99,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("Évolution de poste")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -110,32 +110,36 @@ struct ContexteEntretienScreen: View {
                         .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.white)
-                        .cornerRadius(12)
+                        .cornerRadius(16)
+                        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
                     }
 
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("Entreprise / contexte")
                             .font(.headline)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .fontWeight(.semibold)
+                            .foregroundColor(primaryTextColor)
 
                         TextField("Nom de l’entreprise, secteur, etc.", text: $entrepriseContexte)
-                            .font(.body)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
-                            .padding(14)
+                            .font(.subheadline)
+                            .foregroundColor(primaryTextColor)
+                            .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(Color.white)
-                            .cornerRadius(12)
+                            .cornerRadius(16)
+                            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
                     }
 
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("Situation actuelle")
                             .font(.headline)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .fontWeight(.semibold)
+                            .foregroundColor(primaryTextColor)
 
                         VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if situationActuelle == "En poste" {
@@ -145,7 +149,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("En poste")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -154,7 +158,7 @@ struct ContexteEntretienScreen: View {
 
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if situationActuelle == "En recherche d’emploi" {
@@ -164,7 +168,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("En recherche d’emploi")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -173,7 +177,7 @@ struct ContexteEntretienScreen: View {
 
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if situationActuelle == "En reconversion" {
@@ -183,7 +187,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("En reconversion")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -192,7 +196,7 @@ struct ContexteEntretienScreen: View {
 
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if situationActuelle == "En formation" {
@@ -202,7 +206,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("En formation")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -211,7 +215,7 @@ struct ContexteEntretienScreen: View {
 
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if situationActuelle == "En période de transition (bench, pause, etc.)" {
@@ -221,7 +225,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("En période de transition (bench, pause, etc.)")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             .contentShape(Rectangle())
@@ -231,7 +235,7 @@ struct ContexteEntretienScreen: View {
 
                             HStack(spacing: 10) {
                                 Circle()
-                                    .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255), lineWidth: 1.5)
+                                    .stroke(secondaryTextColor, lineWidth: 1.5)
                                     .frame(width: 18, height: 18)
                                     .overlay {
                                         if situationActuelle == "Autre" {
@@ -241,7 +245,7 @@ struct ContexteEntretienScreen: View {
                                         }
                                     }
                                 Text("Autre")
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                    .foregroundColor(primaryTextColor)
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -252,20 +256,20 @@ struct ContexteEntretienScreen: View {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("Précisez votre situation")
                                         .font(.subheadline.weight(.medium))
-                                        .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                        .foregroundColor(primaryTextColor)
 
                                     TextField(
                                         "Ex : entrepreneuriat, congé parental, année sabbatique, expatriation, projet personnel…",
                                         text: $autreSituation
                                     )
-                                    .font(.body)
-                                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
-                                    .padding(12)
+                                    .font(.subheadline)
+                                    .foregroundColor(primaryTextColor)
+                                    .padding(16)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .background(Color.white)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255).opacity(0.35), lineWidth: 1)
+                                            .stroke(secondaryTextColor.opacity(0.35), lineWidth: 1)
                                     )
                                     .cornerRadius(10)
                                 }
@@ -276,21 +280,24 @@ struct ContexteEntretienScreen: View {
                         .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.white)
-                        .cornerRadius(12)
+                        .cornerRadius(16)
+                        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
                     }
 
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("Poste actuel ou dernier poste")
                             .font(.headline)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .fontWeight(.semibold)
+                            .foregroundColor(primaryTextColor)
 
                         TextField("Intitulé du poste actuel ou dernier poste occupé", text: $posteActuelOuDernier)
-                            .font(.body)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
-                            .padding(14)
+                            .font(.subheadline)
+                            .foregroundColor(primaryTextColor)
+                            .padding(16)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(Color.white)
-                            .cornerRadius(12)
+                            .cornerRadius(16)
+                            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
                     }
 
                     Button(action: {
@@ -308,7 +315,9 @@ struct ContexteEntretienScreen: View {
                             .cornerRadius(12)
                     }
                 }
-                .padding(24)
+                .padding(.horizontal, 20)
+                .padding(.top, 30)
+                .padding(.bottom, 24)
             }
         }
         .alert("Informations manquantes", isPresented: $showIncompleteAlert) {

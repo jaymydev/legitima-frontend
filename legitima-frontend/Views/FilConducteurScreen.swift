@@ -21,7 +21,8 @@ struct FilConducteurScreen: View {
                 VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Construire votre fil conducteur")
-                            .font(.largeTitle.bold())
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
                             .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
                         Text("Structurer un récit cohérent et défendable de votre parcours.")
@@ -71,28 +72,19 @@ struct FilConducteurScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.headline)
+                .fontWeight(.semibold)
                 .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
             Text(description)
                 .font(.subheadline)
                 .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
 
-            ZStack(alignment: .topLeading) {
-                TextEditor(text: text)
-                    .frame(minHeight: 120)
-                    .padding(4)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.white)
-
-                if text.wrappedValue.isEmpty {
-                    Text(placeholder)
-                        .font(.subheadline)
-                        .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255).opacity(0.7))
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 12)
-                        .allowsHitTesting(false)
-                }
-            }
+            PlaceholderTextEditor(
+                placeholder: placeholder,
+                text: text,
+                primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
+                minHeight: 120
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.black.opacity(0.08), lineWidth: 1)
@@ -103,6 +95,7 @@ struct FilConducteurScreen: View {
                 Text(warning)
                     .font(.caption)
                     .foregroundColor(Color.orange)
+                    .padding(.top, 4)
             }
         }
         .padding(16)
