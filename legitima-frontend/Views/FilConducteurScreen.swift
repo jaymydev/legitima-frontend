@@ -4,6 +4,8 @@ struct FilConducteurScreen: View {
     @State private var resumeGlobal = ""
     @State private var positionnementActuel = ""
     @State private var logiqueEvolution = ""
+    @State private var analysisResult: String = ""
+    private let iaService = IAService()
 
     var body: some View {
         ZStack {
@@ -54,6 +56,36 @@ struct FilConducteurScreen: View {
                         placeholder: "– Décision clé 1 :\n– Décision clé 2 :\n– Cohérence globale :",
                         warning: logiqueEvolution.count < 50 ? "Essayez d’atteindre au moins 50 caractères pour expliciter la cohérence de vos choix." : nil
                     )
+
+                    Button(action: {
+                        let sampleJSON = """
+                        {
+                          "meta": { "version": "1.0" }
+                        }
+                        """
+
+                        iaService.analyze(json: sampleJSON) { result in
+                            analysisResult = result
+                        }
+                    }) {
+                        Text("Analyser mon fil conducteur")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color(red: 43/255, green: 111/255, blue: 113/255))
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
+                    .padding(.top, 12)
+
+                    if !analysisResult.isEmpty {
+                        ScrollView {
+                            Text(analysisResult)
+                                .font(.system(size: 12, design: .monospaced))
+                                .padding()
+                        }
+                        .frame(maxHeight: 300)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 30)
