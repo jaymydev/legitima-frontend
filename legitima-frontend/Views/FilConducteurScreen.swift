@@ -4,8 +4,9 @@ struct FilConducteurScreen: View {
     @State private var resumeGlobal = ""
     @State private var positionnementActuel = ""
     @State private var logiqueEvolution = ""
-    @State private var analysisResult: String = ""
+    @State private var parsedResponse: AnalysisResponse?
     private let iaService = IAService()
+    private let jsonBuilder = JSONBuilder()
 
     var body: some View {
         ZStack {
@@ -58,14 +59,19 @@ struct FilConducteurScreen: View {
                     )
 
                     Button(action: {
-                        let sampleJSON = """
-                        {
-                          "meta": { "version": "1.0" }
-                        }
-                        """
+                        let builtJSON = jsonBuilder.buildFilConducteurJSON(
+                            resume: resumeGlobal,
+                            positionnement: positionnementActuel,
+                            logique: logiqueEvolution
+                        )
 
-                        iaService.analyze(json: sampleJSON) { result in
-                            analysisResult = result
+                        iaService.analyze(json: builtJSON) { result in
+                            if let data = result.data(using: .utf8) {
+                                let decoder = JSONDecoder()
+                                if let decoded = try? decoder.decode(AnalysisResponse.self, from: data) {
+                                    parsedResponse = decoded
+                                }
+                            }
                         }
                     }) {
                         Text("Analyser mon fil conducteur")
@@ -78,13 +84,32 @@ struct FilConducteurScreen: View {
                     }
                     .padding(.top, 12)
 
-                    if !analysisResult.isEmpty {
-                        ScrollView {
-                            Text(analysisResult)
-                                .font(.system(size: 12, design: .monospaced))
-                                .padding()
+                    if let response = parsedResponse {
+                        VStack(alignment: .leading, spacing: 16) {
+
+                            Text("Lecture stratégique")
+                                .font(.headline)
+                            Text(response.analysis.strategic_reading)
+
+                            Text("Compétences dominantes")
+                                .font(.headline)
+                            Text(response.analysis.dominant_competencies)
+
+                            Text("Fil narratif")
+                                .font(.headline)
+                            Text(response.narrative.core_thread)
+
+                            Text("Objection probable")
+                                .font(.headline)
+                            Text(response.interview_preparation.probable_objections)
+
+                            Text("Ancrage de légitimité")
+                                .font(.headline)
+                            Text(response.legitimacy_anchor.final_alignment_statement)
                         }
-                        .frame(maxHeight: 300)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(12)
                     }
                 }
                 .padding(.horizontal, 20)
