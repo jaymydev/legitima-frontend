@@ -85,31 +85,54 @@ struct FilConducteurScreen: View {
                     .padding(.top, 12)
 
                     if let response = parsedResponse {
-                        VStack(alignment: .leading, spacing: 16) {
+                        VStack(spacing: 20) {
+                            analysisCard(
+                                icon: "lightbulb.fill",
+                                title: "Compréhension stratégique",
+                                content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
+                                backgroundColor: Color.green.opacity(0.12)
+                            )
 
-                            Text("Lecture stratégique")
-                                .font(.headline)
-                            Text(response.analysis.strategic_reading)
+                            analysisCard(
+                                icon: "arrow.triangle.branch",
+                                title: "Relecture structurée du parcours",
+                                content: response.analysis.career_logic + "\n\n" + response.narrative.core_thread,
+                                backgroundColor: Color.yellow.opacity(0.15)
+                            )
 
-                            Text("Compétences dominantes")
-                                .font(.headline)
-                            Text(response.analysis.dominant_competencies)
+                            analysisCard(
+                                icon: "shield.fill",
+                                title: "Anticipation des objections",
+                                content: response.interview_preparation.probable_objections + "\n\n" + response.interview_preparation.structured_answers,
+                                backgroundColor: Color.orange.opacity(0.15)
+                            )
 
-                            Text("Fil narratif")
-                                .font(.headline)
-                            Text(response.narrative.core_thread)
+                            analysisCard(
+                                icon: "checkmark.seal.fill",
+                                title: "Ancrage de légitimité",
+                                content: response.legitimacy_anchor.objective_strength + "\n\n" + response.legitimacy_anchor.final_alignment_statement,
+                                backgroundColor: Color.blue.opacity(0.12)
+                            )
 
-                            Text("Objection probable")
-                                .font(.headline)
-                            Text(response.interview_preparation.probable_objections)
+                            analysisCard(
+                                icon: "sparkles",
+                                title: "Synthèse stratégique finale",
+                                content:
+"""
+Vous ne présentez pas un parcours fragmenté.
 
-                            Text("Ancrage de légitimité")
-                                .font(.headline)
-                            Text(response.legitimacy_anchor.final_alignment_statement)
+Vous présentez une trajectoire construite par l’expérience,
+renforcée par l’analyse,
+et alignée avec votre positionnement actuel.
+
+Votre parcours est défendable.
+Il est cohérent.
+Il est légitime.
+""",
+                                backgroundColor: Color.purple.opacity(0.18)
+                            )
                         }
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(12)
+                        .animation(.easeInOut(duration: 0.3), value: parsedResponse)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -160,8 +183,82 @@ struct FilConducteurScreen: View {
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
+
+    private func analysisCard(
+        icon: String,
+        title: String,
+        content: String,
+        backgroundColor: Color
+    ) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.primary)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title)
+                    .font(.headline)
+                    .bold()
+
+                Text(content)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(16)
+        .background(backgroundColor)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
+    }
 }
 
 #Preview {
     FilConducteurScreen()
+}
+
+extension AnalysisResponse: Equatable {
+    static func == (lhs: AnalysisResponse, rhs: AnalysisResponse) -> Bool {
+        lhs.analysis == rhs.analysis &&
+        lhs.sensitive_reframing == rhs.sensitive_reframing &&
+        lhs.narrative == rhs.narrative &&
+        lhs.interview_preparation == rhs.interview_preparation &&
+        lhs.legitimacy_anchor == rhs.legitimacy_anchor
+    }
+}
+
+extension AnalysisSection: Equatable {
+    static func == (lhs: AnalysisSection, rhs: AnalysisSection) -> Bool {
+        lhs.strategic_reading == rhs.strategic_reading &&
+        lhs.dominant_competencies == rhs.dominant_competencies &&
+        lhs.career_logic == rhs.career_logic
+    }
+}
+
+extension SensitiveSection: Equatable {
+    static func == (lhs: SensitiveSection, rhs: SensitiveSection) -> Bool {
+        lhs.identified_fragilities == rhs.identified_fragilities &&
+        lhs.strategic_reinterpretation == rhs.strategic_reinterpretation &&
+        lhs.rational_reframing == rhs.rational_reframing
+    }
+}
+
+extension NarrativeSection: Equatable {
+    static func == (lhs: NarrativeSection, rhs: NarrativeSection) -> Bool {
+        lhs.core_thread == rhs.core_thread &&
+        lhs.positioning_statement == rhs.positioning_statement
+    }
+}
+
+extension InterviewSection: Equatable {
+    static func == (lhs: InterviewSection, rhs: InterviewSection) -> Bool {
+        lhs.probable_objections == rhs.probable_objections &&
+        lhs.structured_answers == rhs.structured_answers
+    }
+}
+
+extension LegitimacySection: Equatable {
+    static func == (lhs: LegitimacySection, rhs: LegitimacySection) -> Bool {
+        lhs.objective_strength == rhs.objective_strength &&
+        lhs.final_alignment_statement == rhs.final_alignment_statement
+    }
 }
