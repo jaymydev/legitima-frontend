@@ -1,36 +1,77 @@
 import Foundation
 
+struct BackendError: Decodable {
+    let detail: [BackendDetail]?
+}
+
+struct BackendDetail: Decodable {
+    let msg: String?
+}
+
 final class IAService {
 
-    func analyze(json: String, completion: @escaping (String) -> Void) {
+    enum IAServiceError: Error {
+        case invalidURL
+        case invalidRequestBody
+        case requestFailed(Error)
+        case decodingFailed(Error)
+    }
 
-        let mockResponse = """
-        {
-          "analysis": {
-            "strategic_reading": "Profile demonstrates progressive alignment toward strategic roles.",
-            "dominant_competencies": "Technical depth, structured thinking, adaptability.",
-            "career_logic": "Non-linear evolution driven by responsibility expansion."
-          },
-          "sensitive_reframing": {
-            "identified_fragilities": "Transitions and repositioning phases.",
-            "strategic_reinterpretation": "Capability consolidation periods.",
-            "rational_reframing": "Intentional strengthening of long-term positioning."
-          },
-          "narrative": {
-            "core_thread": "Engineer evolving from execution to structured strategic impact.",
-            "positioning_statement": "Technical expert aligned with business perspective."
-          },
-          "interview_preparation": {
-            "probable_objections": "Why non-linear path?",
-            "structured_answers": "Each step expanded scope and competencies."
-          },
-          "legitimacy_anchor": {
-            "objective_strength": "10+ years domain expertise.",
-            "final_alignment_statement": "Profile coherent with high-impact engineering roles."
-          }
+    func analyze(request payload: AnalyzeRequest) async throws -> AnalysisResponse {
+        guard let url = URL(string: "http://127.0.0.1:8000/analyze") else {
+            throw IAServiceError.invalidURL
         }
-        """
 
-        completion(mockResponse)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let requestBody: Data
+        do {
+            requestBody = try JSONEncoder().encode(payload)
+        } catch {
+            throw IAServiceError.invalidRequestBody
+        }
+        request.httpBody = requestBody
+
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw IAServiceError.requestFailed(error)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw IAServiceError.requestFailed(URLError(.badServerResponse))
+        }
+
+        if httpResponse.statusCode != 200 {
+            if let backendError = try? JSONDecoder().decode(BackendError.self, from: data),
+               let message = backendError.detail?.first?.msg {
+                throw IAServiceError.requestFailed(
+                    NSError(
+                        domain: "",
+                        code: httpResponse.statusCode,
+                        userInfo: [NSLocalizedDescriptionKey: message]
+                    )
+                )
+            } else {
+                throw IAServiceError.requestFailed(
+                    NSError(
+                        domain: "",
+                        code: httpResponse.statusCode,
+                        userInfo: [NSLocalizedDescriptionKey: "Erreur serveur"]
+                    )
+                )
+            }
+        }
+        
+        print(String(data: data, encoding: .utf8) ?? "no data")
+
+        do {
+            return try JSONDecoder().decode(AnalysisResponse.self, from: data)
+        } catch {
+            throw IAServiceError.decodingFailed(error)
+        }
     }
 }

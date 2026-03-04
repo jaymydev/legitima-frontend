@@ -7,6 +7,7 @@ struct ContexteEntretienScreen: View {
     @State private var autreSituation = ""
     @State private var posteActuelOuDernier = ""
     @State private var showIncompleteAlert = false
+    @State private var navigate = false
     private let selectionBlue = Color(red: 118 / 255, green: 157 / 255, blue: 189 / 255)
     private let primaryTextColor = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
     private let secondaryTextColor = Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255)
@@ -304,9 +305,10 @@ struct ContexteEntretienScreen: View {
                         if isIncomplete {
                             showIncompleteAlert = true
                         } else {
+                            navigate = true
                         }
                     }) {
-                        Text("Continuer")
+                        Text("Suivant")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -321,10 +323,17 @@ struct ContexteEntretienScreen: View {
             }
         }
         .alert("Informations manquantes", isPresented: $showIncompleteAlert) {
-            Button("Modifier les infos", role: .cancel) { }
-            Button("Continuer avec les infos actuelles") { }
+            Button("Modifier les infos", role: .cancel) {
+                
+            }
+            Button("Continuer avec les infos actuelles", role: .destructive) {
+                navigate = true
+            }
         } message: {
             Text("Certaines informations n’ont pas été renseignées. Le résultat final risque d’être moins précis ou altéré. Voulez-vous continuer malgré tout ?")
+        }
+        .navigationDestination(isPresented: $navigate) {
+            ParcoursProfessionnelScreen()
         }
     }
 }

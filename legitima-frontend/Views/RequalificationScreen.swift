@@ -23,6 +23,16 @@ struct RequalificationScreen: View {
                     cardOne
                     cardTwo
                     cardThree
+
+                    NavigationLink(destination: PreparationEntretienScreen()) {
+                        Text("Suivant")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                            .cornerRadius(12)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 30)

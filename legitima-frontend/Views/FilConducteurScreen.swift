@@ -5,8 +5,10 @@ struct FilConducteurScreen: View {
     @State private var positionnementActuel = ""
     @State private var logiqueEvolution = ""
     @State private var parsedResponse: AnalysisResponse?
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var showErrorAlert = false
     private let iaService = IAService()
-    private let jsonBuilder = JSONBuilder()
 
     var body: some View {
         ZStack {
@@ -20,8 +22,9 @@ struct FilConducteurScreen: View {
             )
             .ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 24) {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 24) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Construire votre fil conducteur")
                             .font(.largeTitle)
@@ -59,18 +62,33 @@ struct FilConducteurScreen: View {
                     )
 
                     Button(action: {
-                        let builtJSON = jsonBuilder.buildFilConducteurJSON(
-                            resume: resumeGlobal,
-                            positionnement: positionnementActuel,
-                            logique: logiqueEvolution
-                        )
+                        Task {
+                            isLoading = true
+                            errorMessage = nil
+                            do {
+                                let filRequest = FilConducteurRequest(
+                                    meta: .init(
+                                        version: "1.0",
+                                        language: "fr",
+                                        target_market: "US",
+                                        interview_type: "recruitment"
+                                    ),
+                                    narrative_positioning: .init(
+                                        short_summary: resumeGlobal,
+                                        current_positioning: positionnementActuel,
+                                        evolution_logic: logiqueEvolution
+                                    )
+                                )
+                                let request = AnalyzeRequest(input: filRequest)
 
-                        iaService.analyze(json: builtJSON) { result in
-                            if let data = result.data(using: .utf8) {
-                                let decoder = JSONDecoder()
-                                if let decoded = try? decoder.decode(AnalysisResponse.self, from: data) {
-                                    parsedResponse = decoded
-                                }
+                                let response = try await iaService.analyze(request: request)
+                                parsedResponse = response
+                                isLoading = false
+
+                            } catch {
+                                isLoading = false
+                                errorMessage = error.localizedDescription
+                                showErrorAlert = true
                             }
                         }
                     }) {
@@ -82,42 +100,48 @@ struct FilConducteurScreen: View {
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
+                    .disabled(isLoading)
                     .padding(.top, 12)
 
-                    if let response = parsedResponse {
-                        VStack(spacing: 20) {
-                            analysisCard(
-                                icon: "lightbulb.fill",
-                                title: "Compréhension stratégique",
-                                content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
-                                backgroundColor: Color.green.opacity(0.12)
-                            )
+                    if isLoading {
+                        ProgressView("Analyse en cours...")
+                            .padding()
+                    }
 
-                            analysisCard(
-                                icon: "arrow.triangle.branch",
-                                title: "Relecture structurée du parcours",
-                                content: response.analysis.career_logic + "\n\n" + response.narrative.core_thread,
-                                backgroundColor: Color.yellow.opacity(0.15)
-                            )
+                        if let response = parsedResponse {
+                            VStack(spacing: 20) {
+                                analysisCard(
+                                    icon: "lightbulb.fill",
+                                    title: "Compréhension stratégique",
+                                    content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
+                                    backgroundColor: Color.green.opacity(0.12)
+                                )
 
-                            analysisCard(
-                                icon: "shield.fill",
-                                title: "Anticipation des objections",
-                                content: response.interview_preparation.probable_objections + "\n\n" + response.interview_preparation.structured_answers,
-                                backgroundColor: Color.orange.opacity(0.15)
-                            )
+                                analysisCard(
+                                    icon: "arrow.triangle.branch",
+                                    title: "Relecture structurée du parcours",
+                                    content: response.analysis.career_logic + "\n\n" + response.narrative.core_thread,
+                                    backgroundColor: Color.yellow.opacity(0.15)
+                                )
 
-                            analysisCard(
-                                icon: "checkmark.seal.fill",
-                                title: "Ancrage de légitimité",
-                                content: response.legitimacy_anchor.objective_strength + "\n\n" + response.legitimacy_anchor.final_alignment_statement,
-                                backgroundColor: Color.blue.opacity(0.12)
-                            )
+                                analysisCard(
+                                    icon: "shield.fill",
+                                    title: "Anticipation des objections",
+                                    content: response.interview_preparation.probable_objections + "\n\n" + response.interview_preparation.structured_answers,
+                                    backgroundColor: Color.orange.opacity(0.15)
+                                )
 
-                            analysisCard(
-                                icon: "sparkles",
-                                title: "Synthèse stratégique finale",
-                                content:
+                                analysisCard(
+                                    icon: "checkmark.seal.fill",
+                                    title: "Ancrage de légitimité",
+                                    content: response.legitimacy_anchor.objective_strength + "\n\n" + response.legitimacy_anchor.final_alignment_statement,
+                                    backgroundColor: Color.blue.opacity(0.12)
+                                )
+
+                                analysisCard(
+                                    icon: "sparkles",
+                                    title: "Synthèse stratégique finale",
+                                    content:
 """
 Vous ne présentez pas un parcours fragmenté.
 
@@ -129,16 +153,30 @@ Votre parcours est défendable.
 Il est cohérent.
 Il est légitime.
 """,
-                                backgroundColor: Color.purple.opacity(0.18)
-                            )
+                                    backgroundColor: Color.purple.opacity(0.18)
+                                )
+                            }
+                            .id("analysisResult")
+                            .animation(.easeInOut(duration: 0.3), value: parsedResponse)
                         }
-                        .animation(.easeInOut(duration: 0.3), value: parsedResponse)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 30)
+                    .padding(.bottom, 24)
+                }
+                .onChange(of: parsedResponse) { newValue in
+                    if newValue != nil {
+                        withAnimation {
+                            proxy.scrollTo("analysisResult", anchor: .top)
+                        }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 30)
-                .padding(.bottom, 24)
             }
+        }
+        .alert("Erreur", isPresented: $showErrorAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage ?? "Une erreur est survenue.")
         }
     }
 

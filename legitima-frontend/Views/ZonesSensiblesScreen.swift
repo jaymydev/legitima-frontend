@@ -50,6 +50,16 @@ struct ZonesSensiblesScreen: View {
                         placeholder: "– Formulation synthétique :\n– Angle choisi :\n– Message que je veux faire passer :",
                         warning: "Ce point mérite d’être approfondi pour renforcer votre récit."
                     )
+
+                    NavigationLink(destination: RequalificationScreen()) {
+                        Text("Suivant")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                            .cornerRadius(12)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 30)

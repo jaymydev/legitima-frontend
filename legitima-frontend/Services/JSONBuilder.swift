@@ -1,31 +1,23 @@
 import Foundation
 
-final class JSONBuilder {
+struct FilConducteurRequest: Encodable {
+    let meta: Meta
+    let narrative_positioning: NarrativePositioning
 
-    func buildFilConducteurJSON(
-        resume: String,
-        positionnement: String,
-        logique: String
-    ) -> String {
-
-        let escapedResume = resume.replacingOccurrences(of: "\"", with: "\\\"")
-        let escapedPositionnement = positionnement.replacingOccurrences(of: "\"", with: "\\\"")
-        let escapedLogique = logique.replacingOccurrences(of: "\"", with: "\\\"")
-
-        return """
-        {
-          "meta": {
-            "version": "1.0",
-            "language": "fr",
-            "target_market": "US",
-            "interview_type": "recruitment"
-          },
-          "narrative_positioning": {
-            "short_summary": "\(escapedResume)",
-            "current_positioning": "\(escapedPositionnement)",
-            "evolution_logic": "\(escapedLogique)"
-          }
-        }
-        """
+    struct Meta: Encodable {
+        let version: String
+        let language: String
+        let target_market: String
+        let interview_type: String
     }
+
+    struct NarrativePositioning: Encodable {
+        let short_summary: String
+        let current_positioning: String
+        let evolution_logic: String
+    }
+}
+
+struct AnalyzeRequest: Encodable {
+    let input: FilConducteurRequest
 }

@@ -7,6 +7,7 @@ struct ParcoursProfessionnelScreen: View {
     @State private var transitions = ""
     @State private var showIncompleteAlert = false
     @State private var showOptionalWarning = false
+    @State private var navigate = false
 
     private let primaryTextColor = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
     private let secondaryTextColor = Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255)
@@ -143,9 +144,10 @@ struct ParcoursProfessionnelScreen: View {
                                     || transitions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                             showOptionalWarning = true
                         } else {
+                            navigate = true
                         }
                     }) {
-                        Text("Continuer")
+                        Text("Suivant")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -175,6 +177,9 @@ struct ParcoursProfessionnelScreen: View {
                 Voulez-vous continuer malgré tout ?
                 """
             )
+        }
+        .navigationDestination(isPresented: $navigate) {
+            ZonesSensiblesScreen()
         }
     }
 }
