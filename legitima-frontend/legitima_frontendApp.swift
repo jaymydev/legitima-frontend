@@ -9,10 +9,23 @@ import SwiftUI
 
 @main
 struct legitima_frontendApp: App {
+    @State private var analysisResponse: AnalysisResponse?
+
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                ContexteEntretienScreen()
+
+                if let response = analysisResponse {
+                    LeanResultScreen(response: response)
+
+                } else {
+                    LeanOnboardingScreen(
+                        onAnalysisComplete: { response in
+                            analysisResponse = response
+                        }
+                    )
+                }
+
             }
         }
     }

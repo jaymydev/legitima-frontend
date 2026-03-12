@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct FilConducteurScreen: View {
+    let onReset: () -> Void
+
     @State private var resumeGlobal = ""
     @State private var positionnementActuel = ""
     @State private var logiqueEvolution = ""
@@ -9,6 +11,10 @@ struct FilConducteurScreen: View {
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
     private let iaService = IAService()
+
+    init(onReset: @escaping () -> Void = {}) {
+        self.onReset = onReset
+    }
 
     var body: some View {
         ZStack {
@@ -159,12 +165,23 @@ Il est légitime.
                             .id("analysisResult")
                             .animation(.easeInOut(duration: 0.3), value: parsedResponse)
                         }
+
+                        Button(action: onReset) {
+                            Text("Nouvelle analyse")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                        }
+                        .padding(.top, 4)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 30)
                     .padding(.bottom, 24)
                 }
-                .onChange(of: parsedResponse) { newValue in
+                .onChange(of: parsedResponse) { _, newValue in
                     if newValue != nil {
                         withAnimation {
                             proxy.scrollTo("analysisResult", anchor: .top)
