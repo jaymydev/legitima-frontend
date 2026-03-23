@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct ProgressionScreen: View {
-    @Environment(\.dismiss) private var dismiss
+    let onBackToResults: () -> Void
+    let onShowPremiumUpsell: () -> Void
 
     private let primaryText = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
     private let secondaryText = Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255)
@@ -94,7 +95,7 @@ struct ProgressionScreen: View {
 
     private var primaryCTA: some View {
         Button(action: {
-            print("Navigate to PremiumUpsellScreen")
+            onShowPremiumUpsell()
         }) {
             Text("Structurer ma préparation complète")
                 .fontWeight(.semibold)
@@ -108,7 +109,7 @@ struct ProgressionScreen: View {
 
     private var secondaryCTA: some View {
         Button(action: {
-            dismiss()
+            onBackToResults()
         }) {
             Text("Revenir à mes résultats")
                 .font(.subheadline)
@@ -134,11 +135,17 @@ struct ProgressionScreen: View {
 }
 
 #Preview {
-    ProgressionScreen()
+    ProgressionScreen(
+        onBackToResults: {},
+        onShowPremiumUpsell: {}
+    )
 }
 
 struct ProgressionScreen_Previews: PreviewProvider {
     static var previews: some View {
-        ProgressionScreen()
+        ProgressionScreen(
+            onBackToResults: {},
+            onShowPremiumUpsell: {}
+        )
     }
 }

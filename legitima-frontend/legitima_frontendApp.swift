@@ -9,24 +9,53 @@ import SwiftUI
 
 @main
 struct legitima_frontendApp: App {
-    @State private var analysisResponse: AnalysisResponse?
+    @StateObject private var router = AppRouter()
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
+            NavigationStack(path: $router.path) {
+                rootView
+                    .navigationDestination(for: AppRouter.Route.self) { route in
+                        switch route {
+                        case .progression:
+                            ProgressionScreen(
+                                onBackToResults: {
+                                    router.backToResults()
+                                },
+                                onShowPremiumUpsell: {
+                                    router.showPremiumUpsell()
+                                }
+                            )
 
-                if let response = analysisResponse {
-                    LeanResultScreen(response: response)
-
-                } else {
-                    LeanOnboardingScreen(
-                        onAnalysisComplete: { response in
-                            analysisResponse = response
+                        case .premiumUpsell:
+                            PremiumUpsellScreen(
+                                onContinueFree: {
+                                    router.restartAnalysis()
+                                }
+                            )
                         }
-                    )
-                }
-
+                    }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var rootView: some View {
+        switch router.root {
+        case .onboarding:
+            LeanOnboardingScreen(
+                onAnalysisComplete: { response in
+                    router.showResult(response)
+                }
+            )
+
+        case .result(let response):
+            LeanResultScreen(
+                response: response,
+                onContinue: {
+                    router.showProgression()
+                }
+            )
         }
     }
 }

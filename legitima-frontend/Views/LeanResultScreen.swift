@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LeanResultScreen: View {
     let response: AnalysisResponse
+    let onContinue: () -> Void
     private let lockedPreviewText = """
     Disponible dans la préparation complète.
     Débloquez la suite pour structurer votre récit et préparer vos réponses face au recruteur.
@@ -77,7 +78,9 @@ struct LeanResultScreen: View {
                         isLocked: true
                     )
 
-                    NavigationLink(destination: ProgressionScreen()) {
+                    Button(action: {
+                        onContinue()
+                    }) {
                         Text("Continuer")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
@@ -166,7 +169,8 @@ struct LeanResultScreen: View {
                 objective_strength: "Forces objectives",
                 final_alignment_statement: "Alignement final"
             )
-        )
+        ),
+        onContinue: {}
     )
 }
 
@@ -196,7 +200,8 @@ struct LeanResultScreen_Previews: PreviewProvider {
                     objective_strength: "Forces objectives",
                     final_alignment_statement: "Alignement final"
                 )
-            )
+            ),
+            onContinue: {}
         )
     }
 }
