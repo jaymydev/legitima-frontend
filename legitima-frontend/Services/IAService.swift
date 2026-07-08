@@ -65,9 +65,6 @@ final class IAService {
                 )
             }
         }
-        
-        print(String(data: data, encoding: .utf8) ?? "no data")
-
         do {
             return try JSONDecoder().decode(AnalysisResponse.self, from: data)
         } catch {
