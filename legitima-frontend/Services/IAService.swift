@@ -2,6 +2,17 @@ import Foundation
 
 struct BackendError: Decodable {
     let detail: [BackendDetail]?
+    let detailMessage: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case detail
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        detail = try? container.decode([BackendDetail].self, forKey: .detail)
+        detailMessage = try? container.decode(String.self, forKey: .detail)
+    }
 }
 
 struct BackendDetail: Decodable {
@@ -47,7 +58,7 @@ final class IAService {
 
         if httpResponse.statusCode != 200 {
             if let backendError = try? JSONDecoder().decode(BackendError.self, from: data),
-               let message = backendError.detail?.first?.msg {
+               let message = backendError.detail?.first?.msg ?? backendError.detailMessage {
                 throw IAServiceError.requestFailed(
                     NSError(
                         domain: "",
