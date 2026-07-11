@@ -2,6 +2,8 @@
 
 This document is the frontend repository source of truth for backend integration work.
 
+All frontend integration work must also respect [AGENTS.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/AGENTS.md), especially the product-boundary, UX, and sensitive-data handling rules.
+
 ## Status
 
 The backend contract is documented here for the current frontend/backend integration surface.
@@ -121,6 +123,7 @@ The current service layer is now aligned in principle with the documented transi
 Remaining caution:
 
 - treat `docs/api-contract.md` as authoritative;
+- follow `AGENTS.md` alongside this contract;
 - keep `/analyze` scoped to the current onboarding -> analysis -> result stabilization flow;
 - avoid expanding the service layer around undocumented endpoints;
 - coordinate the future migration to more explicit business endpoints by updating this document first.
