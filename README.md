@@ -43,9 +43,15 @@ Do not add or call backend endpoints that are not documented there.
 
 ## Agent rules
 
-This repository is expected to carry an `AGENTS.md` file and any future agent must follow it strictly when it is present.
+This repository includes [AGENTS.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/AGENTS.md), and contributors and agents should follow it strictly.
 
-No `AGENTS.md` file was present in this checkout on July 8, 2026, so contributors must not invent missing agent rules. Until that file is restored, use this README and [docs/api-contract.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/docs/api-contract.md) as the minimum operational guardrails.
+At a minimum:
+
+- follow the product boundaries defined in `AGENTS.md`;
+- do not invent backend endpoints;
+- follow [docs/api-contract.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/docs/api-contract.md);
+- keep the app guided, structured, and professionally reassuring;
+- avoid unrelated features, dependencies, and sensitive-data logging.
 
 ## Changes that require explicit human approval
 
