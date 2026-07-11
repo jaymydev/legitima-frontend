@@ -26,6 +26,11 @@ The frontend currently expects a local backend at:
 
 `http://127.0.0.1:8000`
 
+The currently documented integration surface is:
+
+- `GET /health`
+- `POST /analyze` as a transitional V1 endpoint for the current onboarding -> analysis -> result flow
+
 Before changing any endpoint usage, update the API contract first.
 
 ## API contract
