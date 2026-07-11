@@ -25,6 +25,20 @@ At the time of this update, no additional V1 CRUD resources are documented in th
 
 There is currently no officially supported `POST /analyze` endpoint in this repository's backend contract.
 
+## What `/analyze` was used for in the frontend
+
+The current frontend code still contains a legacy `IAService.analyze(...)` call targeting `POST /analyze`.
+
+In practice, that endpoint was being treated as a single all-in-one analysis step for the guided preparation flow. The frontend sends a narrative-positioning payload and expects a structured response containing:
+
+- strategic reading of the user's career path;
+- identification and reframing of sensitive periods or fragilities;
+- narrative construction support;
+- difficult interview objection preparation;
+- final legitimacy anchoring.
+
+In other words, `/analyze` was intended to transform the user's career summary and positioning inputs into the main preparation outputs shown in the app.
+
 That means:
 
 - the frontend must not call undocumented endpoints;
@@ -39,6 +53,7 @@ The current frontend service layer still contains integration assumptions that p
 Until a follow-up aligns `IAService` with a documented backend route:
 
 - treat `docs/api-contract.md` as authoritative;
+- treat `/analyze` as a legacy frontend assumption, not as an approved backend capability;
 - avoid expanding the service layer around undocumented endpoints;
 - coordinate backend and frontend changes by updating this document first.
 
