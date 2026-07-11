@@ -4,7 +4,11 @@ This document is the frontend repository source of truth for backend integration
 
 ## Status
 
-The backend contract is not fully documented in this repository yet. Until it is, the frontend must stay conservative and only use endpoints explicitly documented here.
+The backend contract is documented here for the current frontend/backend integration surface.
+
+`POST /analyze` is now officially supported as a transitional V1 endpoint to stabilize the current onboarding -> analysis -> result flow.
+
+It is not the long-term target architecture and should be treated as a temporary compatibility contract until the product migrates to more explicit business endpoints.
 
 ## Base URL
 
@@ -17,19 +21,15 @@ Local development backend:
 The frontend currently expects the backend to expose:
 
 - `GET /health`
-- current V1 CRUD resources only if they are explicitly documented by the backend contract
+- `POST /analyze`
 
-At the time of this update, no additional V1 CRUD resources are documented in this repository as approved frontend integration targets.
+No other V1 integration route should be consumed by the frontend unless it is explicitly documented here.
 
-## Unsupported or undocumented endpoints
+## `POST /analyze`
 
-There is currently no officially supported `POST /analyze` endpoint in this repository's backend contract.
+`POST /analyze` is the currently supported transitional V1 endpoint for the iOS app.
 
-## What `/analyze` was used for in the frontend
-
-The current frontend code still contains a legacy `IAService.analyze(...)` call targeting `POST /analyze`.
-
-In practice, that endpoint was being treated as a single all-in-one analysis step for the guided preparation flow. The frontend sends a narrative-positioning payload and expects a structured response containing:
+It is used as a single all-in-one analysis step for the guided preparation flow. The frontend sends a narrative-positioning payload and expects a structured response containing:
 
 - strategic reading of the user's career path;
 - identification and reframing of sensitive periods or fragilities;
@@ -37,25 +37,93 @@ In practice, that endpoint was being treated as a single all-in-one analysis ste
 - difficult interview objection preparation;
 - final legitimacy anchoring.
 
-In other words, `/analyze` was intended to transform the user's career summary and positioning inputs into the main preparation outputs shown in the app.
+In other words, `/analyze` transforms the user's career summary and positioning inputs into the main preparation outputs currently shown in the app.
+
+### Request
+
+All fields below are currently required by the backend:
+
+```json
+{
+  "input": {
+    "meta": {
+      "version": "1.0",
+      "language": "fr",
+      "target_market": "US",
+      "interview_type": "recruitment"
+    },
+    "narrative_positioning": {
+      "short_summary": "<parcoursResume>",
+      "current_positioning": "<posteVise>",
+      "evolution_logic": "<zoneSensible>"
+    }
+  }
+}
+```
+
+Constraints:
+
+- `input.meta` is required;
+- `input.narrative_positioning` is required;
+- all documented fields above are required;
+- the frontend must not send undocumented extra fields without explicit backend alignment.
+
+### Response
+
+The backend officially supports the following aggregated response shape:
+
+```json
+{
+  "analysis": {
+    "strategic_reading": "string",
+    "dominant_competencies": "string",
+    "career_logic": "string"
+  },
+  "sensitive_reframing": {
+    "identified_fragilities": "string",
+    "strategic_reinterpretation": "string",
+    "rational_reframing": "string"
+  },
+  "narrative": {
+    "core_thread": "string",
+    "positioning_statement": "string"
+  },
+  "interview_preparation": {
+    "probable_objections": "string",
+    "structured_answers": "string"
+  },
+  "legitimacy_anchor": {
+    "objective_strength": "string",
+    "final_alignment_statement": "string"
+  }
+}
+```
+
+### Error handling
+
+The frontend must continue to support backend errors such as:
+
+- FastAPI validation responses shaped like `{"detail":[...]}`
+- backend errors shaped like `{"detail":"..."}`
+- generic non-200 responses when no structured backend message is available
 
 That means:
 
+- the frontend may officially rely on `POST /analyze` for the current V1 stabilization flow;
 - the frontend must not call undocumented endpoints;
 - the frontend must not invent new backend routes during integration work;
-- any V1 CRUD endpoint must be documented here before the frontend relies on it;
-- `IAService` must be aligned with the backend contract in a separate follow-up task.
+- any future V1 route must be documented here before the frontend relies on it.
 
-## Frontend integration warning
+## Frontend integration notes
 
-The current frontend service layer still contains integration assumptions that predate this contract cleanup. Those assumptions are not contract approval.
+The current service layer is now aligned in principle with the documented transitional contract for `POST /analyze`.
 
-Until a follow-up aligns `IAService` with a documented backend route:
+Remaining caution:
 
 - treat `docs/api-contract.md` as authoritative;
-- treat `/analyze` as a legacy frontend assumption, not as an approved backend capability;
+- keep `/analyze` scoped to the current onboarding -> analysis -> result stabilization flow;
 - avoid expanding the service layer around undocumented endpoints;
-- coordinate backend and frontend changes by updating this document first.
+- coordinate the future migration to more explicit business endpoints by updating this document first.
 
 ## Change policy
 
