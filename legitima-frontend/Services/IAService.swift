@@ -83,3 +83,18 @@ final class IAService {
         }
     }
 }
+
+extension IAService.IAServiceError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "URL backend invalide."
+        case .invalidRequestBody:
+            return "Impossible de construire la requete d'analyse."
+        case .requestFailed(let error):
+            return error.localizedDescription
+        case .decodingFailed:
+            return "La reponse backend est invalide ou incomplete."
+        }
+    }
+}
