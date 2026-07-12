@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct legitima_frontendApp: App {
     @StateObject private var router = AppRouter()
+    @StateObject private var userStatus = UserStatus()
 
     var body: some Scene {
         WindowGroup {
@@ -29,6 +30,9 @@ struct legitima_frontendApp: App {
 
                         case .premiumUpsell:
                             PremiumUpsellScreen(
+                                onUnlockPremium: {
+                                    router.backToResults()
+                                },
                                 onContinueFree: {
                                     router.restartAnalysis()
                                 }
@@ -36,6 +40,7 @@ struct legitima_frontendApp: App {
                         }
                     }
             }
+            .environmentObject(userStatus)
         }
     }
 
@@ -44,6 +49,9 @@ struct legitima_frontendApp: App {
         switch router.root {
         case .onboarding:
             LeanOnboardingScreen(
+                onShowPremiumUpsell: {
+                    router.showPremiumUpsell()
+                },
                 onAnalysisComplete: { response in
                     router.showResult(response)
                 }
