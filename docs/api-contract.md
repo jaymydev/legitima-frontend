@@ -4,6 +4,8 @@ This document is the frontend repository source of truth for backend integration
 
 All frontend integration work must also respect [AGENTS.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/AGENTS.md), especially the product-boundary, UX, and sensitive-data handling rules.
 
+For the medium-term migration path beyond the transitional `/analyze` endpoint, see [docs/analyze-transition-plan.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/docs/analyze-transition-plan.md).
+
 ## Status
 
 The backend contract is documented here for the current frontend/backend integration surface.
@@ -119,6 +121,12 @@ That means:
 ## Frontend integration notes
 
 The current service layer is now aligned in principle with the documented transitional contract for `POST /analyze`.
+
+The current premium unlock flow does not require a second backend endpoint:
+
+- the free result screen is populated by `POST /analyze`;
+- premium unlock immediately reveals additional sections from the same aggregated `AnalysisResponse`;
+- deeper premium preparation still remains a frontend flow concern until successor business endpoints are introduced.
 
 Remaining caution:
 
