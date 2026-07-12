@@ -168,7 +168,9 @@ struct ParcoursProfessionnelScreen: View {
         }
         .alert("Champs incomplets", isPresented: $showOptionalWarning) {
             Button("Modifier les infos", role: .cancel) { }
-            Button("Continuer malgré tout") { }
+            Button("Continuer malgré tout") {
+                navigate = true
+            }
         } message: {
             Text(
                 """
@@ -182,8 +184,4 @@ struct ParcoursProfessionnelScreen: View {
             ZonesSensiblesScreen()
         }
     }
-}
-
-#Preview {
-    ParcoursProfessionnelScreen()
 }
