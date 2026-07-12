@@ -49,9 +49,6 @@ struct legitima_frontendApp: App {
         switch router.root {
         case .onboarding:
             LeanOnboardingScreen(
-                onShowPremiumUpsell: {
-                    router.showPremiumUpsell()
-                },
                 onAnalysisComplete: { response in
                     router.showResult(response)
                 }
