@@ -11,6 +11,7 @@ import SwiftUI
 struct legitima_frontendApp: App {
     @StateObject private var router = AppRouter()
     @StateObject private var userStatus = UserStatus()
+    @StateObject private var premiumDraft = PremiumPreparationDraft()
 
     var body: some Scene {
         WindowGroup {
@@ -22,25 +23,13 @@ struct legitima_frontendApp: App {
                             ProgressionScreen(
                                 onBackToResults: {
                                     router.backToResults()
-                                },
-                                onShowPremiumUpsell: {
-                                    router.showPremiumUpsell()
-                                }
-                            )
-
-                        case .premiumUpsell:
-                            PremiumUpsellScreen(
-                                onUnlockPremium: {
-                                    router.backToResults()
-                                },
-                                onContinueFree: {
-                                    router.restartAnalysis()
                                 }
                             )
                         }
                     }
             }
             .environmentObject(userStatus)
+            .environmentObject(premiumDraft)
         }
     }
 

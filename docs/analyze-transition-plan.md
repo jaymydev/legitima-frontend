@@ -30,6 +30,13 @@ The current premium UX now follows a two-step pattern:
 
 This immediate unlock behavior should be preserved during any future migration because it reduces the feeling that premium starts with extra effort before visible value.
 
+Within that premium journey, the frontend currently distinguishes two separate narrative moments:
+
+1. `PreparationEntretienScreen` focuses on a local answer to one difficult question;
+2. `FilConducteurScreen` focuses on the global story that connects the whole career path.
+
+This distinction should also be preserved during future backend migration work because both steps may depend on different successor business capabilities even if they both involve narrative input.
+
 ## Why this should change later
 
 `POST /analyze` is useful for near-term stabilization and end-to-end testing, but it combines multiple product steps into one backend call.
