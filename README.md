@@ -41,6 +41,16 @@ The frontend repository source of truth for backend integration is:
 
 Do not add or call backend endpoints that are not documented there.
 
+## Current Premium Flow
+
+The current premium behavior is intentionally split in two steps:
+
+- after a successful free analysis, locked premium cards are visible as teasers;
+- when premium is unlocked, those cards are revealed immediately on the result screen;
+- only after that immediate reward does the user continue into the deeper premium preparation flow.
+
+This keeps the premium transition rewarding before it becomes more effortful.
+
 ## Agent rules
 
 This repository includes [AGENTS.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/AGENTS.md), and contributors and agents should follow it strictly.
