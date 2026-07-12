@@ -26,7 +26,6 @@ struct ProgressionScreen: View {
 
             ScrollView {
                 VStack(spacing: 28) {
-                    debugStatus
                     headerSection
                     progressSection
                     pedagogicalSection
@@ -39,16 +38,6 @@ struct ProgressionScreen: View {
                 .frame(maxWidth: .infinity)
             }
         }
-    }
-
-    private var debugStatus: some View {
-        Text(userStatus.isPremium ? "PREMIUM" : "FREE")
-            .font(.caption.weight(.semibold))
-            .foregroundColor(buttonColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Color.white.opacity(0.9))
-            .clipShape(Capsule())
     }
 
     private var headerSection: some View {

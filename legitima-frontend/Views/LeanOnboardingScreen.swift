@@ -136,6 +136,8 @@ struct LeanOnboardingScreen: View {
     }
 }
 
-#Preview {
-    LeanOnboardingScreen(onAnalysisComplete: { _ in })
+struct LeanOnboardingScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        LeanOnboardingScreen(onAnalysisComplete: { _ in })
+    }
 }

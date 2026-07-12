@@ -32,11 +32,9 @@ struct PremiumUpsellScreen: View {
 
             ScrollView {
                 VStack(spacing: 24) {
-                    debugStatus
                     headerSection
                     benefitsCard
                     primaryCTA
-                    debugActivatePremiumCTA
                     secondaryCTA
                 }
                 .frame(maxWidth: 680)
@@ -46,17 +44,6 @@ struct PremiumUpsellScreen: View {
                 .frame(maxWidth: .infinity)
             }
         }
-    }
-
-    private var debugStatus: some View {
-        Text(userStatus.isPremium ? "PREMIUM" : "FREE")
-            .font(.caption.weight(.semibold))
-            .foregroundColor(buttonColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(Color.white.opacity(0.9))
-            .clipShape(Capsule())
-            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var headerSection: some View {
@@ -124,18 +111,6 @@ struct PremiumUpsellScreen: View {
                 .background(buttonColor)
                 .foregroundColor(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
-        }
-    }
-
-    private var debugActivatePremiumCTA: some View {
-        Button(action: {
-            userStatus.activatePremium()
-            onUnlockPremium()
-        }) {
-            Text("DEBUG — Activer Premium")
-                .font(.footnote)
-                .fontWeight(.semibold)
-                .foregroundColor(buttonColor)
         }
     }
 

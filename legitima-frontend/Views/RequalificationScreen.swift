@@ -148,6 +148,8 @@ struct RequalificationScreen: View {
     }
 }
 
-#Preview {
-    RequalificationScreen()
+struct RequalificationScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        RequalificationScreen()
+    }
 }

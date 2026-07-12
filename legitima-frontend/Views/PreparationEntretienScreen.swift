@@ -123,6 +123,8 @@ struct PreparationEntretienScreen: View {
     }
 }
 
-#Preview {
-    PreparationEntretienScreen()
+struct PreparationEntretienScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        PreparationEntretienScreen()
+    }
 }

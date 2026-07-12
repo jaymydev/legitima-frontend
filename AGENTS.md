@@ -33,6 +33,7 @@ The iOS app must not add without explicit human approval:
 - Use SwiftUI unless the existing codebase requires otherwise.
 - Keep views small and readable.
 - Separate View, ViewModel, Model, and API client logic.
+- Run `./scripts/check-build.sh` before handing off build-related frontend changes when the environment allows it.
 - Do not invent backend endpoints.
 - Follow docs/api-contract.md.
 - Handle loading, error, empty, and success states.
@@ -53,6 +54,7 @@ The iOS app must not add without explicit human approval:
 A frontend task is complete only if:
 - the screen or behavior is implemented;
 - navigation still works;
+- the project still builds through `./scripts/check-build.sh` when the environment allows it;
 - API contract is respected;
 - main states are handled;
 - no unrelated feature is added;

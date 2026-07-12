@@ -135,6 +135,8 @@ private extension Color {
     }
 }
 
-#Preview {
-    ZonesSensiblesScreen()
+struct ZonesSensiblesScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        ZonesSensiblesScreen()
+    }
 }

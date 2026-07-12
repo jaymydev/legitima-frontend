@@ -267,8 +267,10 @@ Il est légitime.
     }
 }
 
-#Preview {
-    FilConducteurScreen()
+struct FilConducteurScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        FilConducteurScreen()
+    }
 }
 
 extension AnalysisResponse: Equatable {

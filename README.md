@@ -20,6 +20,18 @@ V1 scope stays limited to:
 3. Select [legitima-frontend.xcodeproj](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/legitima-frontend.xcodeproj).
 4. Pick an iOS Simulator and run the `legitima-frontend` app target.
 
+## Automated build check
+
+Before opening Xcode, you can validate that the project still compiles with:
+
+```sh
+./scripts/check-build.sh
+```
+
+This performs a simulator-targeted `xcodebuild` compile check without requiring code signing.
+
+The repository also includes a GitHub Actions workflow at [.github/workflows/ios-build.yml](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/.github/workflows/ios-build.yml) so pull requests and pushes to `main` automatically run the same build verification.
+
 ## Local backend
 
 The frontend currently expects a local backend at:
