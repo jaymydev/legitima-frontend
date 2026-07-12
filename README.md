@@ -58,10 +58,16 @@ Do not add or call backend endpoints that are not documented there.
 The current premium behavior is intentionally split in two steps:
 
 - after a successful free analysis, locked premium cards are visible as teasers;
-- when premium is unlocked, those cards are revealed immediately on the result screen;
+- when premium is unlocked, those cards are revealed immediately on the result screen without a separate upsell screen;
 - only after that immediate reward does the user continue into the deeper premium preparation flow.
 
 This keeps the premium transition rewarding before it becomes more effortful.
+
+Inside the guided premium journey:
+
+- `Préparer une réponse forte` is used for a single difficult question or objection;
+- `Clarifier votre fil conducteur` is used afterwards for the global story that connects the full career path;
+- these two screens should stay distinct in purpose even if both collect short-form narrative input.
 
 ## Agent rules
 

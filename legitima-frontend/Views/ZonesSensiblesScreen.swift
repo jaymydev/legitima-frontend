@@ -3,61 +3,56 @@ import SwiftUI
 struct ZonesSensiblesScreen: View {
     @State private var periodesSensibles = ""
     @State private var explicationBrute = ""
-    @State private var relectureStrategique = ""
-    @State private var reformulationAssumee = ""
+
+    private let primaryText = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
+    private let secondaryText = Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255)
+    private let buttonColor = Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255)
 
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(hex: "CFFCF9"), Color(hex: "EDF3F3")],
+                colors: [
+                    Color(red: 207 / 255, green: 252 / 255, blue: 249 / 255),
+                    Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255)
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    header
+                VStack(alignment: .leading, spacing: 22) {
+                    headerSection
+                    framingCard
 
-                    card(
-                        title: "Périodes sensibles identifiées",
-                        description: "Indiquez les périodes de votre parcours qui vous semblent fragiles ou difficiles à expliquer.",
+                    guidedStepCard(
+                        index: "1",
+                        title: "La zone sensible à traiter",
+                        helper: "Choisissez une seule période ou situation qui vous semble difficile à expliquer aujourd’hui.",
+                        placeholder: "Ex : période de bench, pause, reconversion, changement fréquent de poste...",
                         text: $periodesSensibles,
-                        placeholder: "– Période concernée :\n– Contexte :\n– Pourquoi cela vous met en difficulté :",
-                        warning: "Ce point mérite d’être approfondi pour renforcer votre récit."
+                        minHeight: 84
                     )
 
-                    card(
-                        title: "Explication actuelle (brute)",
-                        description: "Comment expliquez-vous aujourd’hui cette période, sans filtre stratégique ?",
+                    guidedStepCard(
+                        index: "2",
+                        title: "Expliquez-la simplement",
+                        helper: "Décrivez-la avec vos mots, sans chercher encore à la requalifier. Une version brute suffit.",
+                        placeholder: "Ex : J’ai peur que cette période donne une impression d’instabilité, alors qu’elle correspondait à une vraie phase de transition.",
                         text: $explicationBrute,
-                        placeholder: "– Ce que je dis généralement :\n– Ce que je ressens encore :\n– Ce que j’évite de mentionner :",
-                        warning: "Ce point mérite d’être approfondi pour renforcer votre récit."
+                        minHeight: 120
                     )
 
-                    card(
-                        title: "Relecture stratégique",
-                        description: "Comment pourriez-vous relire cette période de manière factuelle et constructive ?",
-                        text: $relectureStrategique,
-                        placeholder: "– Compétences développées :\n– Apprentissages réels :\n– Éléments objectifs positifs :",
-                        warning: "Ce point mérite d’être approfondi pour renforcer votre récit."
-                    )
-
-                    card(
-                        title: "Reformulation assumée",
-                        description: "Formulez une version claire et assumée que vous pourriez défendre en entretien.",
-                        text: $reformulationAssumee,
-                        placeholder: "– Formulation synthétique :\n– Angle choisi :\n– Message que je veux faire passer :",
-                        warning: "Ce point mérite d’être approfondi pour renforcer votre récit."
-                    )
+                    vocalHintCard
+                    nudgeCard
 
                     NavigationLink(destination: RequalificationScreen()) {
-                        Text("Suivant")
+                        Text("Passer à la reformulation guidée")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                            .background(buttonColor)
                             .cornerRadius(12)
                     }
                 }
@@ -68,70 +63,113 @@ struct ZonesSensiblesScreen: View {
         }
     }
 
-    private var header: some View {
+    private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Identifier vos zones sensibles")
+            Text("Identifier une zone sensible")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-                .foregroundStyle(Color(hex: "2F3131"))
+                .foregroundColor(primaryText)
 
-            Text("Pour transformer les fragilités en maîtrise narrative.")
+            Text("Vous n’avez pas besoin de tout résoudre ici. Donnez seulement la matière brute la plus importante.")
                 .font(.subheadline)
-                .foregroundStyle(Color(hex: "5B5F5F"))
+                .foregroundColor(secondaryText)
         }
     }
 
-    private func card(
-        title: String,
-        description: String,
-        text: Binding<String>,
-        placeholder: String,
-        warning: String
-    ) -> some View {
+    private var framingCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
+            Text("Objectif de cette étape")
                 .font(.headline)
                 .fontWeight(.semibold)
-                .foregroundStyle(Color(hex: "2F3131"))
+                .foregroundColor(primaryText)
 
-            Text(description)
+            Text("Le but n’est pas que vous requalifiiez seule cette fragilité. Le but est de capturer clairement ce qui bloque, pour pouvoir mieux la reformuler ensuite.")
                 .font(.subheadline)
-                .foregroundStyle(Color(hex: "5B5F5F"))
+                .foregroundColor(secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var vocalHintCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "mic.fill")
+                .foregroundColor(buttonColor)
+
+            Text("Si vous utilisez la dictée iPhone, gardez un message court : idéalement 60 à 90 secondes maximum pour rester claire et éviter une matière trop longue à retraiter.")
+                .font(.footnote)
+                .foregroundColor(secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var nudgeCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "shield.lefthalf.filled")
+                .foregroundColor(buttonColor)
+
+            Text("Restez simple et factuelle. Une version imparfaite mais honnête sera plus utile qu’une tentative déjà trop travaillée.")
+                .font(.footnote)
+                .foregroundColor(secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func guidedStepCard(
+        index: String,
+        title: String,
+        helper: String,
+        placeholder: String,
+        text: Binding<String>,
+        minHeight: CGFloat
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 10) {
+                Text(index)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(buttonColor)
+                    .frame(width: 28, height: 28)
+                    .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+                    .clipShape(Circle())
+
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(primaryText)
+            }
+
+            Text(helper)
+                .font(.subheadline)
+                .foregroundColor(secondaryText)
 
             PlaceholderTextEditor(
                 placeholder: placeholder,
                 text: text,
-                primaryColor: Color(hex: "2F3131"),
-                minHeight: 120
+                primaryColor: primaryText,
+                minHeight: minHeight
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(hex: "DDE3E3"), lineWidth: 1)
+                    .stroke(Color(red: 224 / 255, green: 231 / 255, blue: 231 / 255), lineWidth: 1)
             )
-
-            if text.wrappedValue.count < 30 {
-                Text(warning)
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .padding(.top, 4)
-            }
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .padding(16)
         .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
-    }
-}
-
-private extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let r = Double((int >> 16) & 0xFF) / 255.0
-        let g = Double((int >> 8) & 0xFF) / 255.0
-        let b = Double(int & 0xFF) / 255.0
-        self.init(.sRGB, red: r, green: g, blue: b, opacity: 1)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
 }
 
