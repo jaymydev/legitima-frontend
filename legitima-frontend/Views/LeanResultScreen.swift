@@ -6,7 +6,7 @@ struct LeanResultScreen: View {
     let onContinue: () -> Void
     private let lockedPreviewText = """
     Disponible dans la préparation complète.
-    Débloquez la suite pour structurer votre récit et préparer vos réponses face au recruteur.
+    Débloquez la suite pour transformer cette lecture en réponses plus claires et plus défendables.
     """
 
     var body: some View {
@@ -29,7 +29,7 @@ struct LeanResultScreen: View {
                             .fontWeight(.bold)
                             .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
-                        Text("Une synthèse claire pour consolider votre récit et votre légitimité.")
+                        Text("Une première lecture utile pour clarifier votre parcours avant la suite de la préparation.")
                             .font(.subheadline)
                             .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
                     }
@@ -89,10 +89,14 @@ struct LeanResultScreen: View {
                         isLocked: !userStatus.isPremium
                     )
 
+                    if !userStatus.isPremium {
+                        inlinePremiumUnlockCard
+                    }
+
                     Button(action: {
                         onContinue()
                     }) {
-                        Text(userStatus.isPremium ? "Continuer ma préparation complète" : "Continuer")
+                        Text(userStatus.isPremium ? "Continuer ma préparation" : "Voir la suite de ma préparation")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -120,6 +124,39 @@ struct LeanResultScreen: View {
         .joined(separator: "\n\n")
     }
 
+    private var inlinePremiumUnlockCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Débloquez la suite maintenant")
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+
+            Text("Accédez immédiatement aux contenus déjà prêts sur cet écran, puis poursuivez le parcours guidé.")
+                .font(.subheadline)
+                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+
+            Button(action: {
+                userStatus.activatePremium()
+            }) {
+                Text("Voir mes contenus premium")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+    }
+
     private var premiumUnlockBanner: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "sparkles.rectangle.stack.fill")
@@ -132,7 +169,7 @@ struct LeanResultScreen: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
-                Text("Vos contenus premium sont maintenant déverrouillés. Consultez-les librement avant de poursuivre la préparation complète.")
+                Text("Vos contenus premium sont maintenant visibles ici. Prenez-les en main avant de continuer le parcours guidé.")
                     .font(.subheadline)
                     .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
             }

@@ -10,7 +10,6 @@ final class AppRouter: ObservableObject {
 
     enum Route: Hashable {
         case progression
-        case premiumUpsell
     }
 
     @Published var root: Root = .onboarding
@@ -23,10 +22,6 @@ final class AppRouter: ObservableObject {
 
     func showProgression() {
         path.append(.progression)
-    }
-
-    func showPremiumUpsell() {
-        path.append(.premiumUpsell)
     }
 
     func backToResults() {

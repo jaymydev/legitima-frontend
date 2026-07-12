@@ -3,14 +3,18 @@ import SwiftUI
 struct FilConducteurScreen: View {
     let onReset: () -> Void
 
-    @State private var resumeGlobal = ""
-    @State private var positionnementActuel = ""
+    @State private var pointDepart = ""
+    @State private var forceCentrale = ""
     @State private var logiqueEvolution = ""
     @State private var parsedResponse: AnalysisResponse?
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showErrorAlert = false
+
     private let iaService = IAService()
+    private let primaryText = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
+    private let secondaryText = Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255)
+    private let buttonColor = Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255)
 
     init(onReset: @escaping () -> Void = {}) {
         self.onReset = onReset
@@ -30,148 +34,70 @@ struct FilConducteurScreen: View {
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(spacing: 24) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Construire votre fil conducteur")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    VStack(alignment: .leading, spacing: 22) {
+                        headerSection
+                        framingCard
 
-                        Text("Structurer un récit cohérent et défendable de votre parcours.")
-                            .font(.subheadline)
-                            .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                        guidedStepCard(
+                            index: "1",
+                            title: "Votre point de départ",
+                            helper: "En une phrase simple, quel est le point de départ global de votre trajectoire ?",
+                            placeholder: "Ex : J’ai construit mon parcours dans des environnements techniques exigeants, avec une montée progressive en responsabilité.",
+                            text: $pointDepart,
+                            minHeight: 96
+                        )
 
-                    cardView(
-                        title: "Résumé stratégique (5 à 7 lignes)",
-                        description: "Racontez votre parcours comme une progression logique et non comme une succession d’événements.",
-                        text: $resumeGlobal,
-                        placeholder: "– Point de départ :\n– Évolution clé :\n– Compétences consolidées :\n– Positionnement actuel :",
-                        warning: resumeGlobal.count < 150 ? "Essayez d’atteindre au moins 150 caractères pour formuler un récit structuré." : nil
-                    )
+                        guidedStepCard(
+                            index: "2",
+                            title: "La force qui relie votre parcours",
+                            helper: "Choisissez l’idée centrale qui relie vos étapes entre elles.",
+                            placeholder: "Ex : Ma capacité à structurer des sujets complexes et à rassurer dans des contextes instables.",
+                            text: $forceCentrale,
+                            minHeight: 96
+                        )
 
-                    cardView(
-                        title: "Positionnement actuel",
-                        description: "Définissez clairement votre posture professionnelle aujourd’hui.",
-                        text: $positionnementActuel,
-                        placeholder: "– Rôle cible :\n– Valeur ajoutée principale :\n– Différenciation :",
-                        warning: positionnementActuel.count < 50 ? "Essayez d’atteindre au moins 50 caractères pour clarifier votre positionnement." : nil
-                    )
+                        guidedStepCard(
+                            index: "3",
+                            title: "Pourquoi cette évolution est logique",
+                            helper: "Expliquez pourquoi l’ensemble de vos choix raconte une continuité plutôt qu’une succession d’épisodes isolés.",
+                            placeholder: "Ex : Chaque étape m’a rapprochée d’un positionnement plus stratégique et plus transversal.",
+                            text: $logiqueEvolution,
+                            minHeight: 96
+                        )
 
-                    cardView(
-                        title: "Logique d’évolution",
-                        description: "Expliquez pourquoi vos choix successifs forment une continuité stratégique.",
-                        text: $logiqueEvolution,
-                        placeholder: "– Décision clé 1 :\n– Décision clé 2 :\n– Cohérence globale :",
-                        warning: logiqueEvolution.count < 50 ? "Essayez d’atteindre au moins 50 caractères pour expliciter la cohérence de vos choix." : nil
-                    )
-
-                    Button(action: {
-                        Task {
-                            isLoading = true
-                            errorMessage = nil
-                            do {
-                                let filRequest = FilConducteurRequest(
-                                    meta: .init(
-                                        version: "1.0",
-                                        language: "fr",
-                                        target_market: "US",
-                                        interview_type: "recruitment"
-                                    ),
-                                    narrative_positioning: .init(
-                                        short_summary: resumeGlobal,
-                                        current_positioning: positionnementActuel,
-                                        evolution_logic: logiqueEvolution
-                                    )
-                                )
-                                let request = AnalyzeRequest(input: filRequest)
-
-                                let response = try await iaService.analyze(request: request)
-                                parsedResponse = response
-                                isLoading = false
-
-                            } catch {
-                                isLoading = false
-                                errorMessage = error.localizedDescription
-                                showErrorAlert = true
-                            }
-                        }
-                    }) {
-                        Text("Analyser mon fil conducteur")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(red: 43/255, green: 111/255, blue: 113/255))
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                    }
-                    .disabled(isLoading)
-                    .padding(.top, 12)
-
-                    if isLoading {
-                        ProgressView("Analyse en cours...")
-                            .padding()
-                    }
-
-                        if let response = parsedResponse {
-                            VStack(spacing: 20) {
-                                analysisCard(
-                                    icon: "lightbulb.fill",
-                                    title: "Compréhension stratégique",
-                                    content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
-                                    backgroundColor: Color.green.opacity(0.12)
-                                )
-
-                                analysisCard(
-                                    icon: "arrow.triangle.branch",
-                                    title: "Relecture structurée du parcours",
-                                    content: response.analysis.career_logic + "\n\n" + response.narrative.core_thread,
-                                    backgroundColor: Color.yellow.opacity(0.15)
-                                )
-
-                                analysisCard(
-                                    icon: "shield.fill",
-                                    title: "Anticipation des objections",
-                                    content: response.interview_preparation.probable_objections + "\n\n" + response.interview_preparation.structured_answers,
-                                    backgroundColor: Color.orange.opacity(0.15)
-                                )
-
-                                analysisCard(
-                                    icon: "checkmark.seal.fill",
-                                    title: "Ancrage de légitimité",
-                                    content: response.legitimacy_anchor.objective_strength + "\n\n" + response.legitimacy_anchor.final_alignment_statement,
-                                    backgroundColor: Color.blue.opacity(0.12)
-                                )
-
-                                analysisCard(
-                                    icon: "sparkles",
-                                    title: "Synthèse stratégique finale",
-                                    content:
-"""
-Vous ne présentez pas un parcours fragmenté.
-
-Vous présentez une trajectoire construite par l’expérience,
-renforcée par l’analyse,
-et alignée avec votre positionnement actuel.
-
-Votre parcours est défendable.
-Il est cohérent.
-Il est légitime.
-""",
-                                    backgroundColor: Color.purple.opacity(0.18)
-                                )
-                            }
-                            .id("analysisResult")
-                            .animation(.easeInOut(duration: 0.3), value: parsedResponse)
+                        if shouldShowNudge {
+                            nudgeCard
                         }
 
-                        Button(action: onReset) {
-                            Text("Nouvelle analyse")
+                        Button(action: analyzeNarrative) {
+                            Text("Générer un premier fil conducteur")
                                 .fontWeight(.semibold)
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                                .background(buttonColor)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                        }
+                        .disabled(isLoading)
+                        .padding(.top, 4)
+
+                        if isLoading {
+                            ProgressView("Analyse en cours...")
+                                .padding(.top, 2)
+                        }
+
+                        if let response = parsedResponse {
+                            resultSection(response)
+                                .id("analysisResult")
+                                .animation(.easeInOut(duration: 0.3), value: parsedResponse)
+                        }
+
+                        Button(action: onReset) {
+                            Text("Relancer une analyse")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(buttonColor)
                                 .foregroundColor(.white)
                                 .cornerRadius(12)
                         }
@@ -197,49 +123,145 @@ Il est légitime.
         }
     }
 
-    private func cardView(
-        title: String,
-        description: String,
-        text: Binding<String>,
-        placeholder: String,
-        warning: String?
-    ) -> some View {
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Clarifier votre fil conducteur")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(primaryText)
+
+            Text("Après la réponse ponctuelle, clarifiez maintenant la logique globale qui relie l’ensemble de votre parcours.")
+                .font(.subheadline)
+                .foregroundColor(secondaryText)
+        }
+    }
+
+    private var framingCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
+            Text("Objectif de cette étape")
                 .font(.headline)
                 .fontWeight(.semibold)
-                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                .foregroundColor(primaryText)
 
-            Text(description)
+            Text("L’écran précédent servait à préparer une réponse précise. Ici, vous travaillez autre chose : le récit d’ensemble qui donne de la cohérence à tout votre parcours.")
                 .font(.subheadline)
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .foregroundColor(secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var nudgeCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "sparkles")
+                .foregroundColor(buttonColor)
+
+            Text("Ne cherchez pas la formulation parfaite tout de suite. Ici, vous ne préparez pas une réponse isolée, mais la logique d’ensemble de votre parcours.")
+                .font(.footnote)
+                .foregroundColor(secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var shouldShowNudge: Bool {
+        [pointDepart, forceCentrale, logiqueEvolution]
+            .joined()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .count < 60
+    }
+
+    private func guidedStepCard(
+        index: String,
+        title: String,
+        helper: String,
+        placeholder: String,
+        text: Binding<String>,
+        minHeight: CGFloat
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 10) {
+                Text(index)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(buttonColor)
+                    .frame(width: 28, height: 28)
+                    .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+                    .clipShape(Circle())
+
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(primaryText)
+            }
+
+            Text(helper)
+                .font(.subheadline)
+                .foregroundColor(secondaryText)
 
             PlaceholderTextEditor(
                 placeholder: placeholder,
                 text: text,
-                primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
-                minHeight: 120
+                primaryColor: primaryText,
+                minHeight: minHeight
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.black.opacity(0.08), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
-
-            if let warning {
-                Text(warning)
-                    .font(.caption)
-                    .foregroundColor(Color.orange)
-                    .padding(.top, 4)
-            }
         }
         .padding(16)
         .background(Color.white)
-        .cornerRadius(16)
+        .cornerRadius(18)
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
 
-    private func analysisCard(
+    private func resultSection(_ response: AnalysisResponse) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Votre première reformulation")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(primaryText)
+
+            narrativeResultCard(
+                icon: "lightbulb.fill",
+                title: "Lecture stratégique",
+                content: response.analysis.strategic_reading,
+                backgroundColor: Color(red: 227 / 255, green: 245 / 255, blue: 236 / 255)
+            )
+
+            narrativeResultCard(
+                icon: "point.3.connected.trianglepath.dotted",
+                title: "Fil narratif central",
+                content: response.narrative.core_thread,
+                backgroundColor: Color(red: 255 / 255, green: 247 / 255, blue: 225 / 255)
+            )
+
+            narrativeResultCard(
+                icon: "text.quote",
+                title: "Positionnement formulé",
+                content: response.narrative.positioning_statement,
+                backgroundColor: Color(red: 228 / 255, green: 239 / 255, blue: 253 / 255)
+            )
+
+            narrativeResultCard(
+                icon: "sparkles",
+                title: "Conclusion défendable",
+                content: response.legitimacy_anchor.final_alignment_statement,
+                backgroundColor: Color(red: 242 / 255, green: 233 / 255, blue: 252 / 255)
+            )
+        }
+    }
+
+    private func narrativeResultCard(
         icon: String,
         title: String,
         content: String,
@@ -247,23 +269,61 @@ Il est légitime.
     ) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.primary)
+                .font(.title3)
+                .foregroundColor(primaryText)
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(.headline)
-                    .bold()
+                    .fontWeight(.semibold)
+                    .foregroundColor(primaryText)
 
                 Text(content)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(16)
         .background(backgroundColor)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private func analyzeNarrative() {
+        Task {
+            isLoading = true
+            errorMessage = nil
+
+            do {
+                let request = AnalyzeRequest(
+                    input: FilConducteurRequest(
+                        meta: .init(
+                            version: "1.0",
+                            language: "fr",
+                            target_market: "US",
+                            interview_type: "recruitment"
+                        ),
+                        narrative_positioning: .init(
+                            short_summary: pointDepart,
+                            current_positioning: forceCentrale,
+                            evolution_logic: logiqueEvolution
+                        )
+                    )
+                )
+
+                let response = try await iaService.analyze(request: request)
+                parsedResponse = response
+                isLoading = false
+            } catch {
+                isLoading = false
+                errorMessage = error.localizedDescription
+                showErrorAlert = true
+            }
+        }
     }
 }
 
