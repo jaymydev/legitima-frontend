@@ -36,7 +36,14 @@ The repository also includes a GitHub Actions workflow at [.github/workflows/ios
 
 The frontend currently expects a local backend at:
 
-`http://127.0.0.1:8000`
+- iOS Simulator: `http://127.0.0.1:8000`
+- Physical iPhone on the same Wi-Fi: `http://192.168.1.43:8000`
+
+For physical-device testing, start the backend with network exposure, for example:
+
+```sh
+uvicorn app.minimal_ai:app --host 0.0.0.0 --port 8000 --reload
+```
 
 The currently documented integration surface is:
 

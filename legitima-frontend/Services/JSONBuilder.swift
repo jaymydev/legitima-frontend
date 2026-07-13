@@ -21,3 +21,16 @@ struct FilConducteurRequest: Encodable {
 struct AnalyzeRequest: Encodable {
     let input: FilConducteurRequest
 }
+
+enum AnalyzePromptPolicy {
+    static func frenchOnlyEvolutionLogic(_ value: String) -> String {
+        let instruction = "Consigne de sortie : répondez exclusivement en français."
+        let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmedValue.isEmpty {
+            return instruction
+        }
+
+        return "\(trimmedValue)\n\n\(instruction)"
+    }
+}

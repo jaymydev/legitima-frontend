@@ -16,10 +16,12 @@ struct RequalificationScreen: View {
                     Color(red: 207 / 255, green: 252 / 255, blue: 249 / 255),
                     Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255)
                 ],
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
+
+            ambientBackground
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
@@ -28,9 +30,9 @@ struct RequalificationScreen: View {
 
                     guidedStepCard(
                         index: "1",
-                        title: "Ce que vous craignez comme perception",
-                        helper: "Quelle mauvaise lecture du recruteur vous inquiète le plus ?",
-                        placeholder: "Ex : J’ai peur qu’on y voie un manque de stabilité ou un parcours mal maîtrisé.",
+                        title: "La mauvaise lecture que vous redoutez",
+                        helper: "Quelle interprétation vous inquiète le plus ?",
+                        placeholder: "Ex : un manque de stabilité ou un parcours mal maîtrisé.",
                         text: $faiblessePerçue,
                         minHeight: 96
                     )
@@ -38,17 +40,17 @@ struct RequalificationScreen: View {
                     guidedStepCard(
                         index: "2",
                         title: "Ce que cette phase a réellement apporté",
-                        helper: "Pensez aux faits utiles : apprentissages, décisions prises, recul, compétences renforcées.",
-                        placeholder: "Ex : J’ai clarifié mon positionnement, pris du recul, et mieux identifié l’environnement dans lequel je crée le plus de valeur.",
+                        helper: "Pensez aux faits utiles : recul, décisions prises, apprentissages.",
+                        placeholder: "Ex : j’ai clarifié mon positionnement et mieux identifié où je crée le plus de valeur.",
                         text: $apprentissageReel,
                         minHeight: 110
                     )
 
                     guidedStepCard(
                         index: "3",
-                        title: "Ce que vous voulez qu’on comprenne",
-                        helper: "En une idée simple, quel message juste voulez-vous laisser sur cette période ?",
-                        placeholder: "Ex : Cette phase ne résume pas une faiblesse, mais une transition qui m’a aidée à faire un choix plus cohérent.",
+                        title: "Le message juste à laisser",
+                        helper: "En une idée simple, qu’aimeriez-vous que l’on retienne ?",
+                        placeholder: "Ex : cette phase ne résume pas une faiblesse, mais une transition qui m’a aidée à faire un choix plus cohérent.",
                         text: $postureActuelle,
                         minHeight: 110
                     )
@@ -56,13 +58,23 @@ struct RequalificationScreen: View {
                     nudgeCard
 
                     NavigationLink(destination: PreparationEntretienScreen()) {
-                        Text("Passer à la préparation d’entretien")
+                        Text("Continuer")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(buttonColor)
-                            .cornerRadius(12)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        buttonColor,
+                                        Color(red: 54 / 255, green: 132 / 255, blue: 134 / 255)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .shadow(color: buttonColor.opacity(0.22), radius: 12, x: 0, y: 8)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -73,36 +85,71 @@ struct RequalificationScreen: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Commencer la reformulation")
+        VStack(alignment: .leading, spacing: 14) {
+            Text("ETAPE 4")
+                .font(.caption.weight(.bold))
+                .foregroundColor(buttonColor.opacity(0.82))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.72))
+                .clipShape(Capsule())
+
+            Text("Reformuler la fragilité\nsans vous trahir")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryText)
 
-            Text("Ici, vous préparez les bons appuis pour mieux expliquer cette zone sensible, sans travestir votre parcours.")
+            Text("Préparez ici des appuis simples pour expliquer cette période avec plus de justesse.")
                 .font(.subheadline)
                 .foregroundColor(secondaryText)
         }
     }
 
     private var framingCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Objectif de cette étape")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundColor(primaryText)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "sparkles.rectangle.stack")
+                    .font(.title3)
+                    .foregroundColor(buttonColor)
+                    .frame(width: 40, height: 40)
+                    .background(Color.white.opacity(0.72))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Text("Vous n’avez pas besoin d’écrire une réponse parfaite. L’objectif est seulement de dégager quelques points d’appui pour rendre la reformulation plus simple ensuite.")
-                .font(.subheadline)
-                .foregroundColor(secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Objectif de cette étape")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(primaryText)
+
+                    Text("Vous n’écrivez pas encore une réponse finale. Vous préparez seulement les bons points d’appui.")
+                        .font(.subheadline)
+                        .foregroundColor(secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            HStack(spacing: 10) {
+                framingPill("crainte")
+                framingPill("apprentissage")
+                framingPill("message juste")
+            }
         }
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.96),
+                    Color(red: 244 / 255, green: 252 / 255, blue: 250 / 255)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                .stroke(Color.white.opacity(0.72), lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
@@ -111,7 +158,7 @@ struct RequalificationScreen: View {
             Image(systemName: "sparkles")
                 .foregroundColor(buttonColor)
 
-            Text("Le bon objectif n’est pas d’effacer la fragilité. Le bon objectif est de préparer une lecture plus juste et plus maîtrisée.")
+            Text("L’objectif n’est pas d’effacer la fragilité, mais d’en donner une lecture plus juste.")
                 .font(.footnote)
                 .foregroundColor(secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -119,6 +166,33 @@ struct RequalificationScreen: View {
         .padding(16)
         .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
         .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var ambientBackground: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white.opacity(0.34))
+                .frame(width: 220, height: 220)
+                .blur(radius: 8)
+                .offset(x: 150, y: -250)
+
+            Circle()
+                .fill(Color(red: 170 / 255, green: 232 / 255, blue: 224 / 255).opacity(0.34))
+                .frame(width: 200, height: 200)
+                .blur(radius: 10)
+                .offset(x: -140, y: 260)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func framingPill(_ text: String) -> some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .foregroundColor(buttonColor.opacity(0.92))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+            .clipShape(Capsule())
     }
 
     private func guidedStepCard(

@@ -6,7 +6,6 @@ struct ContexteEntretienScreen: View {
     @State private var entrepriseContexte = ""
     @State private var situationActuelle = "En poste"
     @State private var autreSituation = ""
-    @State private var posteActuelOuDernier = ""
     @State private var showIncompleteAlert = false
     @State private var navigate = false
 
@@ -17,8 +16,7 @@ struct ContexteEntretienScreen: View {
 
     private var isIncomplete: Bool {
         typeEntretien.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-        situationActuelle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-        posteActuelOuDernier.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        situationActuelle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     var body: some View {
@@ -28,10 +26,12 @@ struct ContexteEntretienScreen: View {
                     Color(red: 207 / 255, green: 252 / 255, blue: 249 / 255),
                     Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255)
                 ],
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
+
+            ambientBackground
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
@@ -53,9 +53,14 @@ struct ContexteEntretienScreen: View {
                     guidedInputCard(
                         index: "2",
                         title: "Le contexte à garder en tête",
-                        helper: "Quelques mots suffisent pour situer l’entreprise, le secteur ou le type d’environnement.",
+                        helper: "Quelques mots suffisent pour situer l’entreprise, le secteur ou le type d’environnement. Cette info est optionnelle.",
                         content: AnyView(
-                            TextField("Ex : ESN, industrie, startup, contexte international...", text: $entrepriseContexte)
+                            TextField(
+                                "",
+                                text: $entrepriseContexte,
+                                prompt: Text("Ex : ESN, industrie, startup, contexte international...")
+                                    .foregroundColor(secondaryTextColor.opacity(0.82))
+                            )
                                 .font(.subheadline)
                                 .foregroundColor(primaryTextColor)
                                 .padding(16)
@@ -89,8 +94,10 @@ struct ContexteEntretienScreen: View {
                                         .foregroundColor(primaryTextColor)
 
                                     TextField(
-                                        "Ex : projet personnel, expatriation, congé parental...",
-                                        text: $autreSituation
+                                        "",
+                                        text: $autreSituation,
+                                        prompt: Text("Ex : projet personnel, expatriation, congé parental...")
+                                            .foregroundColor(secondaryTextColor.opacity(0.82))
                                     )
                                     .font(.subheadline)
                                     .foregroundColor(primaryTextColor)
@@ -108,33 +115,24 @@ struct ContexteEntretienScreen: View {
                         }
                     }
 
-                    guidedInputCard(
-                        index: "4",
-                        title: "Votre point d’ancrage professionnel",
-                        helper: "Renseignez votre poste actuel ou votre dernier poste. C’est le repère principal de la suite du récit.",
-                        content: AnyView(
-                            TextField("Ex : Product Owner, Senior PLM Engineer, PMO...", text: $posteActuelOuDernier)
-                                .font(.subheadline)
-                                .foregroundColor(primaryTextColor)
-                                .padding(16)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.white)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        )
-                    )
-
                     Button(action: continueFlow) {
                         Text("Passer au parcours professionnel")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(buttonColor)
-                            .cornerRadius(12)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        buttonColor,
+                                        Color(red: 54 / 255, green: 132 / 255, blue: 134 / 255)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .shadow(color: buttonColor.opacity(0.22), radius: 12, x: 0, y: 8)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -148,7 +146,7 @@ struct ContexteEntretienScreen: View {
                 navigate = true
             }
         } message: {
-            Text("Le poste et la situation actuelle aident à personnaliser la suite. Vous pouvez continuer, mais la préparation sera un peu moins précise.")
+            Text("Le type d’entretien et la situation actuelle aident à personnaliser la suite. Vous pouvez continuer, mais la préparation sera un peu moins précise.")
         }
         .navigationDestination(isPresented: $navigate) {
             ParcoursProfessionnelScreen()
@@ -156,37 +154,99 @@ struct ContexteEntretienScreen: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Situer votre entretien")
+        VStack(alignment: .leading, spacing: 14) {
+            Text("ETAPE 1")
+                .font(.caption.weight(.bold))
+                .foregroundColor(buttonColor.opacity(0.82))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.72))
+                .clipShape(Capsule())
+
+            Text("Poser le cadre\nde votre entretien")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryTextColor)
 
-            Text("Ici, on pose seulement le cadre. Quatre repères simples suffisent pour préparer la suite.")
+            Text("Ici, on pose seulement le cadre. Trois repères simples suffisent pour rendre la suite plus juste et plus rapide.")
                 .font(.subheadline)
                 .foregroundColor(secondaryTextColor)
         }
     }
 
     private var framingCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Comment remplir cette étape")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundColor(primaryTextColor)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "scope")
+                    .font(.title3)
+                    .foregroundColor(buttonColor)
+                    .frame(width: 40, height: 40)
+                    .background(Color.white.opacity(0.72))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Text("Ne cherchez pas à être exhaustive. Le but est seulement de préciser le type d’entretien, votre contexte, votre situation actuelle et votre point d’ancrage professionnel.")
-                .font(.subheadline)
-                .foregroundColor(secondaryTextColor)
-                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Le bon niveau d’effort")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(primaryTextColor)
+
+                    Text("Ne cherchez pas à être exhaustive. Le but est seulement de cadrer l’entretien, pas de raconter déjà tout votre parcours.")
+                        .font(.subheadline)
+                        .foregroundColor(secondaryTextColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            HStack(spacing: 10) {
+                framingPill("type d’entretien")
+                framingPill("situation")
+                framingPill("contexte optionnel")
+            }
         }
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.96),
+                    Color(red: 244 / 255, green: 252 / 255, blue: 250 / 255)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                .stroke(Color.white.opacity(0.72), lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var ambientBackground: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white.opacity(0.34))
+                .frame(width: 220, height: 220)
+                .blur(radius: 8)
+                .offset(x: 150, y: -260)
+
+            Circle()
+                .fill(Color(red: 170 / 255, green: 232 / 255, blue: 224 / 255).opacity(0.34))
+                .frame(width: 200, height: 200)
+                .blur(radius: 10)
+                .offset(x: -150, y: 260)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func framingPill(_ text: String) -> some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .foregroundColor(buttonColor.opacity(0.92))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+            .clipShape(Capsule())
     }
 
     private func optionRow(_ label: String, selection: Binding<String>) -> some View {
@@ -281,7 +341,7 @@ struct ContexteEntretienScreen: View {
     }
 
     private func continueFlow() {
-        premiumDraft.anchorRole = posteActuelOuDernier.trimmingCharacters(in: .whitespacesAndNewlines)
+        premiumDraft.anchorRole = ""
 
         if isIncomplete {
             showIncompleteAlert = true

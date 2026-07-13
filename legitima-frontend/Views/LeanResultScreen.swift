@@ -23,16 +23,7 @@ struct LeanResultScreen: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Votre lecture stratégique")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
-
-                        Text("Une première lecture utile pour clarifier votre parcours avant la suite de la préparation.")
-                            .font(.subheadline)
-                            .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
-                    }
+                    resultHeroSection
 
                     if userStatus.hasSeenPremiumUnlock {
                         premiumUnlockBanner
@@ -124,21 +115,91 @@ struct LeanResultScreen: View {
         .joined(separator: "\n\n")
     }
 
+    private var resultHeroSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("LECTURE STRATÉGIQUE")
+                .font(.caption.weight(.bold))
+                .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.82))
+                .clipShape(Capsule())
+
+            Text("Votre parcours commence à prendre forme")
+                .font(.system(size: 31, weight: .bold, design: .rounded))
+                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+
+            Text("Vous avez maintenant une première lecture solide. La préparation complète sert à transformer cette matière en récit, en réponses et en posture d’entretien.")
+                .font(.subheadline)
+                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .fixedSize(horizontal: false, vertical: true)
+
+            insightHighlightCard
+        }
+    }
+
+    private var insightHighlightCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(Color(red: 227 / 255, green: 245 / 255, blue: 236 / 255))
+                    .frame(width: 44, height: 44)
+
+                Image(systemName: "sparkles")
+                    .font(.headline)
+                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+            }
+
+            VStack(alignment: .leading, spacing: 7) {
+                Text("Le point clé")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+
+                Text(heroInsightText)
+                    .font(.subheadline)
+                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .background(Color.white.opacity(0.9))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.black.opacity(0.04), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+
+    private var heroInsightText: String {
+        let trimmed = response.analysis.strategic_reading.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return "Votre analyse pose déjà une base de cohérence. La suite sert à la rendre plus facile à expliquer et à défendre."
+        }
+
+        let cleaned = trimmed.replacingOccurrences(of: "\n", with: " ")
+        if cleaned.count <= 180 {
+            return cleaned
+        }
+
+        let cutoffIndex = cleaned.index(cleaned.startIndex, offsetBy: 177)
+        return String(cleaned[..<cutoffIndex]) + "..."
+    }
+
     private var inlinePremiumUnlockCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Débloquez la suite maintenant")
+            Text("Passez à la préparation complète")
                 .font(.headline)
                 .fontWeight(.bold)
                 .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
-            Text("Accédez immédiatement aux contenus déjà prêts sur cet écran, puis poursuivez le parcours guidé.")
+            Text("Débloquez maintenant les contenus déjà prêts sur cet écran, puis entrez dans le parcours premium guidé.")
                 .font(.subheadline)
                 .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
 
             Button(action: {
                 userStatus.activatePremium()
             }) {
-                Text("Voir mes contenus premium")
+                Text("Débloquer et voir mes contenus")
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -148,7 +209,16 @@ struct LeanResultScreen: View {
             }
         }
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.95),
+                    Color(red: 247 / 255, green: 244 / 255, blue: 232 / 255).opacity(0.95)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.black.opacity(0.05), lineWidth: 1)
@@ -169,7 +239,7 @@ struct LeanResultScreen: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
-                Text("Vos contenus premium sont maintenant visibles ici. Prenez-les en main avant de continuer le parcours guidé.")
+                Text("Vos contenus premium sont maintenant visibles ici. Prenez-les en main, puis passez au hub de préparation guidée.")
                     .font(.subheadline)
                     .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
             }
