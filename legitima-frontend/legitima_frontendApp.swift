@@ -23,6 +23,9 @@ struct legitima_frontendApp: App {
                             ProgressionScreen(
                                 onBackToResults: {
                                     router.backToResults()
+                                },
+                                onRestartAnalysis: {
+                                    router.restartAnalysis()
                                 }
                             )
                         }
@@ -30,6 +33,7 @@ struct legitima_frontendApp: App {
             }
             .environmentObject(userStatus)
             .environmentObject(premiumDraft)
+            .environmentObject(router)
         }
     }
 

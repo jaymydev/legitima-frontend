@@ -17,10 +17,12 @@ struct PreparationEntretienScreen: View {
                     Color(red: 207 / 255, green: 252 / 255, blue: 249 / 255),
                     Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255)
                 ],
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
+
+            ambientBackground
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
@@ -30,7 +32,7 @@ struct PreparationEntretienScreen: View {
                     guidedStepCard(
                         index: "1",
                         title: "La question prioritaire",
-                        helper: "Commencez par une seule question difficile. Inutile de préparer tout l’entretien d’un coup.",
+                        helper: "Commencez par une seule question difficile.",
                         placeholder: "Ex : Pourquoi votre parcours semble-t-il si atypique ?",
                         text: $questionCle,
                         minHeight: 84
@@ -39,7 +41,7 @@ struct PreparationEntretienScreen: View {
                     guidedStepCard(
                         index: "2",
                         title: "Votre meilleur point d’appui",
-                        helper: "Choisissez l’élément le plus rassurant ou le plus solide à rappeler.",
+                        helper: "Choisissez l’élément le plus solide à rappeler.",
                         placeholder: "Ex : Ma capacité à livrer dans des contextes complexes et changeants.",
                         text: $forceAppui,
                         minHeight: 84
@@ -48,7 +50,7 @@ struct PreparationEntretienScreen: View {
                     guidedStepCard(
                         index: "3",
                         title: "Le message à laisser",
-                        helper: "Pensez à la phrase simple que le recruteur devra retenir après cette réponse.",
+                        helper: "Quelle idée voulez-vous laisser à la fin de cette réponse ?",
                         placeholder: "Ex : Mon parcours est cohérent parce qu’il suit une logique d’évolution assumée.",
                         text: $messagePrioritaire,
                         minHeight: 84
@@ -56,9 +58,9 @@ struct PreparationEntretienScreen: View {
 
                     guidedStepCard(
                         index: "4",
-                        title: "Votre réponse de départ",
-                        helper: "Rédigez une première réponse brève. Elle n’a pas besoin d’être parfaite maintenant.",
-                        placeholder: "Ex : J’ai eu un parcours non linéaire, mais il m’a permis de renforcer une expertise utile aujourd’hui...",
+                        title: "Votre première réponse",
+                        helper: "Rédigez une première version brève.",
+                        placeholder: "Ex : mon parcours n’a pas été linéaire, mais il a renforcé une expertise utile aujourd’hui...",
                         text: $reponseCourte,
                         minHeight: 120
                     )
@@ -68,13 +70,23 @@ struct PreparationEntretienScreen: View {
                     }
 
                     NavigationLink(destination: FilConducteurScreen()) {
-                        Text("Passer au récit global")
+                        Text("Continuer")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(buttonColor)
-                            .cornerRadius(12)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        buttonColor,
+                                        Color(red: 54 / 255, green: 132 / 255, blue: 134 / 255)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .shadow(color: buttonColor.opacity(0.22), radius: 12, x: 0, y: 8)
                     }
                     .padding(.top, 4)
                 }
@@ -86,36 +98,71 @@ struct PreparationEntretienScreen: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Préparer une réponse forte")
+        VStack(alignment: .leading, spacing: 14) {
+            Text("ETAPE 5")
+                .font(.caption.weight(.bold))
+                .foregroundColor(buttonColor.opacity(0.82))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.72))
+                .clipShape(Capsule())
+
+            Text("Préparer une réponse\nforte et crédible")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryText)
 
-            Text("Travaillez une question précise pour préparer une réponse claire, calme et crédible.")
+            Text("Préparez une réponse claire à une question difficile, sans chercher la perfection.")
                 .font(.subheadline)
                 .foregroundColor(secondaryText)
         }
     }
 
     private var intentionCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Objectif de cette étape")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundColor(primaryText)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "bubble.left.and.exclamationmark.bubble.right.fill")
+                    .font(.title3)
+                    .foregroundColor(buttonColor)
+                    .frame(width: 40, height: 40)
+                    .background(Color.white.opacity(0.72))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Text("Ici, vous préparez une réponse locale à une question difficile. Vous ne cherchez pas encore à résumer tout votre parcours.")
-                .font(.subheadline)
-                .foregroundColor(secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Objectif de cette étape")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(primaryText)
+
+                    Text("Ici, vous travaillez une réponse précise. Le récit global viendra à l’étape suivante.")
+                        .font(.subheadline)
+                        .foregroundColor(secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            HStack(spacing: 10) {
+                framingPill("1 question")
+                framingPill("1 point d’appui")
+                framingPill("1 message final")
+            }
         }
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.96),
+                    Color(red: 244 / 255, green: 252 / 255, blue: 250 / 255)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                .stroke(Color.white.opacity(0.72), lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
@@ -124,7 +171,7 @@ struct PreparationEntretienScreen: View {
             Image(systemName: "lightbulb.fill")
                 .foregroundColor(.orange)
 
-            Text("Une réponse simple et imparfaite vaut mieux qu’un écran vide. Vous clarifierez ensuite le récit global qui relie l’ensemble de votre parcours.")
+            Text("Une réponse simple vaut mieux qu’un écran vide. Vous affinerez ensuite le récit global.")
                 .font(.footnote)
                 .foregroundColor(secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -139,6 +186,33 @@ struct PreparationEntretienScreen: View {
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .count < 40
+    }
+
+    private var ambientBackground: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white.opacity(0.34))
+                .frame(width: 220, height: 220)
+                .blur(radius: 8)
+                .offset(x: 150, y: -250)
+
+            Circle()
+                .fill(Color(red: 170 / 255, green: 232 / 255, blue: 224 / 255).opacity(0.34))
+                .frame(width: 200, height: 200)
+                .blur(radius: 10)
+                .offset(x: -140, y: 260)
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func framingPill(_ text: String) -> some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .foregroundColor(buttonColor.opacity(0.92))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+            .clipShape(Capsule())
     }
 
     private func guidedStepCard(

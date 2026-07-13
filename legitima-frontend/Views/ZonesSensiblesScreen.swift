@@ -20,6 +20,8 @@ struct ZonesSensiblesScreen: View {
             )
             .ignoresSafeArea()
 
+            ambientBackground
+
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     headerSection
@@ -27,33 +29,42 @@ struct ZonesSensiblesScreen: View {
 
                     guidedStepCard(
                         index: "1",
-                        title: "La zone sensible à traiter",
-                        helper: "Choisissez une seule période ou situation qui vous semble difficile à expliquer aujourd’hui.",
-                        placeholder: "Ex : période de bench, pause, reconversion, changement fréquent de poste...",
+                        title: "La zone à clarifier",
+                        helper: "Choisissez une seule période qui vous semble délicate à expliquer.",
+                        placeholder: "Ex : bench, pause, reconversion, changements fréquents...",
                         text: $periodesSensibles,
                         minHeight: 84
                     )
 
                     guidedStepCard(
                         index: "2",
-                        title: "Expliquez-la simplement",
-                        helper: "Décrivez-la avec vos mots, sans chercher encore à la requalifier. Une version brute suffit.",
-                        placeholder: "Ex : J’ai peur que cette période donne une impression d’instabilité, alors qu’elle correspondait à une vraie phase de transition.",
+                        title: "Votre version brute",
+                        helper: "Décrivez-la avec vos mots. Une version simple suffit.",
+                        placeholder: "Ex : cette période peut sembler instable, alors qu’elle correspondait à une vraie transition.",
                         text: $explicationBrute,
                         minHeight: 120
                     )
 
-                    vocalHintCard
                     nudgeCard
 
                     NavigationLink(destination: RequalificationScreen()) {
-                        Text("Passer à la reformulation guidée")
+                        Text("Continuer")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(buttonColor)
-                            .cornerRadius(12)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        buttonColor,
+                                        Color(red: 54 / 255, green: 132 / 255, blue: 134 / 255)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .shadow(color: buttonColor.opacity(0.22), radius: 12, x: 0, y: 8)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -64,52 +75,99 @@ struct ZonesSensiblesScreen: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Identifier une zone sensible")
+        VStack(alignment: .leading, spacing: 14) {
+            Text("ETAPE 3")
+                .font(.caption.weight(.bold))
+                .foregroundColor(buttonColor.opacity(0.82))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.72))
+                .clipShape(Capsule())
+
+            Text("Clarifier une zone sensible\nsans vous bloquer")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryText)
 
-            Text("Vous n’avez pas besoin de tout résoudre ici. Donnez seulement la matière brute la plus importante.")
+            Text("Nommez simplement ce qui coince. La reformulation viendra juste après.")
                 .font(.subheadline)
                 .foregroundColor(secondaryText)
         }
     }
 
     private var framingCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Objectif de cette étape")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundColor(primaryText)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "shield.lefthalf.filled")
+                    .font(.title3)
+                    .foregroundColor(buttonColor)
+                    .frame(width: 40, height: 40)
+                    .background(Color.white.opacity(0.72))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Text("Le but n’est pas que vous requalifiiez seule cette fragilité. Le but est de capturer clairement ce qui bloque, pour pouvoir mieux la reformuler ensuite.")
-                .font(.subheadline)
-                .foregroundColor(secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Objectif de cette étape")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(primaryText)
+
+                    Text("Ici, l’objectif est juste de poser les faits clairement avant de les reformuler.")
+                        .font(.subheadline)
+                        .foregroundColor(secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            HStack(spacing: 10) {
+                framingPill("1 situation")
+                framingPill("version brute")
+                framingPill("60 a 90 sec")
+            }
         }
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.96),
+                    Color(red: 244 / 255, green: 252 / 255, blue: 250 / 255)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                .stroke(Color.white.opacity(0.72), lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private var vocalHintCard: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "mic.fill")
-                .foregroundColor(buttonColor)
+    private var ambientBackground: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white.opacity(0.34))
+                .frame(width: 220, height: 220)
+                .blur(radius: 8)
+                .offset(x: 150, y: -250)
 
-            Text("Si vous utilisez la dictée iPhone, gardez un message court : idéalement 60 à 90 secondes maximum pour rester claire et éviter une matière trop longue à retraiter.")
-                .font(.footnote)
-                .foregroundColor(secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
+            Circle()
+                .fill(Color(red: 170 / 255, green: 232 / 255, blue: 224 / 255).opacity(0.34))
+                .frame(width: 200, height: 200)
+                .blur(radius: 10)
+                .offset(x: -140, y: 260)
         }
-        .padding(16)
-        .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .allowsHitTesting(false)
+    }
+
+    private func framingPill(_ text: String) -> some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .foregroundColor(buttonColor.opacity(0.92))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+            .clipShape(Capsule())
     }
 
     private var nudgeCard: some View {
@@ -117,7 +175,7 @@ struct ZonesSensiblesScreen: View {
             Image(systemName: "shield.lefthalf.filled")
                 .foregroundColor(buttonColor)
 
-            Text("Restez simple et factuelle. Une version imparfaite mais honnête sera plus utile qu’une tentative déjà trop travaillée.")
+            Text("Restez simple. Une version honnête sera plus utile qu’un texte déjà trop travaillé.")
                 .font(.footnote)
                 .foregroundColor(secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
