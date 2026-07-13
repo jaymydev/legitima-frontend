@@ -18,7 +18,10 @@ It is not the long-term target architecture and should be treated as a temporary
 
 Local development backend:
 
-`http://127.0.0.1:8000`
+- iOS Simulator: `http://127.0.0.1:8000`
+- Physical iPhone on the same Wi-Fi: `http://192.168.1.43:8000`
+
+For physical-device testing, the backend should be started so it is reachable on the local network, not only on loopback.
 
 ## Currently expected backend surface
 

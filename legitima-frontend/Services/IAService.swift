@@ -1,5 +1,18 @@
 import Foundation
 
+private enum BackendConfiguration {
+    static let simulatorBaseURL = "http://127.0.0.1:8000"
+    static let deviceBaseURL = "http://192.168.1.43:8000"
+
+    static var baseURLString: String {
+        #if targetEnvironment(simulator)
+        return simulatorBaseURL
+        #else
+        return deviceBaseURL
+        #endif
+    }
+}
+
 struct BackendError: Decodable {
     let detail: [BackendDetail]?
     let detailMessage: String?
@@ -29,7 +42,7 @@ final class IAService {
     }
 
     func analyze(request payload: AnalyzeRequest) async throws -> AnalysisResponse {
-        guard let url = URL(string: "http://127.0.0.1:8000/analyze") else {
+        guard let url = URL(string: "\(BackendConfiguration.baseURLString)/analyze") else {
             throw IAServiceError.invalidURL
         }
 

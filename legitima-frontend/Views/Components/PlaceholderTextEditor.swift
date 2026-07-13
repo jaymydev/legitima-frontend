@@ -19,7 +19,7 @@ struct PlaceholderTextEditor: View {
             if text.isEmpty {
                 Text(placeholder)
                     .font(.subheadline)
-                    .foregroundStyle(Color(uiColor: .placeholderText))
+                    .foregroundColor(primaryColor.opacity(0.7))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 18)
                     .allowsHitTesting(false)

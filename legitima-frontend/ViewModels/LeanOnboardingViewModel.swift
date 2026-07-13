@@ -39,7 +39,9 @@ final class LeanOnboardingViewModel: ObservableObject {
                         narrative_positioning: .init(
                             short_summary: trimmedParcoursResume,
                             current_positioning: trimmedPosteVise,
-                            evolution_logic: zoneSensible.trimmingCharacters(in: .whitespacesAndNewlines)
+                            evolution_logic: AnalyzePromptPolicy.frenchOnlyEvolutionLogic(
+                                zoneSensible.trimmingCharacters(in: .whitespacesAndNewlines)
+                            )
                         )
                     )
                 )

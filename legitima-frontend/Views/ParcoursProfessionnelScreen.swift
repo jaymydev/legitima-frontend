@@ -3,8 +3,7 @@ import SwiftUI
 struct ParcoursProfessionnelScreen: View {
     @EnvironmentObject private var premiumDraft: PremiumPreparationDraft
     @State private var posteActuel = ""
-    @State private var experiences = ""
-    @State private var elementsCles = ""
+    @State private var etapesCles = ""
     @State private var transitions = ""
     @State private var showIncompleteAlert = false
     @State private var showOptionalWarning = false
@@ -21,10 +20,12 @@ struct ParcoursProfessionnelScreen: View {
                     Color(red: 207 / 255, green: 252 / 255, blue: 249 / 255),
                     Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255)
                 ],
-                startPoint: .top,
-                endPoint: .bottom
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
+
+            ambientBackground
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
@@ -37,8 +38,10 @@ struct ParcoursProfessionnelScreen: View {
                         helper: "C’est le point d’ancrage principal de votre récit. Une ligne claire suffit.",
                         content: AnyView(
                             TextField(
-                                "Ex : Senior PLM Engineer - pilotage migration 3DEXPERIENCE",
-                                text: $posteActuel
+                                "",
+                                text: $posteActuel,
+                                prompt: Text("Ex : Senior PLM Engineer - pilotage migration 3DEXPERIENCE")
+                                    .foregroundColor(secondaryTextColor.opacity(0.82))
                             )
                             .font(.subheadline)
                             .foregroundColor(primaryTextColor)
@@ -55,8 +58,8 @@ struct ParcoursProfessionnelScreen: View {
 
                     guidedInputCard(
                         index: "2",
-                        title: "Les expériences à retenir",
-                        helper: "Ne racontez pas tout. Gardez seulement les 2 ou 3 étapes les plus utiles pour comprendre votre évolution.",
+                        title: "Les 2 ou 3 étapes qui comptent",
+                        helper: "Gardez seulement les étapes les plus utiles pour comprendre votre évolution et ce qu’elle dit de vous.",
                         content: AnyView(
                             PlaceholderTextEditor(
                                 placeholder:
@@ -65,10 +68,15 @@ struct ParcoursProfessionnelScreen: View {
                                     2019-2022 : Développement logiciel embarqué
                                     2022-2024 : Coordination transverse et validation
                                     2024-2025 : Migration, structuration, sujets complexes
+
+                                    Ce que cela montre :
+                                    - montée en responsabilité progressive
+                                    - aisance dans les contextes techniques complexes
+                                    - capacité à structurer et rassurer
                                     """,
-                                text: $experiences,
+                                text: $etapesCles,
                                 primaryColor: primaryTextColor,
-                                minHeight: 110
+                                minHeight: 150
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
@@ -80,31 +88,6 @@ struct ParcoursProfessionnelScreen: View {
 
                     guidedInputCard(
                         index: "3",
-                        title: "Ce que votre parcours montre de vous",
-                        helper: "Pensez compétences, posture, manière d’évoluer. Quelques points simples suffisent.",
-                        content: AnyView(
-                            PlaceholderTextEditor(
-                                placeholder:
-                                    """
-                                    Ex :
-                                    - montée en responsabilité progressive
-                                    - aisance dans les contextes techniques complexes
-                                    - capacité à structurer et rassurer
-                                    """,
-                                text: $elementsCles,
-                                primaryColor: primaryTextColor,
-                                minHeight: 96
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                        )
-                    )
-
-                    guidedInputCard(
-                        index: "4",
                         title: "Les transitions ou zones de rupture",
                         helper: "S’il y a une pause, un bench, une reconversion ou un virage, notez-le simplement sans chercher encore la formulation parfaite.",
                         content: AnyView(
@@ -129,16 +112,24 @@ struct ParcoursProfessionnelScreen: View {
                         )
                     )
 
-                    dictationHint
-
                     Button(action: continueFlow) {
                         Text("Suivant")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
-                            .background(buttonColor)
-                            .cornerRadius(12)
+                            .background(
+                                LinearGradient(
+                                    colors: [
+                                        buttonColor,
+                                        Color(red: 54 / 255, green: 132 / 255, blue: 134 / 255)
+                                    ],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .shadow(color: buttonColor.opacity(0.22), radius: 12, x: 0, y: 8)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -179,8 +170,16 @@ struct ParcoursProfessionnelScreen: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Parcours professionnel")
+        VStack(alignment: .leading, spacing: 14) {
+            Text("ETAPE 2")
+                .font(.caption.weight(.bold))
+                .foregroundColor(buttonColor.opacity(0.82))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.72))
+                .clipShape(Capsule())
+
+            Text("Faire émerger\nla logique du parcours")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryTextColor)
@@ -192,39 +191,78 @@ struct ParcoursProfessionnelScreen: View {
     }
 
     private var framingCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Comment remplir cette étape")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundColor(primaryTextColor)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "point.3.connected.trianglepath.dotted")
+                    .font(.title3)
+                    .foregroundColor(buttonColor)
+                    .frame(width: 40, height: 40)
+                    .background(Color.white.opacity(0.72))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Text("Avancez en version simple : un poste repère, quelques étapes clés, ce que cela dit de vous, puis les éventuelles ruptures. Vous pourrez affiner ensuite.")
-                .font(.subheadline)
-                .foregroundColor(secondaryTextColor)
-                .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Comment remplir cette étape")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(primaryTextColor)
+
+                    Text("Avancez en version simple : un poste repère, quelques étapes clés, ce que cela dit de vous, puis les éventuelles ruptures. Vous pourrez affiner ensuite.")
+                        .font(.subheadline)
+                        .foregroundColor(secondaryTextColor)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            HStack(spacing: 10) {
+                framingPill("2 ou 3 étapes")
+                framingPill("étapes utiles")
+                framingPill("ruptures utiles")
+            }
         }
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.96),
+                    Color(red: 244 / 255, green: 252 / 255, blue: 250 / 255)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                .stroke(Color.white.opacity(0.72), lineWidth: 1)
         )
+        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private var dictationHint: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "mic.fill")
-                .foregroundColor(buttonColor)
+    private var ambientBackground: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white.opacity(0.34))
+                .frame(width: 220, height: 220)
+                .blur(radius: 8)
+                .offset(x: 150, y: -250)
 
-            Text("Vous pouvez aussi utiliser la dictée iPhone pour aller plus vite, puis corriger ensuite les formulations si besoin.")
-                .font(.footnote)
-                .foregroundColor(secondaryTextColor)
-                .fixedSize(horizontal: false, vertical: true)
+            Circle()
+                .fill(Color(red: 170 / 255, green: 232 / 255, blue: 224 / 255).opacity(0.34))
+                .frame(width: 200, height: 200)
+                .blur(radius: 10)
+                .offset(x: -140, y: 260)
         }
-        .padding(16)
-        .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .allowsHitTesting(false)
+    }
+
+    private func framingPill(_ text: String) -> some View {
+        Text(text)
+            .font(.caption.weight(.semibold))
+            .foregroundColor(buttonColor.opacity(0.92))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+            .clipShape(Capsule())
     }
 
     private func guidedInputCard(
@@ -261,11 +299,12 @@ struct ParcoursProfessionnelScreen: View {
     }
 
     private func continueFlow() {
+        let trimmedEtapes = etapesCles.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedTransitions = transitions.trimmingCharacters(in: .whitespacesAndNewlines)
+
         if posteActuel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             showIncompleteAlert = true
-        } else if experiences.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    || elementsCles.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    || transitions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        } else if trimmedEtapes.isEmpty || trimmedTransitions.isEmpty {
             showOptionalWarning = true
         } else {
             navigate = true
