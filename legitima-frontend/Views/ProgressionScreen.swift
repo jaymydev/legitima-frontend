@@ -491,6 +491,58 @@ struct ProgressionScreen: View {
         .shadow(color: Color.black.opacity(0.045), radius: 10, x: 0, y: 6)
         .opacity(module.isUnlocked ? 1 : 0.96)
     }
+
+    private func moduleCard(_ module: PremiumModuleCard) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: module.icon)
+                .font(.title3)
+                .foregroundColor(primaryText)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Text(module.title)
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(primaryText)
+
+                    if !module.isUnlocked {
+                        Image(systemName: "lock.fill")
+                            .font(.caption)
+                            .foregroundColor(secondaryText)
+                    }
+                }
+
+                Text(module.description)
+                    .font(.subheadline)
+                    .foregroundColor(secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(18)
+        .background(module.accent.opacity(module.isUnlocked ? 1 : 0.62))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .opacity(module.isUnlocked ? 1 : 0.88)
+    }
+}
+
+private struct ProgressStepRow {
+    let title: String
+    let isCompleted: Bool
+}
+
+private struct PremiumModuleCard {
+    let icon: String
+    let title: String
+    let description: String
+    let accent: Color
+    let isUnlocked: Bool
 }
 
 private struct ProgressStepRow {
