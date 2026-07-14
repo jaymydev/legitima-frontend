@@ -73,7 +73,15 @@ Constraints:
 - `input.meta` is required;
 - `input.narrative_positioning` is required;
 - all documented fields above are required;
+- `input.meta.language` is currently officially supported only with the value `fr`;
 - the frontend must not send undocumented extra fields without explicit backend alignment.
+
+Language rule:
+
+- the backend now treats French output as a hard contract requirement for `/analyze`;
+- the frontend must continue to send `input.meta.language = "fr"`;
+- the frontend should keep its defensive French-only textual instruction in addition to `meta.language`;
+- unsupported languages must be treated as invalid requests unless the contract is updated.
 
 ### Response
 
@@ -120,6 +128,11 @@ That means:
 - the frontend must not call undocumented endpoints;
 - the frontend must not invent new backend routes during integration work;
 - any future V1 route must be documented here before the frontend relies on it.
+
+More specifically, the frontend should expect:
+
+- `422` if the payload is invalid or if a non-supported language is requested;
+- `500` if the backend fails to obtain a compliant French-only output or if model generation fails.
 
 ## Frontend integration notes
 
