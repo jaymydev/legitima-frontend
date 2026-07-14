@@ -50,6 +50,8 @@ The currently documented integration surface is:
 - `GET /health`
 - `POST /analyze` as a transitional V1 endpoint for the current onboarding -> analysis -> result flow
 
+`POST /analyze` currently supports only French output. The frontend must continue to send `input.meta.language = "fr"` and should not assume support for any other language until the contract changes.
+
 Before changing any endpoint usage, update the API contract first.
 
 ## API contract
