@@ -43,6 +43,7 @@ struct legitima_frontendApp: App {
         case .onboarding:
             LeanOnboardingScreen(
                 onAnalysisComplete: { response in
+                    premiumDraft.baseAnalysis = response
                     router.showResult(response)
                 }
             )

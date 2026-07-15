@@ -74,9 +74,9 @@ This keeps the premium transition rewarding before it becomes more effortful.
 
 Inside the guided premium journey:
 
-- `Préparer une réponse forte` is used for a single difficult question or objection;
-- `Clarifier votre fil conducteur` is used afterwards for the global story that connects the full career path;
-- these two screens should stay distinct in purpose even if both collect short-form narrative input.
+- `Préparer une réponse claire et solide` is used for a single difficult question or objection;
+- `Recevoir ma synthèse premium` then leads to a synthesis-only screen that reuses the existing `AnalysisResponse` without triggering a second AI call;
+- that final premium synthesis is intentionally more value-dense than the lean result because it reframes the same analysis into premium-ready interview material.
 
 ## Agent rules
 

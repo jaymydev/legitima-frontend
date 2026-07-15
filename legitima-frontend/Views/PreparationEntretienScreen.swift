@@ -3,7 +3,6 @@ import SwiftUI
 struct PreparationEntretienScreen: View {
     @State private var questionCle = ""
     @State private var forceAppui = ""
-    @State private var messagePrioritaire = ""
     @State private var reponseCourte = ""
 
     private let primaryText = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
@@ -40,7 +39,7 @@ struct PreparationEntretienScreen: View {
 
                     guidedStepCard(
                         index: "2",
-                        title: "Votre meilleur point d’appui",
+                        title: "Votre point d’appui principal",
                         helper: "Choisissez l’élément le plus solide à rappeler.",
                         placeholder: "Ex : Ma capacité à livrer dans des contextes complexes et changeants.",
                         text: $forceAppui,
@@ -49,18 +48,9 @@ struct PreparationEntretienScreen: View {
 
                     guidedStepCard(
                         index: "3",
-                        title: "Le message à laisser",
-                        helper: "Quelle idée voulez-vous laisser à la fin de cette réponse ?",
-                        placeholder: "Ex : Mon parcours est cohérent parce qu’il suit une logique d’évolution assumée.",
-                        text: $messagePrioritaire,
-                        minHeight: 84
-                    )
-
-                    guidedStepCard(
-                        index: "4",
                         title: "Votre première réponse",
-                        helper: "Rédigez une première version brève.",
-                        placeholder: "Ex : mon parcours n’a pas été linéaire, mais il a renforcé une expertise utile aujourd’hui...",
+                        helper: "Rédigez une version courte. Elle doit répondre à la question, s’appuyer sur un fait fort et laisser une idée claire.",
+                        placeholder: "Ex : mon parcours n’a pas été linéaire, mais il a renforcé une expertise utile aujourd’hui et m’a permis de clarifier un positionnement plus cohérent.",
                         text: $reponseCourte,
                         minHeight: 120
                     )
@@ -70,7 +60,7 @@ struct PreparationEntretienScreen: View {
                     }
 
                     NavigationLink(destination: FilConducteurScreen()) {
-                        Text("Continuer")
+                        Text("Recevoir ma synthèse premium")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -107,12 +97,12 @@ struct PreparationEntretienScreen: View {
                 .background(Color.white.opacity(0.72))
                 .clipShape(Capsule())
 
-            Text("Préparer une réponse\nforte et crédible")
+            Text("Préparer une réponse\nclaire et solide")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryText)
 
-            Text("Préparez une réponse claire à une question difficile, sans chercher la perfection.")
+            Text("Choisissez une seule question difficile et préparez une première réponse exploitable tout de suite.")
                 .font(.subheadline)
                 .foregroundColor(secondaryText)
         }
@@ -134,7 +124,7 @@ struct PreparationEntretienScreen: View {
                         .fontWeight(.semibold)
                         .foregroundColor(primaryText)
 
-                    Text("Ici, vous travaillez une réponse précise. Le récit global viendra à l’étape suivante.")
+                    Text("Ici, vous préparez une réponse précise à une question sensible. La synthèse globale viendra ensuite, sans nouvel effort de saisie.")
                         .font(.subheadline)
                         .foregroundColor(secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
@@ -144,7 +134,7 @@ struct PreparationEntretienScreen: View {
             HStack(spacing: 10) {
                 framingPill("1 question")
                 framingPill("1 point d’appui")
-                framingPill("1 message final")
+                framingPill("1 réponse courte")
             }
         }
         .padding(18)
@@ -171,7 +161,7 @@ struct PreparationEntretienScreen: View {
             Image(systemName: "lightbulb.fill")
                 .foregroundColor(.orange)
 
-            Text("Une réponse simple vaut mieux qu’un écran vide. Vous affinerez ensuite le récit global.")
+            Text("Une réponse simple vaut mieux qu’une réponse parfaite. Le plus important ici est d’avoir une base claire.")
                 .font(.footnote)
                 .foregroundColor(secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
@@ -182,7 +172,7 @@ struct PreparationEntretienScreen: View {
     }
 
     private var shouldShowNudge: Bool {
-        [questionCle, forceAppui, messagePrioritaire, reponseCourte]
+        [questionCle, forceAppui, reponseCourte]
             .joined()
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .count < 40

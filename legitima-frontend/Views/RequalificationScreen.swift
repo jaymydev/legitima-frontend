@@ -30,7 +30,7 @@ struct RequalificationScreen: View {
 
                     guidedStepCard(
                         index: "1",
-                        title: "La mauvaise lecture que vous redoutez",
+                        title: "La lecture que vous redoutez",
                         helper: "Quelle interprétation vous inquiète le plus ?",
                         placeholder: "Ex : un manque de stabilité ou un parcours mal maîtrisé.",
                         text: $faiblessePerçue,
@@ -39,7 +39,7 @@ struct RequalificationScreen: View {
 
                     guidedStepCard(
                         index: "2",
-                        title: "Ce que cette phase a réellement apporté",
+                        title: "Ce que cette phase vous a apporté",
                         helper: "Pensez aux faits utiles : recul, décisions prises, apprentissages.",
                         placeholder: "Ex : j’ai clarifié mon positionnement et mieux identifié où je crée le plus de valeur.",
                         text: $apprentissageReel,
@@ -48,8 +48,8 @@ struct RequalificationScreen: View {
 
                     guidedStepCard(
                         index: "3",
-                        title: "Le message juste à laisser",
-                        helper: "En une idée simple, qu’aimeriez-vous que l’on retienne ?",
+                        title: "La lecture plus juste",
+                        helper: "En une idée simple, quelle lecture aimeriez-vous laisser ?",
                         placeholder: "Ex : cette phase ne résume pas une faiblesse, mais une transition qui m’a aidée à faire un choix plus cohérent.",
                         text: $postureActuelle,
                         minHeight: 110
@@ -94,12 +94,12 @@ struct RequalificationScreen: View {
                 .background(Color.white.opacity(0.72))
                 .clipShape(Capsule())
 
-            Text("Reformuler la fragilité\nsans vous trahir")
+            Text("Donner une lecture\nplus juste")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryText)
 
-            Text("Préparez ici des appuis simples pour expliquer cette période avec plus de justesse.")
+            Text("Ici, vous préparez une lecture plus claire de cette phase, sans minimiser ce qu’elle a représenté.")
                 .font(.subheadline)
                 .foregroundColor(secondaryText)
         }
@@ -121,7 +121,7 @@ struct RequalificationScreen: View {
                         .fontWeight(.semibold)
                         .foregroundColor(primaryText)
 
-                    Text("Vous n’écrivez pas encore une réponse finale. Vous préparez seulement les bons points d’appui.")
+                    Text("Vous ne cherchez pas encore la réponse parfaite. Vous préparez juste les bons repères pour parler de cette phase plus sereinement.")
                         .font(.subheadline)
                         .foregroundColor(secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
@@ -131,7 +131,7 @@ struct RequalificationScreen: View {
             HStack(spacing: 10) {
                 framingPill("crainte")
                 framingPill("apprentissage")
-                framingPill("message juste")
+                framingPill("lecture juste")
             }
         }
         .padding(18)
@@ -158,7 +158,7 @@ struct RequalificationScreen: View {
             Image(systemName: "sparkles")
                 .foregroundColor(buttonColor)
 
-            Text("L’objectif n’est pas d’effacer la fragilité, mais d’en donner une lecture plus juste.")
+            Text("L’objectif n’est pas d’effacer la fragilité, mais d’éviter qu’elle résume tout votre parcours.")
                 .font(.footnote)
                 .foregroundColor(secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
