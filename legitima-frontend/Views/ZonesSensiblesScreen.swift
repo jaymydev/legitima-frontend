@@ -29,17 +29,17 @@ struct ZonesSensiblesScreen: View {
 
                     guidedStepCard(
                         index: "1",
-                        title: "La zone à clarifier",
-                        helper: "Choisissez une seule période qui vous semble délicate à expliquer.",
-                        placeholder: "Ex : bench, pause, reconversion, changements fréquents...",
+                        title: "La phase à expliquer",
+                        helper: "Choisissez une seule phase qui vous semble délicate à raconter.",
+                        placeholder: "Ex : bench, pause, reconversion, changements fréquents.",
                         text: $periodesSensibles,
                         minHeight: 84
                     )
 
                     guidedStepCard(
                         index: "2",
-                        title: "Votre version brute",
-                        helper: "Décrivez-la avec vos mots. Une version simple suffit.",
+                        title: "Ce qui s’est passé, simplement",
+                        helper: "Décrivez cette phase avec vos mots. Une version simple suffit.",
                         placeholder: "Ex : cette période peut sembler instable, alors qu’elle correspondait à une vraie transition.",
                         text: $explicationBrute,
                         minHeight: 120
@@ -84,12 +84,12 @@ struct ZonesSensiblesScreen: View {
                 .background(Color.white.opacity(0.72))
                 .clipShape(Capsule())
 
-            Text("Clarifier une zone sensible\nsans vous bloquer")
+            Text("Nommer la phase\na expliquer")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(primaryText)
 
-            Text("Nommez simplement ce qui coince. La reformulation viendra juste après.")
+            Text("Ici, vous posez simplement les faits. La reformulation vient juste après.")
                 .font(.subheadline)
                 .foregroundColor(secondaryText)
         }
@@ -111,7 +111,7 @@ struct ZonesSensiblesScreen: View {
                         .fontWeight(.semibold)
                         .foregroundColor(primaryText)
 
-                    Text("Ici, l’objectif est juste de poser les faits clairement avant de les reformuler.")
+                    Text("Le but n’est pas de bien tourner votre réponse. Le but est juste de nommer la phase et votre lecture actuelle.")
                         .font(.subheadline)
                         .foregroundColor(secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
@@ -119,9 +119,9 @@ struct ZonesSensiblesScreen: View {
             }
 
             HStack(spacing: 10) {
-                framingPill("1 situation")
-                framingPill("version brute")
-                framingPill("60 a 90 sec")
+                framingPill("1 phase")
+                framingPill("vos mots")
+                framingPill("rapide")
             }
         }
         .padding(18)
@@ -175,7 +175,7 @@ struct ZonesSensiblesScreen: View {
             Image(systemName: "shield.lefthalf.filled")
                 .foregroundColor(buttonColor)
 
-            Text("Restez simple. Une version honnête sera plus utile qu’un texte déjà trop travaillé.")
+            Text("Restez simple. Une version honnête sera plus utile qu’une formulation déjà trop travaillée.")
                 .font(.footnote)
                 .foregroundColor(secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
