@@ -33,9 +33,9 @@ This immediate unlock behavior should be preserved during any future migration b
 Within that premium journey, the frontend currently distinguishes two separate narrative moments:
 
 1. `PreparationEntretienScreen` focuses on a local answer to one difficult question;
-2. `FilConducteurScreen` focuses on the global story that connects the whole career path.
+2. `FilConducteurScreen` is now a premium synthesis restitution screen that reuses the existing aggregated result instead of collecting new input or triggering a second AI call.
 
-This distinction should also be preserved during future backend migration work because both steps may depend on different successor business capabilities even if they both involve narrative input.
+This distinction should also be preserved during future backend migration work because the objection-answer step and the final premium synthesis do not have the same product role.
 
 ## Why this should change later
 
@@ -57,7 +57,8 @@ Current frontend dependencies on the aggregated analysis flow:
 - `IAService` calls `POST /analyze`;
 - `AppRouter` carries `AnalysisResponse` into the result flow;
 - `LeanResultScreen` consumes the current aggregated result in the main user path;
-- `FilConducteurScreen` also consumes the aggregated result, but is not currently part of the main router flow.
+- `PremiumPreparationDraft` retains the aggregated result for the guided premium flow;
+- `FilConducteurScreen` consumes that retained aggregated result as a premium synthesis screen.
 
 ## Current business capabilities inside `/analyze`
 
@@ -93,7 +94,7 @@ They exist here to show the intended business split, not to authorize new fronte
 | --- | --- | --- |
 | onboarding result summary | `/analyze` | strategic reading |
 | sensitive-period review | `/analyze` | sensitive reframing |
-| fil conducteur / narrative work | `/analyze` | narrative construction |
+| premium synthesis / fil conducteur restitution | `/analyze` | narrative construction + preparation summary |
 | difficult interview preparation | `/analyze` | interview preparation |
 | final legitimacy / summary | `/analyze` | preparation summary |
 

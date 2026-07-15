@@ -87,15 +87,15 @@ struct ProgressionScreen: View {
             }
 
             VStack(alignment: .leading, spacing: 10) {
-                Text(userStatus.isPremium ? "Premium activé" : "Votre préparation complète prend forme")
+                Text(userStatus.isPremium ? "Premium activé" : "La suite de votre préparation est prête")
                     .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundColor(primaryText)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(
                     userStatus.isPremium
-                    ? "Vos modules sont prêts. Vous pouvez maintenant démarrer la préparation guidée."
-                    : "Vous avez obtenu une lecture stratégique forte. La suite sert à la transformer en préparation concrète et rassurante."
+                    ? "Vos modules sont prêts. Vous pouvez maintenant entrer dans la préparation guidée."
+                    : "Vous avez déjà une lecture stratégique. Le premium sert maintenant à la transformer en réponses, en récit et en posture d’entretien."
                 )
                 .font(.subheadline)
                 .foregroundColor(secondaryText)
@@ -142,8 +142,8 @@ struct ProgressionScreen: View {
 
                 Text(
                     userStatus.isPremium
-                    ? "Le plus utile maintenant est de transformer votre analyse en récit, en réponses et en posture d’entretien."
-                    : "Le premium ne vous demande pas de repartir de zéro. Il s'appuie sur votre analyse déjà obtenue pour vous faire avancer plus vite."
+                    ? "Le plus utile maintenant est de transformer votre analyse en réponses claires, en récit cohérent et en posture d’entretien."
+                    : "Le premium ne vous fait pas repartir de zéro. Il s’appuie sur votre analyse déjà obtenue pour vous faire avancer plus vite."
                 )
                 .font(.subheadline)
                 .foregroundColor(primaryText)
@@ -170,7 +170,7 @@ struct ProgressionScreen: View {
                         .fontWeight(.semibold)
                         .foregroundColor(primaryText)
 
-                    Text(userStatus.isPremium ? "Voici les étapes qui vous attendent maintenant." : "Voici ce qui est déjà acquis et ce qui se débloque ensuite.")
+                    Text(userStatus.isPremium ? "Voici les étapes que vous allez travailler maintenant." : "Voici ce qui est déjà acquis et ce que la suite va vous aider à construire.")
                         .font(.subheadline)
                         .foregroundColor(secondaryText)
                 }
@@ -207,15 +207,15 @@ struct ProgressionScreen: View {
     private var momentumCard: some View {
         HStack(alignment: .top, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                Text(userStatus.isPremium ? "Ce que vous travaillez maintenant" : "Ce que le premium va ajouter")
+                Text(userStatus.isPremium ? "Ce que vous allez construire maintenant" : "Ce que le premium ajoute à votre analyse")
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundColor(primaryText)
 
                 Text(
                     userStatus.isPremium
-                    ? "Réponses difficiles, zones sensibles, fil conducteur, posture finale : tout le reste sert à rendre votre parcours plus facile à raconter et à défendre."
-                    : "Le premium ajoute une couche de mise en forme. Vous ne collectez plus seulement des idées : vous apprenez à les transformer en préparation utile."
+                    ? "Réponses difficiles, zones sensibles, fil conducteur, posture finale : tout sert maintenant à rendre votre parcours plus simple à raconter et à défendre."
+                    : "Le premium ajoute une vraie mise en forme. Vous ne collectez plus seulement des idées : vous les transformez en préparation utile."
                 )
                 .font(.subheadline)
                 .foregroundColor(primaryText)
@@ -279,7 +279,7 @@ struct ProgressionScreen: View {
             }
         }) {
             HStack {
-                Text(userStatus.isPremium ? "Entrer dans la préparation guidée" : "Débloquer maintenant la préparation complète")
+                    Text(userStatus.isPremium ? "Commencer la préparation guidée" : "Débloquer maintenant la préparation complète")
                     .fontWeight(.bold)
 
                 Spacer(minLength: 0)
@@ -315,7 +315,7 @@ struct ProgressionScreen: View {
                 Button(action: {
                     onRestartAnalysis()
                 }) {
-                    Text("Lancer une nouvelle analyse")
+                        Text("Relancer une nouvelle analyse")
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(buttonColor)
@@ -339,12 +339,12 @@ struct ProgressionScreen: View {
 
     private var stepRows: [ProgressStepRow] {
         [
-            ProgressStepRow(title: "Compréhension stratégique", note: "Base de lecture obtenue", isCompleted: true),
-            ProgressStepRow(title: "Relecture du parcours", note: "Logique du parcours dégagée", isCompleted: true),
-            ProgressStepRow(title: "Requalification des zones sensibles", note: "Fragilités déjà identifiées", isCompleted: true),
-            ProgressStepRow(title: "Anticipation des objections", note: userStatus.isPremium ? "Maintenant accessible" : "Débloqué avec le premium", isCompleted: userStatus.isPremium),
-            ProgressStepRow(title: "Construction du fil conducteur", note: "Récit global à clarifier", isCompleted: false),
-            ProgressStepRow(title: "Préparation complète de l’entretien", note: "Posture finale à consolider", isCompleted: false)
+            ProgressStepRow(title: "Compréhension stratégique", note: "Lecture de base obtenue", isCompleted: true),
+            ProgressStepRow(title: "Relecture du parcours", note: "Logique du parcours déjà dégagée", isCompleted: true),
+            ProgressStepRow(title: "Zones sensibles", note: "Première lecture déjà posée", isCompleted: true),
+            ProgressStepRow(title: "Réponse à une objection", note: userStatus.isPremium ? "Maintenant accessible" : "Débloqué avec le premium", isCompleted: userStatus.isPremium),
+            ProgressStepRow(title: "Fil conducteur", note: "Récit global à formuler", isCompleted: false),
+            ProgressStepRow(title: "Posture d’entretien", note: "Dernière mise en confiance", isCompleted: false)
         ]
     }
 
@@ -354,7 +354,7 @@ struct ProgressionScreen: View {
                 icon: "bubble.left.and.bubble.right.fill",
                 eyebrow: "RÉPONSES DIFFICILES",
                 title: "Objections",
-                description: "Préparez les questions sensibles avec des réponses plus calmes, plus claires et plus solides.",
+                description: "Préparez une réponse plus claire et plus solide à une question sensible.",
                 accent: Color(red: 255 / 255, green: 239 / 255, blue: 221 / 255),
                 tone: Color(red: 138 / 255, green: 86 / 255, blue: 45 / 255),
                 isUnlocked: userStatus.isPremium
@@ -372,7 +372,7 @@ struct ProgressionScreen: View {
                 icon: "point.3.connected.trianglepath.dotted",
                 eyebrow: "RÉCIT GLOBAL",
                 title: "Fil conducteur",
-                description: "Assemblez un récit simple, cohérent et défendable de votre trajectoire.",
+                description: "Assemblez un récit global simple, cohérent et défendable de votre trajectoire.",
                 accent: Color(red: 255 / 255, green: 247 / 255, blue: 225 / 255),
                 tone: Color(red: 132 / 255, green: 104 / 255, blue: 40 / 255),
                 isUnlocked: userStatus.isPremium

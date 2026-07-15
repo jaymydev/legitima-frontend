@@ -142,7 +142,8 @@ The current premium unlock flow does not require a second backend endpoint:
 
 - the free result screen is populated by `POST /analyze`;
 - premium unlock immediately reveals additional sections from the same aggregated `AnalysisResponse`, directly from the result experience;
-- deeper premium preparation still remains a frontend flow concern until successor business endpoints are introduced.
+- the premium guided flow currently continues from that same payload;
+- the current premium synthesis screen also reuses the same aggregated `AnalysisResponse` and must not trigger a second undocumented AI route.
 
 Remaining caution:
 
