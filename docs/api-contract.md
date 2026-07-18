@@ -16,12 +16,13 @@ It is not the long-term target architecture and should be treated as a temporary
 
 ## Base URL
 
-Local development backend:
+Current frontend target backend:
 
-- iOS Simulator: `http://127.0.0.1:8000`
-- Physical iPhone on the same Wi-Fi: `http://192.168.1.43:8000`
+- `https://legitima-backend.onrender.com`
 
-For physical-device testing, the backend should be started so it is reachable on the local network, not only on loopback.
+The iOS frontend should now point to the public Render deployment for real-device testing and TestFlight preparation.
+
+No loopback, localhost, or local network machine IP should remain active in the shipped frontend configuration for the current V1 flow.
 
 ## Currently expected backend surface
 
