@@ -32,18 +32,13 @@ This performs a simulator-targeted `xcodebuild` compile check without requiring 
 
 The repository also includes a GitHub Actions workflow at [.github/workflows/ios-build.yml](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/.github/workflows/ios-build.yml) so pull requests and pushes to `main` automatically run the same build verification.
 
-## Local backend
+## Backend base URL
 
-The frontend currently expects a local backend at:
+The frontend now targets the deployed Render backend for real-device testing and TestFlight:
 
-- iOS Simulator: `http://127.0.0.1:8000`
-- Physical iPhone on the same Wi-Fi: `http://192.168.1.43:8000`
+- `https://legitima-backend.onrender.com`
 
-For physical-device testing, start the backend with network exposure, for example:
-
-```sh
-uvicorn app.minimal_ai:app --host 0.0.0.0 --port 8000 --reload
-```
+No local backend URL should remain active in the iOS app configuration for the current V1 test flow.
 
 The currently documented integration surface is:
 

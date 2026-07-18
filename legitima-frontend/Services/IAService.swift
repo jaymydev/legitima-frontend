@@ -1,16 +1,7 @@
 import Foundation
 
 private enum BackendConfiguration {
-    static let simulatorBaseURL = "http://127.0.0.1:8000"
-    static let deviceBaseURL = "http://192.168.1.43:8000"
-
-    static var baseURLString: String {
-        #if targetEnvironment(simulator)
-        return simulatorBaseURL
-        #else
-        return deviceBaseURL
-        #endif
-    }
+    static let baseURLString = "https://legitima-backend.onrender.com"
 }
 
 struct BackendError: Decodable {
