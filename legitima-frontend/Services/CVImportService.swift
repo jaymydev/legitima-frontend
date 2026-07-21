@@ -123,6 +123,11 @@ final class CVImportService {
                 continue
             }
 
+            if isEducationLikeLine(current) || isBulletActionLine(current) {
+                index += 1
+                continue
+            }
+
             if isDateLeadingLine(current) {
                 let block = collectExperienceBlock(startingAt: index, in: lines, keepDetailLines: true)
 
@@ -154,7 +159,7 @@ final class CVImportService {
         while nextIndex < lines.count {
             let nextLine = cleanup(lines[nextIndex])
 
-            if nextLine.isEmpty || isDateLeadingLine(nextLine) {
+            if nextLine.isEmpty || isDateLeadingLine(nextLine) || isEducationLikeLine(nextLine) {
                 break
             }
 
@@ -307,6 +312,8 @@ final class CVImportService {
         if line.count < 12 || line.count > 140 { return false }
         if lowercase.contains("@") || lowercase.contains("http") { return false }
         if lowercase.contains("compétence") || lowercase.contains("skills") { return false }
+        if isEducationLikeLine(line) { return false }
+        if isLikelyExperienceTitle(line) { return false }
 
         return true
     }
@@ -359,6 +366,47 @@ final class CVImportService {
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    private func isEducationLikeLine(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+        let educationKeywords = [
+            "formation", "formations", "master", "mastère", "mastère", "m1", "m2",
+            "licence", "bachelor", "université", "universite", "diplôme", "diplome",
+            "certification", "école", "ecole", "mects", "bts", "dut", "doctorat", "mba"
+        ]
+
+        return educationKeywords.contains(where: { lowercase.contains($0) })
+    }
+
+    private func isBulletActionLine(_ line: String) -> Bool {
+        let cleaned = cleanup(line)
+        let lowercase = cleaned.lowercased()
+        let normalized = normalizedActionCandidate(from: cleaned).lowercased()
+
+        if line.hasPrefix("•") || line.hasPrefix("-") || line.hasPrefix("–") {
+            return true
+        }
+
+        let actionStarters = [
+            "developed", "built", "improved", "supported", "collaborated",
+            "performed", "enhanced", "ensured", "created", "implemented",
+            "led", "managed", "designed", "developed", "automated",
+            "développé", "amélioré", "piloté", "coordonné", "assuré",
+            "créé", "mis en place", "conçu", "géré", "animé", "réalisé"
+        ]
+
+        return actionStarters.contains(where: { lowercase.hasPrefix($0) || normalized.hasPrefix($0) })
+    }
+
+    private func normalizedActionCandidate(from line: String) -> String {
+        cleanup(line)
+            .replacingOccurrences(
+                of: #"^\s*((19|20)\d{2}|[A-Za-zéûîôàèù]+\s+(19|20)\d{2}|[A-Za-zéûîôàèù]+\s+\d{4}\s*[-–—/]\s*[A-Za-zéûîôàèù0-9']+)\s*[:·\-–—|]+\s*"#,
+                with: "",
+                options: .regularExpression
+            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func isDateLeadingLine(_ line: String) -> Bool {
         line.range(
             of: #"^\s*((19|20)\d{2}|[A-Za-zéûîôàèù]+\s+(19|20)\d{2})"#,
@@ -401,6 +449,8 @@ final class CVImportService {
         if lowercase.contains("@") || lowercase.contains("http") { return false }
         if lowercase.contains("ce que cela montre") { return false }
         if lowercase.contains("compétence") || lowercase.contains("skills") { return false }
+        if isEducationLikeLine(line) { return false }
+        if isBulletActionLine(line) { return false }
 
         let actionLikeFragments = [
             "j'ai", "j’ai", "mise en", "amélioration de", "participation", "gestion de",
@@ -414,10 +464,11 @@ final class CVImportService {
         let titleKeywords = [
             "consultant", "manager", "responsable", "ingénieur", "ingenieur", "développeur",
             "developpeur", "chef", "coordinateur", "coordinatrice", "analyste", "designer",
-            "product", "lead", "directeur", "chargé", "chargee", "spécialiste", "specialiste"
+            "product", "lead", "directeur", "chargé", "chargee", "spécialiste", "specialiste",
+            "engineer", "architect", "owner", "scrum", "qa", "test engineer", "plm"
         ]
 
-        return titleKeywords.contains(where: { lowercase.contains($0) }) || line.split(separator: " ").count <= 8
+        return titleKeywords.contains(where: { lowercase.contains($0) })
     }
 
     private func mergeLikelyFragments(_ lines: [String]) -> [String] {
@@ -469,6 +520,8 @@ final class CVImportService {
         if line.count < 28 || line.count > 170 { return false }
         if lowercase.contains("@") || lowercase.contains("linkedin") || lowercase.contains("http") { return false }
         if lowercase.range(of: #"\b\d{10}\b"#, options: .regularExpression) != nil { return false }
+        if isEducationLikeLine(line) { return false }
+        if isBulletActionLine(line) { return false }
         if lowercase == line.uppercased(), line.count < 40 { return false }
 
         let noisyKeywords = [
