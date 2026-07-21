@@ -17,7 +17,7 @@ final class LeanOnboardingViewModel: ObservableObject {
         let trimmedParcoursResume = parcoursResume.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedPosteVise.isEmpty, !trimmedParcoursResume.isEmpty else {
-            errorMessage = "Veuillez renseigner le poste visé et votre parcours résumé."
+            errorMessage = "Veuillez renseigner le poste visé et les étapes clés de votre parcours."
             return
         }
 
