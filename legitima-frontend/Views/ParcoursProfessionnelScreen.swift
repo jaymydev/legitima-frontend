@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct ParcoursProfessionnelScreen: View {
     @EnvironmentObject private var premiumDraft: PremiumPreparationDraft
@@ -7,6 +8,7 @@ struct ParcoursProfessionnelScreen: View {
     @State private var transitions = ""
     @State private var showIncompleteAlert = false
     @State private var showOptionalWarning = false
+    @State private var isShowingCVImportFlow = false
     @State private var navigate = false
 
     private let primaryTextColor = Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255)
@@ -61,28 +63,50 @@ struct ParcoursProfessionnelScreen: View {
                         title: "Les 2 ou 3 étapes qui comptent",
                         helper: "Gardez seulement les étapes les plus utiles pour comprendre votre évolution et ce qu’elle dit de vous.",
                         content: AnyView(
-                            PlaceholderTextEditor(
-                                placeholder:
-                                    """
-                                    Ex :
-                                    2019-2022 : Développement logiciel embarqué
-                                    2022-2024 : Coordination transverse et validation
-                                    2024-2025 : Migration, structuration, sujets complexes
+                            VStack(alignment: .leading, spacing: 12) {
+                                PlaceholderTextEditor(
+                                    placeholder:
+                                        """
+                                        Ex :
+                                        2019-2022 : Développement logiciel embarqué
+                                        2022-2024 : Coordination transverse et validation
+                                        2024-2025 : Migration, structuration, sujets complexes
 
-                                    Ce que cela montre :
-                                    - montée en responsabilité progressive
-                                    - aisance dans les contextes techniques complexes
-                                    - capacité à structurer et rassurer
-                                    """,
-                                text: $etapesCles,
-                                primaryColor: primaryTextColor,
-                                minHeight: 150
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                        Ce que cela montre :
+                                        - montée en responsabilité progressive
+                                        - aisance dans les contextes techniques complexes
+                                        - capacité à structurer et rassurer
+                                        """,
+                                    text: $etapesCles,
+                                    primaryColor: primaryTextColor,
+                                    minHeight: 150
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                                Button(action: {
+                                    dismissKeyboard()
+                                    isShowingCVImportFlow = true
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "square.and.arrow.up")
+                                        Text("Importer un CV pour préremplir")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .foregroundColor(buttonColor)
+                                    .background(Color(red: 239 / 255, green: 250 / 255, blue: 249 / 255))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(buttonColor.opacity(0.22), lineWidth: 1)
+                                    )
+                                    .cornerRadius(12)
+                                }
+                            }
                         )
                     )
 
@@ -159,13 +183,37 @@ struct ParcoursProfessionnelScreen: View {
         .navigationDestination(isPresented: $navigate) {
             ZonesSensiblesScreen()
         }
+        .sheet(isPresented: $isShowingCVImportFlow) {
+            CVImportFlowSheet(
+                onUseSummary: { importedSummary in
+                    etapesCles = importedSummary
+                },
+                introText: "Nous allons extraire les étapes les plus utiles de votre parcours pour vous aider à choisir les expériences pertinentes.",
+                applyButtonTitle: "Utiliser ces étapes",
+                reviewFootnote: "Vous pourrez encore garder, supprimer ou reformuler certaines étapes dans cet écran."
+            )
+        }
         .onAppear {
             if posteActuel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 posteActuel = premiumDraft.anchorRole
             }
+
+            if etapesCles.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                etapesCles = premiumDraft.careerKeySteps
+            }
+
+            if transitions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                transitions = premiumDraft.careerTransitions
+            }
         }
         .onChange(of: posteActuel) { _, newValue in
             premiumDraft.anchorRole = newValue
+        }
+        .onChange(of: etapesCles) { _, newValue in
+            premiumDraft.careerKeySteps = newValue
+        }
+        .onChange(of: transitions) { _, newValue in
+            premiumDraft.careerTransitions = newValue
         }
     }
 
@@ -309,5 +357,9 @@ struct ParcoursProfessionnelScreen: View {
         } else {
             navigate = true
         }
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
