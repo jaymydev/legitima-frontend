@@ -25,6 +25,9 @@ struct CVImportFlowSheet: View {
 
     private let cvImportService = CVImportService()
     let onUseSummary: (String) -> Void
+    var introText: String = "Nous allons extraire les étapes les plus utiles de votre parcours. Vous pourrez tout corriger avant de continuer."
+    var applyButtonTitle: String = "Utiliser ces étapes"
+    var reviewFootnote: String = "Vous pourrez encore ajuster ce texte dans l'écran précédent avant de continuer."
 
     var body: some View {
         NavigationStack {
@@ -113,7 +116,7 @@ struct CVImportFlowSheet: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
-                Text("Nous allons préremplir uniquement le résumé de parcours. Vous pourrez tout corriger avant l'analyse.")
+                Text(introText)
                     .font(.subheadline)
                     .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
                     .fixedSize(horizontal: false, vertical: true)
@@ -234,12 +237,12 @@ struct CVImportFlowSheet: View {
             .cornerRadius(20)
             .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
 
-            Text("Vous pourrez encore ajuster ce texte dans l'écran précédent avant de lancer l'analyse.")
+            Text(reviewFootnote)
                 .font(.footnote)
                 .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
 
             Button(action: useImportedSummary) {
-                Text("Utiliser ce résumé")
+                Text(applyButtonTitle)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding()
