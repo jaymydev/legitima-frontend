@@ -99,6 +99,13 @@ final class CVImportService {
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
 
+        if source == .pdf {
+            let pdfSteps = extractPDFExperienceBlocks(from: normalizedText)
+            if !pdfSteps.isEmpty {
+                return Array(uniquePreservingOrder(pdfSteps).prefix(5))
+            }
+        }
+
         let mergedLines = mergeLikelyFragments(normalizedText)
         let structuredSteps = extractStructuredExperienceSteps(from: mergedLines, source: source)
 
@@ -119,6 +126,44 @@ final class CVImportService {
 
         let unique = uniquePreservingOrder(ranked.isEmpty ? filteredLines : ranked)
         return Array(unique.prefix(5))
+    }
+
+    private func extractPDFExperienceBlocks(from lines: [String]) -> [String] {
+        var results: [String] = []
+        var index = 0
+
+        while index < lines.count - 1 {
+            let current = cleanup(lines[index])
+            let next = cleanup(lines[index + 1])
+
+            guard !current.isEmpty, !next.isEmpty else {
+                index += 1
+                continue
+            }
+
+            if isSectionHeading(current) || isSectionHeading(next) {
+                index += 1
+                continue
+            }
+
+            if isLikelyCompanyHeading(current),
+               let experience = buildCompanyFirstPDFExperience(companyLine: current, roleLine: next) {
+                results.append(experience)
+                index += 2
+                continue
+            }
+
+            if isLikelyRoleHeading(current),
+               let experience = buildRoleFirstPDFExperience(roleLine: current, companyLine: next) {
+                results.append(experience)
+                index += 2
+                continue
+            }
+
+            index += 1
+        }
+
+        return results
     }
 
     private func extractStructuredExperienceSteps(from lines: [String], source: CVImportSource) -> [String] {
@@ -327,6 +372,39 @@ final class CVImportService {
         }
     }
 
+    private func buildCompanyFirstPDFExperience(companyLine: String, roleLine: String) -> String? {
+        guard !isEducationLikeLine(companyLine), !isProfileLikeLine(companyLine) else { return nil }
+        guard let period = extractPeriod(from: roleLine) else { return nil }
+
+        let company = sanitizeCompanyCandidate(companyLine)
+        let role = sanitizeRoleCandidate(
+            cleanup(
+                roleLine.replacingOccurrences(of: period, with: "", options: [.caseInsensitive])
+            )
+        )
+
+        guard isLikelyCompanyHeading(company), isLikelyExperienceTitle(role) else { return nil }
+
+        return "\(company) — \(role) — \(period)"
+    }
+
+    private func buildRoleFirstPDFExperience(roleLine: String, companyLine: String) -> String? {
+        guard !isEducationLikeLine(roleLine), !isProfileLikeLine(roleLine) else { return nil }
+        guard let period = extractPeriod(from: companyLine) else { return nil }
+
+        let role = sanitizeRoleCandidate(roleLine)
+        let company = sanitizeCompanyCandidate(
+            cleanup(
+                companyLine.replacingOccurrences(of: period, with: "", options: [.caseInsensitive])
+            )
+        )
+
+        guard isLikelyExperienceTitle(role) else { return nil }
+        guard isLikelyCompanyContext(company) else { return nil }
+
+        return "\(role) — \(company) — \(period)"
+    }
+
     private func isUsefulDetailForSummary(_ line: String) -> Bool {
         let lowercase = line.lowercased()
 
@@ -414,6 +492,20 @@ final class CVImportService {
         return candidate
     }
 
+    private func sanitizeRoleCandidate(_ text: String) -> String {
+        sanitizeTitleCandidate(text)
+            .replacingOccurrences(of: #"^\s*[•○◦]\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"^\s*[-–—|]+\s*"#, with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func sanitizeCompanyCandidate(_ text: String) -> String {
+        cleanup(text)
+            .replacingOccurrences(of: #"^\s*[•○◦]\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private func isEducationLikeLine(_ line: String) -> Bool {
         let lowercase = line.lowercased()
         let educationKeywords = [
@@ -463,6 +555,69 @@ final class CVImportService {
         }
 
         return false
+    }
+
+    private func isSectionHeading(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+        let headings = [
+            "expérience", "expériences", "experience", "experiences",
+            "parcours", "formation", "formations", "compétences", "competences",
+            "skills", "profil", "summary", "résumé", "a propos", "à propos"
+        ]
+
+        if headings.contains(where: { lowercase == $0 || lowercase.hasPrefix("\($0) ") }) {
+            return true
+        }
+
+        return false
+    }
+
+    private func isLikelyCompanyHeading(_ line: String) -> Bool {
+        let cleaned = sanitizeCompanyCandidate(line)
+        let lowercase = cleaned.lowercased()
+
+        guard !cleaned.isEmpty, cleaned.count <= 90 else { return false }
+        guard extractPeriod(from: cleaned) == nil else { return false }
+        guard !isSectionHeading(cleaned), !isEducationLikeLine(cleaned), !isProfileLikeLine(cleaned) else { return false }
+        guard !isBulletActionLine(cleaned) else { return false }
+
+        let words = cleaned.split(separator: " ")
+        let uppercaseWords = words.filter { word in
+            let letters = word.filter(\.isLetter)
+            return !letters.isEmpty && letters == letters.uppercased()
+        }
+
+        let companyHints = [
+            "airbus", "thales", "accenture", "continental", "kratos",
+            "stmicroelectronics", "space", "defense", "defence"
+        ]
+
+        if companyHints.contains(where: { lowercase.contains($0) }) {
+            return true
+        }
+
+        return !words.isEmpty && uppercaseWords.count >= max(1, words.count - 1)
+    }
+
+    private func isLikelyRoleHeading(_ line: String) -> Bool {
+        let cleaned = sanitizeRoleCandidate(line)
+        guard extractPeriod(from: cleaned) == nil else { return false }
+        return isLikelyExperienceTitle(cleaned)
+    }
+
+    private func isLikelyCompanyContext(_ line: String) -> Bool {
+        let cleaned = sanitizeCompanyCandidate(line)
+        let lowercase = cleaned.lowercased()
+
+        guard !cleaned.isEmpty else { return false }
+        guard !isSectionHeading(cleaned), !isEducationLikeLine(cleaned), !isProfileLikeLine(cleaned) else { return false }
+
+        let companyHints = [
+            "airbus", "thales", "accenture", "continental", "kratos",
+            "stmicroelectronics", "mission", "client", "dgac"
+        ]
+
+        return companyHints.contains(where: { lowercase.contains($0) }) || isLikelyCompanyHeading(cleaned)
     }
 
     private func normalizedActionCandidate(from line: String) -> String {
@@ -563,6 +718,12 @@ final class CVImportService {
 
     private func shouldMerge(previous: String, current: String) -> Bool {
         if previous.count >= 90 { return false }
+        if isLikelyCompanyHeading(previous) && (isLikelyRoleHeading(current) || extractPeriod(from: current) != nil) {
+            return false
+        }
+        if isLikelyRoleHeading(previous) && isLikelyCompanyContext(current) {
+            return false
+        }
         if beginsLikeNewStep(current) { return false }
         if previous.hasSuffix(".") || previous.hasSuffix(":") { return false }
         return current.count < 55 || previous.count < 45
