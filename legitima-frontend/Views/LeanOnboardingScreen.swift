@@ -4,6 +4,7 @@ import UIKit
 struct LeanOnboardingScreen: View {
     @EnvironmentObject private var userStatus: UserStatus
     @StateObject private var viewModel = LeanOnboardingViewModel()
+    @State private var isShowingCVImportFlow = false
     let onAnalysisComplete: (AnalysisResponse) -> Void
 
     init(onAnalysisComplete: @escaping (AnalysisResponse) -> Void) {
@@ -39,6 +40,7 @@ struct LeanOnboardingScreen: View {
 
                     inputCard(
                         label: "Poste visé",
+                        helper: "Indiquez simplement le rôle que vous ciblez aujourd'hui.",
                         field: {
                             TextField(
                                 "",
@@ -60,29 +62,53 @@ struct LeanOnboardingScreen: View {
                     )
 
                     inputCard(
-                        label: "Parcours résumé",
+                        label: "Indiquez les 3 à 5 étapes clés de votre parcours",
+                        helper: "Gardez seulement les expériences utiles. Ne collez pas votre CV complet.",
                         field: {
-                            PlaceholderTextEditor(
-                                placeholder: "Résumez les étapes clés de votre parcours, vos compétences et votre logique d'évolution.",
-                                text: $viewModel.parcoursResume,
-                                primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
-                                minHeight: 180
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            VStack(alignment: .leading, spacing: 12) {
+                                PlaceholderTextEditor(
+                                    placeholder: "Ex : 2019-2022 pilotage de projets techniques, 2022-2024 coordination produit, 2025 période de transition puis repositionnement.",
+                                    text: $viewModel.parcoursResume,
+                                    primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
+                                    minHeight: 180
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                                Button(action: {
+                                    dismissKeyboard()
+                                    isShowingCVImportFlow = true
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "square.and.arrow.up")
+                                        Text("Importer un CV (PDF ou photo)")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                                    .background(Color(red: 239 / 255, green: 250 / 255, blue: 249 / 255))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.22), lineWidth: 1)
+                                    )
+                                    .cornerRadius(12)
+                                }
+                            }
                         }
                     )
 
                     inputCard(
-                        label: "Zone sensible (optionnel)",
+                        label: "Point à expliquer en entretien (optionnel)",
+                        helper: "Ex : chômage, transition, bench ou burn-out.",
                         field: {
                             TextField(
                                 "",
                                 text: $viewModel.zoneSensible,
-                                prompt: Text("Ex : Changement de secteur en 2024")
+                                prompt: Text("Ex : chômage en 2025, bench de 6 mois, reconversion ou burn-out")
                                     .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255).opacity(0.82))
                             )
                                 .textInputAutocapitalization(.sentences)
@@ -136,16 +162,29 @@ struct LeanOnboardingScreen: View {
         .onAppear {
             userStatus.refreshFreeQuotaIfNeeded()
         }
+        .sheet(isPresented: $isShowingCVImportFlow) {
+            CVImportFlowSheet { importedSummary in
+                viewModel.parcoursResume = importedSummary
+            }
+        }
     }
 
     private func inputCard<Content: View>(
         label: String,
+        helper: String? = nil,
         @ViewBuilder field: () -> Content
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(label)
                 .font(.headline)
                 .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+
+            if let helper {
+                Text(helper)
+                    .font(.subheadline)
+                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             field()
         }
@@ -196,7 +235,7 @@ struct LeanOnboardingScreen: View {
 
             AnalysisLoadingCard(
                 title: "Analyse en cours",
-                subtitle: "Nous relisons votre parcours, votre cible et votre zone sensible pour faire ressortir une première lecture stratégique.",
+                subtitle: "Nous relisons votre parcours, votre cible et votre point à expliquer pour faire ressortir une première lecture stratégique.",
                 accent: Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255)
             )
             .padding(.horizontal, 24)
