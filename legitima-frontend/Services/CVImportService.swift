@@ -28,13 +28,18 @@ enum CVImportServiceError: LocalizedError {
     }
 }
 
+private enum CVImportSource {
+    case pdf
+    case image
+}
+
 final class CVImportService {
     func extractSummary(fromPDFAt url: URL) async throws -> CVImportResult {
         guard let document = PDFDocument(url: url), let rawText = document.string else {
             throw CVImportServiceError.unreadableDocument
         }
 
-        return try buildResult(from: rawText)
+        return try buildResult(from: rawText, source: .pdf)
     }
 
     func extractSummary(from image: UIImage) async throws -> CVImportResult {
@@ -43,7 +48,7 @@ final class CVImportService {
         }
 
         let recognizedText = try await recognizeText(in: cgImage)
-        return try buildResult(from: recognizedText)
+        return try buildResult(from: recognizedText, source: .image)
     }
 
     private func recognizeText(in cgImage: CGImage) async throws -> String {
@@ -76,8 +81,8 @@ final class CVImportService {
         }
     }
 
-    private func buildResult(from rawText: String) throws -> CVImportResult {
-        let extractedSteps = extractRelevantSteps(from: rawText)
+    private func buildResult(from rawText: String, source: CVImportSource) throws -> CVImportResult {
+        let extractedSteps = extractRelevantSteps(from: rawText, source: source)
 
         guard !extractedSteps.isEmpty else {
             throw CVImportServiceError.noTextDetected
@@ -86,7 +91,7 @@ final class CVImportService {
         return CVImportResult(steps: Array(extractedSteps.prefix(5)))
     }
 
-    private func extractRelevantSteps(from rawText: String) -> [String] {
+    private func extractRelevantSteps(from rawText: String, source: CVImportSource) -> [String] {
         let normalizedText = rawText
             .replacingOccurrences(of: "\r", with: "\n")
             .replacingOccurrences(of: "\t", with: " ")
@@ -95,10 +100,15 @@ final class CVImportService {
             .filter { !$0.isEmpty }
 
         let mergedLines = mergeLikelyFragments(normalizedText)
-        let structuredSteps = extractStructuredExperienceSteps(from: mergedLines)
+        let structuredSteps = extractStructuredExperienceSteps(from: mergedLines, source: source)
 
         if !structuredSteps.isEmpty {
             return Array(uniquePreservingOrder(structuredSteps).prefix(5))
+        }
+
+        let recoveredHeadlines = extractExperienceHeadlineFallback(from: mergedLines)
+        if !recoveredHeadlines.isEmpty {
+            return Array(uniquePreservingOrder(recoveredHeadlines).prefix(5))
         }
 
         let filteredLines = mergedLines.filter(isUsefulCVLine)
@@ -111,7 +121,7 @@ final class CVImportService {
         return Array(unique.prefix(5))
     }
 
-    private func extractStructuredExperienceSteps(from lines: [String]) -> [String] {
+    private func extractStructuredExperienceSteps(from lines: [String], source: CVImportSource) -> [String] {
         var results: [String] = []
         var index = 0
 
@@ -124,6 +134,11 @@ final class CVImportService {
             }
 
             if isEducationLikeLine(current) || isBulletActionLine(current) {
+                index += 1
+                continue
+            }
+
+            if source == .pdf && isProfileLikeLine(current) {
                 index += 1
                 continue
             }
@@ -225,16 +240,7 @@ final class CVImportService {
             .replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if let splitRange = candidate.range(of: #"(\. | ; | • | - )"#, options: .regularExpression) {
-            candidate = String(candidate[..<splitRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        if let companySeparator = candidate.range(of: #"(\s{2,}| \| | — | – )"#, options: .regularExpression) {
-            let prefix = String(candidate[..<companySeparator.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-            if isLikelyExperienceTitle(prefix) {
-                candidate = prefix
-            }
-        }
+        candidate = sanitizeTitleCandidate(candidate)
 
         guard isLikelyExperienceTitle(candidate) else {
             return nil
@@ -244,10 +250,6 @@ final class CVImportService {
     }
 
     private func formatExperience(period: String, title: String, summary: String?) -> String {
-        if let summary, !summary.isEmpty {
-            return "\(period) · \(title)\n  \(summary)"
-        }
-
         return "\(period) · \(title)"
     }
 
@@ -256,7 +258,7 @@ final class CVImportService {
             return nil
         }
 
-        let candidate = cleanup(String(line[..<periodRange.lowerBound]))
+        let candidate = sanitizeTitleCandidate(cleanup(String(line[..<periodRange.lowerBound])))
         guard isLikelyExperienceTitle(candidate) else {
             return nil
         }
@@ -274,7 +276,7 @@ final class CVImportService {
             return nil
         }
 
-        let candidate = trimAtFirstDetailBoundary(trailing)
+        let candidate = sanitizeTitleCandidate(trimAtFirstDetailBoundary(trailing))
         guard isLikelyExperienceTitle(candidate) else {
             return nil
         }
@@ -304,6 +306,25 @@ final class CVImportService {
 
         guard let candidateSource else { return nil }
         return summarizeDetail(candidateSource)
+    }
+
+    private func extractExperienceHeadlineFallback(from lines: [String]) -> [String] {
+        lines.compactMap { line in
+            let cleaned = cleanup(line)
+
+            guard !cleaned.isEmpty else { return nil }
+            guard !isEducationLikeLine(cleaned) else { return nil }
+            guard !isBulletActionLine(cleaned) else { return nil }
+            guard !isProfileLikeLine(cleaned) else { return nil }
+
+            guard let period = extractPeriod(from: cleaned),
+                  let title = extractTitleBeforePeriod(from: cleaned, period: period)
+                    ?? extractTitleAfterLeadingDate(from: cleaned, period: period) else {
+                return nil
+            }
+
+            return formatExperience(period: period, title: title, summary: nil)
+        }
     }
 
     private func isUsefulDetailForSummary(_ line: String) -> Bool {
@@ -366,6 +387,33 @@ final class CVImportService {
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    private func sanitizeTitleCandidate(_ text: String) -> String {
+        var candidate = text
+            .replacingOccurrences(of: #"^\s*[:\-–|]+\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let boundaries = [
+            #"(\. )"#,
+            #"(; )"#,
+            #"(\s[•\-–]\s)"#,
+            #"(\s+A\s+(regulated|integrated|collaborated|built|developed|supported|improved|ensured|created|managed|designed|performed|automated)\b)"#,
+            #"(\s+avec\s+\d+\s+ans\b)"#,
+            #"(\s+habitué[ea]?\b)"#,
+            #"(\s+reconnu[ea]?\b)"#,
+            #"(\s+dans\s+le\s+secteur\b)"#,
+            #"(\s+amélioration\s+continue\b)"#
+        ]
+
+        for pattern in boundaries {
+            if let range = candidate.range(of: pattern, options: .regularExpression) {
+                candidate = String(candidate[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+
+        return candidate
+    }
+
     private func isEducationLikeLine(_ line: String) -> Bool {
         let lowercase = line.lowercased()
         let educationKeywords = [
@@ -395,6 +443,26 @@ final class CVImportService {
         ]
 
         return actionStarters.contains(where: { lowercase.hasPrefix($0) || normalized.hasPrefix($0) })
+    }
+
+    private func isProfileLikeLine(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+        let profileKeywords = [
+            "avec 8 ans", "avec plus de", "dans le secteur", "amélioration continue",
+            "habituée", "habitué", "reconnue", "reconnu", "environnements exigeants",
+            "respect des délais", "rigoureuse", "autonome", "motivée", "opérationnelle",
+            "ingénieure cheffe de projet avec", "soft skills", "profil", "à propos"
+        ]
+
+        if profileKeywords.contains(where: { lowercase.contains($0) }) {
+            return true
+        }
+
+        if lowercase.hasSuffix(".") && extractPeriod(from: line) == nil {
+            return true
+        }
+
+        return false
     }
 
     private func normalizedActionCandidate(from line: String) -> String {
@@ -451,6 +519,7 @@ final class CVImportService {
         if lowercase.contains("compétence") || lowercase.contains("skills") { return false }
         if isEducationLikeLine(line) { return false }
         if isBulletActionLine(line) { return false }
+        if isProfileLikeLine(line) { return false }
 
         let actionLikeFragments = [
             "j'ai", "j’ai", "mise en", "amélioration de", "participation", "gestion de",
@@ -522,6 +591,7 @@ final class CVImportService {
         if lowercase.range(of: #"\b\d{10}\b"#, options: .regularExpression) != nil { return false }
         if isEducationLikeLine(line) { return false }
         if isBulletActionLine(line) { return false }
+        if isProfileLikeLine(line) { return false }
         if lowercase == line.uppercased(), line.count < 40 { return false }
 
         let noisyKeywords = [
