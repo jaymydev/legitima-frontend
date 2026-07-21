@@ -95,8 +95,13 @@ final class CVImportService {
             .filter { !$0.isEmpty }
 
         let mergedLines = mergeLikelyFragments(normalizedText)
-        let filteredLines = mergedLines.filter(isUsefulCVLine)
+        let structuredSteps = extractStructuredExperienceSteps(from: mergedLines)
 
+        if !structuredSteps.isEmpty {
+            return Array(uniquePreservingOrder(structuredSteps).prefix(5))
+        }
+
+        let filteredLines = mergedLines.filter(isUsefulCVLine)
         let ranked = filteredLines
             .map { ($0, score(line: $0)) }
             .filter { $0.1 > 0 }
@@ -104,6 +109,184 @@ final class CVImportService {
 
         let unique = uniquePreservingOrder(ranked.isEmpty ? filteredLines : ranked)
         return Array(unique.prefix(5))
+    }
+
+    private func extractStructuredExperienceSteps(from lines: [String]) -> [String] {
+        var results: [String] = []
+        var index = 0
+
+        while index < lines.count {
+            let current = cleanup(lines[index])
+
+            guard !current.isEmpty else {
+                index += 1
+                continue
+            }
+
+            if isDateLeadingLine(current) {
+                let block = collectExperienceBlock(startingAt: index, in: lines)
+
+                if let formatted = formatStructuredExperience(from: block) {
+                    results.append(formatted)
+                }
+
+                index += max(block.count, 1)
+                continue
+            }
+
+            if let inline = extractInlineStructuredExperience(from: current) {
+                results.append(inline)
+            }
+
+            index += 1
+        }
+
+        return results
+    }
+
+    private func collectExperienceBlock(startingAt index: Int, in lines: [String]) -> [String] {
+        var block: [String] = [cleanup(lines[index])]
+        var nextIndex = index + 1
+
+        while nextIndex < lines.count {
+            let nextLine = cleanup(lines[nextIndex])
+
+            if nextLine.isEmpty || isDateLeadingLine(nextLine) {
+                break
+            }
+
+            if isLikelyDetailLine(nextLine) {
+                nextIndex += 1
+                continue
+            }
+
+            if block.count >= 2 {
+                break
+            }
+
+            block.append(nextLine)
+            nextIndex += 1
+        }
+
+        return block
+    }
+
+    private func formatStructuredExperience(from block: [String]) -> String? {
+        guard let firstLine = block.first else { return nil }
+
+        let period = extractPeriod(from: firstLine) ?? extractPeriod(from: block.joined(separator: " "))
+        guard let period else { return nil }
+
+        let titleCandidate = extractTitleCandidate(from: firstLine, period: period)
+            ?? block.dropFirst().compactMap { extractTitleCandidate(from: $0) }.first
+
+        guard let titleCandidate else { return nil }
+
+        return "\(period) · \(titleCandidate)"
+    }
+
+    private func extractInlineStructuredExperience(from line: String) -> String? {
+        guard let period = extractPeriod(from: line),
+              let title = extractTitleCandidate(from: line, period: period) else {
+            return nil
+        }
+
+        return "\(period) · \(title)"
+    }
+
+    private func extractTitleCandidate(from line: String, period: String? = nil) -> String? {
+        var candidate = line
+
+        if let period {
+            candidate = candidate.replacingOccurrences(
+                of: period,
+                with: "",
+                options: [.caseInsensitive]
+            )
+        }
+
+        candidate = candidate
+            .replacingOccurrences(of: #"^\s*[:\-–|]+\s*"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let splitRange = candidate.range(of: #"(\. | ; | • | - )"#, options: .regularExpression) {
+            candidate = String(candidate[..<splitRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        if let companySeparator = candidate.range(of: #"(\s{2,}| \| | — | – )"#, options: .regularExpression) {
+            let prefix = String(candidate[..<companySeparator.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if isLikelyExperienceTitle(prefix) {
+                candidate = prefix
+            }
+        }
+
+        guard isLikelyExperienceTitle(candidate) else {
+            return nil
+        }
+
+        return candidate
+    }
+
+    private func isDateLeadingLine(_ line: String) -> Bool {
+        line.range(
+            of: #"^\s*((19|20)\d{2}|[A-Za-zéûîôàèù]+\s+(19|20)\d{2})"#,
+            options: .regularExpression
+        ) != nil
+    }
+
+    private func extractPeriod(from line: String) -> String? {
+        let patterns = [
+            #"(19|20)\d{2}\s*[-–—/]\s*((19|20)\d{2}|présent|present|aujourd'hui|today)"#,
+            #"[A-Za-zéûîôàèù]+\s+(19|20)\d{2}\s*[-–—/]\s*([A-Za-zéûîôàèù]+\s+)?((19|20)\d{2}|présent|present|aujourd'hui|today)"#,
+            #"\b(19|20)\d{2}\b"#
+        ]
+
+        for pattern in patterns {
+            if let range = line.range(of: pattern, options: .regularExpression) {
+                return cleanup(String(line[range]))
+            }
+        }
+
+        return nil
+    }
+
+    private func isLikelyDetailLine(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+
+        if line.count > 110 { return true }
+        if line.hasPrefix("•") || line.hasPrefix("-") || line.hasPrefix("–") { return true }
+        if lowercase.hasPrefix("mission") || lowercase.hasPrefix("missions") { return true }
+        if lowercase.hasPrefix("responsable de") || lowercase.hasPrefix("en charge de") { return true }
+        if lowercase.contains("amélioration") || lowercase.contains("coordination de") { return true }
+
+        return false
+    }
+
+    private func isLikelyExperienceTitle(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+
+        if line.count < 6 || line.count > 90 { return false }
+        if lowercase.contains("@") || lowercase.contains("http") { return false }
+        if lowercase.contains("ce que cela montre") { return false }
+        if lowercase.contains("compétence") || lowercase.contains("skills") { return false }
+
+        let actionLikeFragments = [
+            "j'ai", "j’ai", "mise en", "amélioration de", "participation", "gestion de",
+            "contribution à", "développement de", "coordination de", "responsable de"
+        ]
+
+        if actionLikeFragments.contains(where: { lowercase.contains($0) }) {
+            return false
+        }
+
+        let titleKeywords = [
+            "consultant", "manager", "responsable", "ingénieur", "ingenieur", "développeur",
+            "developpeur", "chef", "coordinateur", "coordinatrice", "analyste", "designer",
+            "product", "lead", "directeur", "chargé", "chargee", "spécialiste", "specialiste"
+        ]
+
+        return titleKeywords.contains(where: { lowercase.contains($0) }) || line.split(separator: " ").count <= 8
     }
 
     private func mergeLikelyFragments(_ lines: [String]) -> [String] {
