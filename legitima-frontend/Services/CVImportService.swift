@@ -129,6 +129,19 @@ final class CVImportService {
     }
 
     private func extractPDFExperienceBlocks(from lines: [String]) -> [String] {
+        let sectionLines = pdfExperienceSectionLines(from: lines)
+        let sequentialHeaders = extractSequentialPDFExperienceHeaders(from: sectionLines)
+
+        if !sequentialHeaders.isEmpty {
+            return sequentialHeaders
+        }
+
+        let richHeaders = extractRichPDFExperienceHeaders(from: sectionLines)
+
+        if !richHeaders.isEmpty {
+            return richHeaders
+        }
+
         var results: [String] = []
         var index = 0
 
@@ -164,6 +177,214 @@ final class CVImportService {
         }
 
         return results
+    }
+
+    private func pdfExperienceSectionLines(from lines: [String]) -> [String] {
+        guard let startIndex = lines.firstIndex(where: isExperienceSectionHeading) else {
+            return lines
+        }
+
+        let tail = Array(lines.dropFirst(startIndex + 1))
+
+        if let endOffset = tail.firstIndex(where: isEducationSectionHeading) {
+            let linesAfterSection = tail.dropFirst(endOffset + 1)
+            let experienceContinuesBelowSidebar = linesAfterSection.contains(where: isLikelyPDFExperienceHeaderStart)
+
+            if !experienceContinuesBelowSidebar {
+                return Array(tail.prefix(endOffset))
+            }
+        }
+
+        return tail
+    }
+
+    private func extractSequentialPDFExperienceHeaders(from lines: [String]) -> [String] {
+        var results: [String] = []
+        var index = 0
+
+        while index < lines.count {
+            let current = cleanup(lines[index])
+
+            guard !current.isEmpty else {
+                index += 1
+                continue
+            }
+
+            if isEducationSectionHeading(current)
+                || isExperienceSectionHeading(current)
+                || isBulletGlyphLine(current)
+                || isProfileLikeLine(current) {
+                index += 1
+                continue
+            }
+
+            guard isLikelyPDFExperienceHeaderStart(current) else {
+                index += 1
+                continue
+            }
+
+            if let formatted = formatExplicitPDFExperience(
+                current: current,
+                next: index + 1 < lines.count ? cleanup(lines[index + 1]) : nil,
+                next2: index + 2 < lines.count ? cleanup(lines[index + 2]) : nil
+            ) {
+                results.append(formatted.value)
+                index += formatted.consumed
+                continue
+            }
+
+            var consumedIndex: Int?
+            var candidateLines = [current]
+
+            for lookahead in 1...2 {
+                let nextIndex = index + lookahead
+                guard nextIndex < lines.count else { break }
+
+                let nextLine = cleanup(lines[nextIndex])
+                guard !nextLine.isEmpty else { break }
+
+                if isBulletGlyphLine(nextLine)
+                    || isEducationSectionHeading(nextLine)
+                    || isExperienceSectionHeading(nextLine)
+                    || isProfileLikeLine(nextLine) {
+                    break
+                }
+
+                candidateLines.append(nextLine)
+
+                if let formatted = formatRichPDFExperienceHeader(from: candidateLines) {
+                    results.append(formatted)
+                    consumedIndex = nextIndex
+                    break
+                }
+            }
+
+            if let consumedIndex {
+                index = consumedIndex + 1
+                continue
+            }
+
+            if let formatted = formatRichPDFExperienceHeader(from: [current]) {
+                results.append(formatted)
+            }
+
+            index += 1
+        }
+
+        return uniquePreservingOrder(results)
+    }
+
+    private func formatExplicitPDFExperience(
+        current: String,
+        next: String?,
+        next2: String?
+    ) -> (value: String, consumed: Int)? {
+        let safeNext = next.map(cleanup)
+        let safeNext2 = next2.map(cleanup)
+
+        if let safeNext,
+           isPrimarilyPeriodLine(safeNext),
+           isLikelyExperiencePayload(current) || isLikelyExperienceTitle(current) || isLikelyCompanyContext(current),
+           let period = extractPeriod(from: safeNext) {
+            return (normalizeRichPDFHeader("\(current) \(period)", period: period), 2)
+        }
+
+        if let safeNext,
+           let safeNext2,
+           isLikelyExperienceTitle(current),
+           isLikelyCompanyContext(safeNext),
+           isPrimarilyPeriodLine(safeNext2),
+           let period = extractPeriod(from: safeNext2) {
+            let combined = "\(current) \(safeNext) \(period)"
+            guard let completePeriod = extractPeriod(from: combined) else {
+                return (normalizeRichPDFHeader(combined, period: period), 3)
+            }
+
+            return (normalizeRichPDFHeader(combined, period: completePeriod), 3)
+        }
+
+        if let safeNext,
+           isLikelyExperienceTitle(current),
+           isLikelyCompanyContext(safeNext),
+           let period = extractPeriod(from: safeNext),
+           isCompletePeriodSegment(safeNext, period: period) {
+            let combined = "\(current) \(safeNext)"
+            return (normalizeRichPDFHeader(combined, period: period), 2)
+        }
+
+        return nil
+    }
+
+    private func extractRichPDFExperienceHeaders(from lines: [String]) -> [String] {
+        let blocks = collectRichPDFHeaderBlocks(from: lines)
+        let formatted = blocks.compactMap(formatRichPDFExperienceHeader(from:))
+        return uniquePreservingOrder(formatted)
+    }
+
+    private func collectRichPDFHeaderBlocks(from lines: [String]) -> [[String]] {
+        var blocks: [[String]] = []
+        var current: [String] = []
+
+        func flushCurrent() {
+            let cleaned = current.map(cleanup).filter { !$0.isEmpty }
+            if !cleaned.isEmpty {
+                blocks.append(cleaned)
+            }
+            current.removeAll()
+        }
+
+        for rawLine in lines {
+            let line = cleanup(rawLine)
+
+            guard !line.isEmpty else {
+                flushCurrent()
+                continue
+            }
+
+            if isEducationSectionHeading(line) || isExperienceSectionHeading(line) {
+                flushCurrent()
+                continue
+            }
+
+            if isBulletGlyphLine(line) {
+                flushCurrent()
+                continue
+            }
+
+            if isProfileLikeLine(line) {
+                flushCurrent()
+                continue
+            }
+
+            if !current.isEmpty,
+               let currentPeriod = extractPeriod(from: current.joined(separator: " ")),
+               isLikelyPDFExperienceHeaderStart(line),
+               !line.contains(currentPeriod) {
+                flushCurrent()
+            }
+
+            current.append(line)
+        }
+
+        flushCurrent()
+        return blocks
+    }
+
+    private func formatRichPDFExperienceHeader(from block: [String]) -> String? {
+        let cleanedLines = block
+            .map(cleanup)
+            .filter { !$0.isEmpty }
+
+        guard !cleanedLines.isEmpty else { return nil }
+        guard cleanedLines.contains(where: isLikelyPDFExperienceHeaderStart) else { return nil }
+
+        let combined = cleanedLines.joined(separator: " ")
+        guard let period = extractPeriod(from: combined) else { return nil }
+        guard isLikelyExperiencePayload(combined) else { return nil }
+
+        let normalized = normalizeRichPDFHeader(combined, period: period)
+        guard normalized.count >= 20 else { return nil }
+        return normalized
     }
 
     private func extractStructuredExperienceSteps(from lines: [String], source: CVImportSource) -> [String] {
@@ -388,6 +609,58 @@ final class CVImportService {
         return "\(company) — \(role) — \(period)"
     }
 
+    private func normalizeRichPDFHeader(_ text: String, period: String) -> String {
+        var normalized = text
+            .replacingOccurrences(of: #"\s+\|\s+"#, with: " — ", options: .regularExpression)
+            .replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: #"Accenture\s+\("#, with: "Accenture (", options: .regularExpression)
+            .replacingOccurrences(of: #"\s+\)"#, with: ")", options: .regularExpression)
+            .replacingOccurrences(of: #"\s+–\s+"#, with: " – ", options: .regularExpression)
+            .replacingOccurrences(of: #"\s+-\s+"#, with: " - ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if let periodRange = normalized.range(of: period, options: [.caseInsensitive]) {
+            let rawPrefix = normalized[..<periodRange.lowerBound]
+                .replacingOccurrences(of: #"[\|\-–—\s]+$"#, with: "", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let prefix = normalizeExperiencePrefix(rawPrefix)
+            normalized = "\(prefix) — \(period)"
+        }
+
+        return normalized
+    }
+
+    private func normalizeExperiencePrefix(_ prefix: String) -> String {
+        let cleaned = prefix
+            .replacingOccurrences(of: #"\s{2,}"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let companyAnchors = [
+            " Accenture",
+            " Airbus",
+            " Thales",
+            " Capgemini",
+            " DOMINO STAFF",
+            " LESER",
+            " O2",
+            " OPTINERIS",
+            " Mairie de",
+            " TFN "
+        ]
+
+        for anchor in companyAnchors {
+            if let range = cleaned.range(of: anchor), range.lowerBound != cleaned.startIndex {
+                let title = cleaned[..<range.lowerBound].trimmingCharacters(in: .whitespacesAndNewlines)
+                let context = cleaned[range.lowerBound...].trimmingCharacters(in: .whitespacesAndNewlines)
+                if !title.isEmpty, !context.isEmpty {
+                    return "\(title) — \(context)"
+                }
+            }
+        }
+
+        return cleaned
+    }
+
     private func buildRoleFirstPDFExperience(roleLine: String, companyLine: String) -> String? {
         guard !isEducationLikeLine(roleLine), !isProfileLikeLine(roleLine) else { return nil }
         guard let period = extractPeriod(from: companyLine) else { return nil }
@@ -511,7 +784,10 @@ final class CVImportService {
         let educationKeywords = [
             "formation", "formations", "master", "mastère", "mastère", "m1", "m2",
             "licence", "bachelor", "université", "universite", "diplôme", "diplome",
-            "certification", "école", "ecole", "mects", "bts", "dut", "doctorat", "mba"
+            "certification", "certifications", "certifié", "certifie", "safe",
+            "école", "ecole", "mects", "bts", "dut", "doctorat", "mba",
+            "baccalauréat", "baccalaureat", "brevet", "lycée", "lycee",
+            "obtention", "titre professionnel"
         ]
 
         return educationKeywords.contains(where: { lowercase.contains($0) })
@@ -542,7 +818,7 @@ final class CVImportService {
         let profileKeywords = [
             "avec 8 ans", "avec plus de", "dans le secteur", "amélioration continue",
             "habituée", "habitué", "reconnue", "reconnu", "environnements exigeants",
-            "respect des délais", "rigoureuse", "autonome", "motivée", "opérationnelle",
+            "respect des délais", "rigoureuse", "autonome", "motivée",
             "ingénieure cheffe de projet avec", "soft skills", "profil", "à propos"
         ]
 
@@ -562,7 +838,8 @@ final class CVImportService {
         let headings = [
             "expérience", "expériences", "experience", "experiences",
             "parcours", "formation", "formations", "compétences", "competences",
-            "skills", "profil", "summary", "résumé", "a propos", "à propos"
+            "skills", "profil", "summary", "résumé", "a propos", "à propos",
+            "langues", "centres d'intérêt", "centres d’interet", "certifications"
         ]
 
         if headings.contains(where: { lowercase == $0 || lowercase.hasPrefix("\($0) ") }) {
@@ -570,6 +847,55 @@ final class CVImportService {
         }
 
         return false
+    }
+
+    private func isExperienceSectionHeading(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+        return lowercase.contains("experience")
+            || lowercase.contains("expérience")
+            || lowercase.contains("parcours professionnel")
+            || lowercase == "parcours"
+    }
+
+    private func isEducationSectionHeading(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+        return lowercase.contains("formation")
+            || lowercase.contains("éducation")
+            || lowercase.contains("education")
+            || lowercase.contains("compétence")
+            || lowercase.contains("competence")
+            || lowercase.contains("langues")
+            || lowercase.contains("certification")
+            || lowercase.contains("centres d'intérêt")
+            || lowercase.contains("centres d’interet")
+    }
+
+    private func isBulletGlyphLine(_ line: String) -> Bool {
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.hasPrefix("●") || trimmed.hasPrefix("•") || trimmed.hasPrefix("-") || trimmed.hasPrefix("▪")
+    }
+
+    private func isLikelyPDFExperienceHeaderStart(_ line: String) -> Bool {
+        let cleaned = cleanup(line)
+        guard !cleaned.isEmpty else { return false }
+        guard !isSectionHeading(cleaned), !isEducationLikeLine(cleaned), !isProfileLikeLine(cleaned) else { return false }
+        guard !isBulletGlyphLine(cleaned) else { return false }
+
+        if isLikelyExperienceTitle(cleaned) {
+            return true
+        }
+
+        return isLikelyCompanyHeading(cleaned)
+    }
+
+    private func isLikelyExperiencePayload(_ line: String) -> Bool {
+        let cleaned = cleanup(line)
+        guard extractPeriod(from: cleaned) != nil else { return false }
+
+        let containsRole = isLikelyExperienceTitle(cleaned)
+        let containsCompany = isLikelyCompanyContext(cleaned) || isLikelyCompanyHeading(cleaned)
+
+        return containsRole || containsCompany
     }
 
     private func isLikelyCompanyHeading(_ line: String) -> Bool {
@@ -589,7 +915,8 @@ final class CVImportService {
 
         let companyHints = [
             "airbus", "thales", "accenture", "continental", "kratos",
-            "stmicroelectronics", "space", "defense", "defence"
+            "stmicroelectronics", "space", "defense", "defence", "domino",
+            "ocea", "smart building", "union", "l’union", "liebherr"
         ]
 
         if companyHints.contains(where: { lowercase.contains($0) }) {
@@ -614,10 +941,47 @@ final class CVImportService {
 
         let companyHints = [
             "airbus", "thales", "accenture", "continental", "kratos",
-            "stmicroelectronics", "mission", "client", "dgac"
+            "stmicroelectronics", "mission", "client", "dgac", "domino",
+            "ocea", "smart building", "union", "l’union", "liebherr", "pour "
         ]
 
         return companyHints.contains(where: { lowercase.contains($0) }) || isLikelyCompanyHeading(cleaned)
+    }
+
+    private func isPrimarilyPeriodLine(_ line: String) -> Bool {
+        let cleaned = cleanup(line)
+        guard cleaned.range(of: #"[-–—/]\s*$"#, options: .regularExpression) == nil else {
+            return false
+        }
+
+        guard let period = extractPeriod(from: cleaned) else { return false }
+
+        let remainder = cleaned
+            .replacingOccurrences(of: period, with: "", options: [.caseInsensitive])
+            .replacingOccurrences(of: #"\((cdd|cdi|stage|alternance|interim|intérim)\)"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"[\|\-–—\s]+"#, with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return remainder.isEmpty
+    }
+
+    private func isCompletePeriodSegment(_ line: String, period: String) -> Bool {
+        guard let periodRange = line.range(of: period, options: [.caseInsensitive]) else {
+            return false
+        }
+
+        let suffix = cleanup(String(line[periodRange.upperBound...]))
+            .trimmingCharacters(in: CharacterSet(charactersIn: "|–—-/.,;:()[]"))
+
+        guard suffix.isEmpty else { return false }
+
+        let periodLowercase = period.lowercased()
+        return periodLowercase.range(of: #"[-–—/]"#, options: .regularExpression) != nil
+            || periodLowercase.contains("présent")
+            || periodLowercase.contains("present")
+            || periodLowercase.contains("aujourd")
+            || periodLowercase.contains("today")
+            || period.range(of: #"\d{2}/\d{2}/\d{2,4}"#, options: .regularExpression) != nil
     }
 
     private func normalizedActionCandidate(from line: String) -> String {
@@ -632,20 +996,25 @@ final class CVImportService {
 
     private func isDateLeadingLine(_ line: String) -> Bool {
         line.range(
-            of: #"^\s*((19|20)\d{2}|[A-Za-zéûîôàèù]+\s+(19|20)\d{2})"#,
+            of: #"^\s*((19|20)\d{2}|[A-Za-zéûîôàèù\.]+\s+(19|20)\d{2}|\d{2}/\d{2}/\d{2,4})"#,
             options: .regularExpression
         ) != nil
     }
 
     private func extractPeriod(from line: String) -> String? {
+        let month = #"(janv(?:ier)?\.?|févr(?:ier)?\.?|fevr(?:ier)?\.?|mars|avr(?:il)?\.?|mai|juin|juil(?:let)?\.?|ao[uû]t|sept(?:embre)?\.?|oct(?:obre)?\.?|nov(?:embre)?\.?|d[ée]c(?:embre)?\.?)"#
+        let current = #"(présent|present|aujourd['’]hui|today)"#
         let patterns = [
-            #"(19|20)\d{2}\s*[-–—/]\s*((19|20)\d{2}|présent|present|aujourd'hui|today)"#,
-            #"[A-Za-zéûîôàèù]+\s+(19|20)\d{2}\s*[-–—/]\s*([A-Za-zéûîôàèù]+\s+)?((19|20)\d{2}|présent|present|aujourd'hui|today)"#,
+            #"\b\d{2}/\d{2}/\d{2,4}\s*(à|a|[-–—/])\s*(\d{2}/\d{2}/\d{2,4}|présent|present|aujourd['’]hui|today)\b"#,
+            "\(month)\\s+(19|20)\\d{2}\\s*(à|a|[-–—/])\\s*(\(month)\\s+)?((19|20)\\d{2}|\(current))",
+            #"(19|20)\d{2}\s*(à|a|[-–—/])\s*((19|20)\d{2}|présent|present|aujourd['’]hui|today)"#,
+            "\(month)\\s+(19|20)\\d{2}\\b",
+            #"\b\d{2}/\d{2}/\d{2,4}\b"#,
             #"\b(19|20)\d{2}\b"#
         ]
 
         for pattern in patterns {
-            if let range = line.range(of: pattern, options: .regularExpression) {
+            if let range = line.range(of: pattern, options: [.regularExpression, .caseInsensitive]) {
                 return cleanup(String(line[range]))
             }
         }
@@ -689,7 +1058,12 @@ final class CVImportService {
             "consultant", "manager", "responsable", "ingénieur", "ingenieur", "développeur",
             "developpeur", "chef", "coordinateur", "coordinatrice", "analyste", "designer",
             "product", "lead", "directeur", "chargé", "chargee", "spécialiste", "specialiste",
-            "engineer", "architect", "owner", "scrum", "qa", "test engineer", "plm"
+            "engineer", "architect", "owner", "qa", "test engineer", "plm",
+            "assistante", "assistant", "assistante d’exploitation", "assistante d'exploitation",
+            "assistante administrative", "technicien", "technicienne", "technicienne de paie",
+            "employée", "employee", "employe", "secrétaire", "secretaire", "agent",
+            "agent d’accueil", "agent d'accueil", "gestionnaire de paie",
+            "testeur", "paramétreur", "parametreur"
         ]
 
         return titleKeywords.contains(where: { lowercase.contains($0) })
