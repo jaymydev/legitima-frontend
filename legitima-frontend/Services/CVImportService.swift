@@ -124,7 +124,7 @@ final class CVImportService {
             }
 
             if isDateLeadingLine(current) {
-                let block = collectExperienceBlock(startingAt: index, in: lines)
+                let block = collectExperienceBlock(startingAt: index, in: lines, keepDetailLines: true)
 
                 if let formatted = formatStructuredExperience(from: block) {
                     results.append(formatted)
@@ -134,7 +134,10 @@ final class CVImportService {
                 continue
             }
 
-            if let inline = extractInlineStructuredExperience(from: current) {
+            if let inline = extractInlineStructuredExperience(
+                from: current,
+                followingLines: Array(lines.dropFirst(index + 1))
+            ) {
                 results.append(inline)
             }
 
@@ -144,7 +147,7 @@ final class CVImportService {
         return results
     }
 
-    private func collectExperienceBlock(startingAt index: Int, in lines: [String]) -> [String] {
+    private func collectExperienceBlock(startingAt index: Int, in lines: [String], keepDetailLines: Bool) -> [String] {
         var block: [String] = [cleanup(lines[index])]
         var nextIndex = index + 1
 
@@ -155,16 +158,13 @@ final class CVImportService {
                 break
             }
 
-            if isLikelyDetailLine(nextLine) {
-                nextIndex += 1
-                continue
-            }
-
-            if block.count >= 2 {
+            if block.count >= 4 {
                 break
             }
 
-            block.append(nextLine)
+            if keepDetailLines || !isLikelyDetailLine(nextLine) {
+                block.append(nextLine)
+            }
             nextIndex += 1
         }
 
@@ -177,21 +177,31 @@ final class CVImportService {
         let period = extractPeriod(from: firstLine) ?? extractPeriod(from: block.joined(separator: " "))
         guard let period else { return nil }
 
-        let titleCandidate = extractTitleCandidate(from: firstLine, period: period)
+        let titleCandidate = extractTitleAfterLeadingDate(from: firstLine, period: period)
             ?? block.dropFirst().compactMap { extractTitleCandidate(from: $0) }.first
 
         guard let titleCandidate else { return nil }
 
-        return "\(period) · \(titleCandidate)"
+        let summary = extractSummarySentence(
+            from: Array(block.dropFirst()),
+            fallbackInlineRemainder: inlineRemainderAfterPeriod(in: firstLine, period: period)
+        )
+
+        return formatExperience(period: period, title: titleCandidate, summary: summary)
     }
 
-    private func extractInlineStructuredExperience(from line: String) -> String? {
+    private func extractInlineStructuredExperience(from line: String, followingLines: [String]) -> String? {
         guard let period = extractPeriod(from: line),
-              let title = extractTitleCandidate(from: line, period: period) else {
+              let title = extractTitleBeforePeriod(from: line, period: period) else {
             return nil
         }
 
-        return "\(period) · \(title)"
+        let summary = extractSummarySentence(
+            from: Array(followingLines.prefix(3)),
+            fallbackInlineRemainder: inlineRemainderAfterPeriod(in: line, period: period)
+        )
+
+        return formatExperience(period: period, title: title, summary: summary)
     }
 
     private func extractTitleCandidate(from line: String, period: String? = nil) -> String? {
@@ -226,6 +236,127 @@ final class CVImportService {
         }
 
         return candidate
+    }
+
+    private func formatExperience(period: String, title: String, summary: String?) -> String {
+        if let summary, !summary.isEmpty {
+            return "\(period) · \(title)\n  \(summary)"
+        }
+
+        return "\(period) · \(title)"
+    }
+
+    private func extractTitleBeforePeriod(from line: String, period: String) -> String? {
+        guard let periodRange = line.range(of: period, options: [.caseInsensitive]) else {
+            return nil
+        }
+
+        let candidate = cleanup(String(line[..<periodRange.lowerBound]))
+        guard isLikelyExperienceTitle(candidate) else {
+            return nil
+        }
+
+        return candidate
+    }
+
+    private func extractTitleAfterLeadingDate(from line: String, period: String) -> String? {
+        guard let periodRange = line.range(of: period, options: [.caseInsensitive]) else {
+            return nil
+        }
+
+        let trailing = cleanup(String(line[periodRange.upperBound...]))
+        guard !trailing.isEmpty else {
+            return nil
+        }
+
+        let candidate = trimAtFirstDetailBoundary(trailing)
+        guard isLikelyExperienceTitle(candidate) else {
+            return nil
+        }
+
+        return candidate
+    }
+
+    private func inlineRemainderAfterPeriod(in line: String, period: String) -> String? {
+        guard let periodRange = line.range(of: period, options: [.caseInsensitive]) else {
+            return nil
+        }
+
+        let remainder = cleanup(String(line[periodRange.upperBound...]))
+        guard !remainder.isEmpty else {
+            return nil
+        }
+
+        return remainder
+    }
+
+    private func extractSummarySentence(from detailLines: [String], fallbackInlineRemainder: String?) -> String? {
+        let candidateSource = detailLines
+            .map(cleanup)
+            .filter { !isLikelyExperienceTitle($0) }
+            .first(where: isUsefulDetailForSummary)
+            ?? fallbackInlineRemainder
+
+        guard let candidateSource else { return nil }
+        return summarizeDetail(candidateSource)
+    }
+
+    private func isUsefulDetailForSummary(_ line: String) -> Bool {
+        let lowercase = line.lowercased()
+
+        if line.count < 12 || line.count > 140 { return false }
+        if lowercase.contains("@") || lowercase.contains("http") { return false }
+        if lowercase.contains("compétence") || lowercase.contains("skills") { return false }
+
+        return true
+    }
+
+    private func summarizeDetail(_ detail: String) -> String? {
+        let cleaned = trimAtFirstDetailBoundary(detail)
+            .replacingOccurrences(of: #"^[•\-–\s]+"#, with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !cleaned.isEmpty else { return nil }
+
+        var snippet = cleaned
+
+        if let commaRange = snippet.range(of: ",") {
+            snippet = String(snippet[..<commaRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        let lowered = snippet.lowercased()
+        let barePrefixes = [
+            "pilotage", "gestion", "coordination", "validation", "conception",
+            "migration", "déploiement", "automatisation", "structuration",
+            "support", "analyse", "accompagnement", "création", "mise en place"
+        ]
+
+        if barePrefixes.contains(where: { lowered.hasPrefix($0) }) {
+            return "A \(snippet.prefix(1).lowercased())\(snippet.dropFirst())."
+        }
+
+        if lowered.hasPrefix("a ") || lowered.hasPrefix("en ") {
+            return "\(snippet.prefix(1).uppercased())\(snippet.dropFirst())."
+        }
+
+        return "A \(snippet.prefix(1).lowercased())\(snippet.dropFirst())."
+    }
+
+    private func trimAtFirstDetailBoundary(_ text: String) -> String {
+        let patterns = [
+            #"(\s{2,})"#,
+            #"(\s[•\-–]\s)"#,
+            #"(\.\s)"#,
+            #"(;\s)"#
+        ]
+
+        for pattern in patterns {
+            if let range = text.range(of: pattern, options: .regularExpression) {
+                return String(text[..<range.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func isDateLeadingLine(_ line: String) -> Bool {
