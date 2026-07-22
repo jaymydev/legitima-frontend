@@ -16,9 +16,10 @@ It is not the long-term target architecture and should be treated as a temporary
 
 ## Base URL
 
-Current frontend target backend:
+Current frontend target backends:
 
-- `https://legitima-backend.onrender.com`
+- analyze backend: `https://legitima-backend.onrender.com`
+- CV parse backend: `https://legitima-backend-ocr.onrender.com`
 
 The iOS frontend should now point to the public Render deployment for real-device testing and TestFlight preparation.
 
@@ -26,11 +27,11 @@ No loopback, localhost, or local network machine IP should remain active in the 
 
 ## Currently expected backend surface
 
-The frontend currently expects the backend to expose:
+The frontend currently expects the backends to expose:
 
-- `GET /health`
-- `POST /analyze`
-- `POST /cv/parse`
+- `GET https://legitima-backend-ocr.onrender.com/health`
+- `POST https://legitima-backend.onrender.com/analyze`
+- `POST https://legitima-backend-ocr.onrender.com/cv/parse`
 
 No other V1 integration route should be consumed by the frontend unless it is explicitly documented here.
 
@@ -49,6 +50,8 @@ It is used by the iOS frontend to upload a CV document, receive structured profe
 Supported file types:
 
 - `application/pdf`
+- `image/jpeg`
+- `image/png`
 
 Max file size:
 
@@ -56,10 +59,10 @@ Max file size:
 
 Current backend limitation:
 
-- only text-based PDFs are supported;
-- scanned or image-only PDFs are not supported;
-- photos, screenshots, JPEG, and PNG files are not supported by the contract;
-- the frontend should guide the user toward a text-based PDF instead of attempting a nominal image upload flow.
+- text-based PDFs are supported;
+- JPEG photos and PNG screenshots are supported;
+- HEIC and HEIF are not accepted directly by the backend and must be converted by iOS to JPEG before upload;
+- the frontend must not run OCR locally and must delegate image parsing to the backend OCR service.
 
 ### Response
 
@@ -92,17 +95,18 @@ The frontend should expect:
 - `415` for unsupported file type;
 - `413` for files larger than `10 MB`;
 - `422` for malformed multipart data or missing file;
-- `422` for PDFs with no extractable text;
+- `422` for files that are readable but contain no exploitable professional experience;
 - `500` for backend failures.
 
 ### Frontend integration behavior
 
-The current frontend integration is backend-first with a temporary PDF-only local fallback:
+The current frontend integration is backend-first and backend-owned:
 
-- the app should upload the selected text-based PDF to `POST /cv/parse`;
+- the app should upload the selected text-based PDF, JPEG photo, or PNG image to `POST /cv/parse`;
+- if iOS provides HEIC or HEIF data, the frontend must convert it to JPEG before upload;
 - if the backend returns a valid `experiences` response, the frontend should use it;
-- if the backend request fails or returns an unusable payload for a text-based PDF, the frontend may temporarily fall back to the local parser while backend parity is still being validated;
-- image, screenshot, and scan flows should surface a clear unsupported message rather than acting as a nominal backend path;
+- the same `experiences` response shape is reused for PDF and image imports;
+- no local OCR or local CV parsing should be used in the nominal flow;
 - the long-term target remains backend-owned CV parsing, with the frontend limited to upload, display, and user correction.
 
 ## `POST /analyze`
