@@ -30,8 +30,80 @@ The frontend currently expects the backend to expose:
 
 - `GET /health`
 - `POST /analyze`
+- `POST /cv/parse`
 
 No other V1 integration route should be consumed by the frontend unless it is explicitly documented here.
+
+## `POST /cv/parse`
+
+`POST /cv/parse` is the current backend endpoint for CV parsing prefill.
+
+It is used by the iOS frontend to upload a CV document, receive structured professional experiences, and prefill the guided onboarding flow before user review.
+
+### Request
+
+- method: `POST`
+- content type: `multipart/form-data`
+- field name: `file`
+
+Supported file types:
+
+- `application/pdf`
+- `image/jpeg`
+- `image/png`
+
+Max file size:
+
+- `10 MB`
+
+Current backend limitation:
+
+- text-based PDFs are supported;
+- scanned or image-only PDFs are not reliably supported through the PDF path yet;
+- if a scanned PDF fails, the frontend should prefer an image upload when possible.
+
+### Response
+
+The backend officially supports the following response shape:
+
+```json
+{
+  "experiences": [
+    {
+      "title": "string",
+      "company": "string",
+      "period": "string"
+    }
+  ]
+}
+```
+
+Contract rules:
+
+- only `experiences` is returned;
+- each item contains exactly `title`, `company`, and `period`;
+- all values are strings;
+- empty strings are allowed if a field cannot be extracted;
+- the backend must not invent experiences.
+
+### Error handling
+
+The frontend should expect:
+
+- `415` for unsupported file type;
+- `413` for files larger than `10 MB`;
+- `422` for malformed multipart data or missing file;
+- `422` for PDFs with no extractable text;
+- `500` for backend or model failures.
+
+### Frontend integration behavior
+
+The current frontend integration is backend-first with a temporary local fallback:
+
+- the app should upload the selected PDF or image to `POST /cv/parse`;
+- if the backend returns a valid `experiences` response, the frontend should use it;
+- if the backend request fails or returns an unusable payload, the frontend may temporarily fall back to the local parser while backend parity is still being validated;
+- the long-term target remains backend-owned CV parsing, with the frontend limited to upload, display, and user correction.
 
 ## `POST /analyze`
 

@@ -1,7 +1,12 @@
 import Foundation
 
-private enum BackendConfiguration {
+enum BackendConfiguration {
     static let baseURLString = "https://legitima-backend.onrender.com"
+    static let maxCVFileSizeBytes = 10 * 1024 * 1024
+
+    static func url(path: String) -> URL? {
+        URL(string: "\(baseURLString)\(path)")
+    }
 }
 
 struct BackendError: Decodable {
@@ -33,7 +38,7 @@ final class IAService {
     }
 
     func analyze(request payload: AnalyzeRequest) async throws -> AnalysisResponse {
-        guard let url = URL(string: "\(BackendConfiguration.baseURLString)/analyze") else {
+        guard let url = BackendConfiguration.url(path: "/analyze") else {
             throw IAServiceError.invalidURL
         }
 

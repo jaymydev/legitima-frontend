@@ -11,6 +11,16 @@ struct CVImportResult {
     }
 }
 
+private struct CVParseResponse: Decodable {
+    let experiences: [CVParsedExperience]
+}
+
+private struct CVParsedExperience: Decodable {
+    let title: String
+    let company: String
+    let period: String
+}
+
 enum CVImportServiceError: LocalizedError {
     case unreadableDocument
     case noTextDetected
@@ -33,8 +43,183 @@ private enum CVImportSource {
     case image
 }
 
+private enum CVUploadMimeType: String {
+    case pdf = "application/pdf"
+    case jpeg = "image/jpeg"
+    case png = "image/png"
+
+    var fileExtension: String {
+        switch self {
+        case .pdf:
+            return "pdf"
+        case .jpeg:
+            return "jpg"
+        case .png:
+            return "png"
+        }
+    }
+}
+
 final class CVImportService {
     func extractSummary(fromPDFAt url: URL) async throws -> CVImportResult {
+        if let remoteAttempt = await attemptBackendPDFParse(from: url) {
+            switch remoteAttempt {
+            case .success(let result):
+                return result
+            case .failure(let remoteError):
+                do {
+                    return try extractLocalSummary(fromPDFAt: url)
+                } catch let localError as CVImportServiceError {
+                    if case .noTextDetected = localError {
+                        throw remoteError
+                    }
+                    throw localError
+                } catch {
+                    throw remoteError
+                }
+            }
+        }
+
+        return try extractLocalSummary(fromPDFAt: url)
+    }
+
+    func extractSummary(from image: UIImage, originalData: Data? = nil) async throws -> CVImportResult {
+        if let remoteAttempt = await attemptBackendImageParse(from: image, originalData: originalData) {
+            switch remoteAttempt {
+            case .success(let result):
+                return result
+            case .failure(let remoteError):
+                do {
+                    return try await extractLocalSummary(from: image)
+                } catch let localError as CVImportServiceError {
+                    if case .noTextDetected = localError {
+                        throw remoteError
+                    }
+                    throw localError
+                } catch {
+                    throw remoteError
+                }
+            }
+        }
+
+        return try await extractLocalSummary(from: image)
+    }
+
+    private func attemptBackendPDFParse(from url: URL) async -> Result<CVImportResult, Error>? {
+        do {
+            let fileData = try Data(contentsOf: url)
+            let result = try await parseWithBackend(
+                fileData: fileData,
+                fileName: url.lastPathComponent.isEmpty ? "cv.pdf" : url.lastPathComponent,
+                mimeType: .pdf
+            )
+            return .success(result)
+        } catch {
+            if error is CocoaError {
+                return nil
+            }
+            return .failure(error)
+        }
+    }
+
+    private func attemptBackendImageParse(from image: UIImage, originalData: Data?) async -> Result<CVImportResult, Error>? {
+        do {
+            let uploadData = try imageUploadPayload(from: image, originalData: originalData)
+            let result = try await parseWithBackend(
+                fileData: uploadData.data,
+                fileName: "cv.\(uploadData.mimeType.fileExtension)",
+                mimeType: uploadData.mimeType
+            )
+            return .success(result)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    private func parseWithBackend(
+        fileData: Data,
+        fileName: String,
+        mimeType: CVUploadMimeType
+    ) async throws -> CVImportResult {
+        guard fileData.count <= BackendConfiguration.maxCVFileSizeBytes else {
+            throw NSError(
+                domain: "",
+                code: 413,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Le fichier dépasse la taille maximale de 10 Mo pour l'import CV."
+                ]
+            )
+        }
+
+        guard let url = BackendConfiguration.url(path: "/cv/parse") else {
+            throw NSError(
+                domain: "",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "URL backend invalide."]
+            )
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.httpBody = makeMultipartBody(
+            fileData: fileData,
+            fileName: fileName,
+            mimeType: mimeType,
+            boundary: boundary
+        )
+
+        let data: Data
+        let response: URLResponse
+
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw NSError(
+                domain: "",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]
+            )
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NSError(
+                domain: "",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "Réponse backend invalide."]
+            )
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            throw backendRequestError(statusCode: httpResponse.statusCode, data: data)
+        }
+
+        let decodedResponse: CVParseResponse
+        do {
+            decodedResponse = try JSONDecoder().decode(CVParseResponse.self, from: data)
+        } catch {
+            throw NSError(
+                domain: "",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "La réponse CV du backend est invalide."]
+            )
+        }
+
+        let parsedSteps = decodedResponse.experiences
+            .compactMap(formatBackendExperience)
+        let uniqueSteps = Array(uniquePreservingOrder(parsedSteps).prefix(5))
+
+        guard !uniqueSteps.isEmpty else {
+            throw CVImportServiceError.noTextDetected
+        }
+
+        return CVImportResult(steps: uniqueSteps)
+    }
+
+    private func extractLocalSummary(fromPDFAt url: URL) throws -> CVImportResult {
         guard let document = PDFDocument(url: url), let rawText = document.string else {
             throw CVImportServiceError.unreadableDocument
         }
@@ -42,13 +227,97 @@ final class CVImportService {
         return try buildResult(from: rawText, source: .pdf)
     }
 
-    func extractSummary(from image: UIImage) async throws -> CVImportResult {
+    private func extractLocalSummary(from image: UIImage) async throws -> CVImportResult {
         guard let cgImage = image.cgImage else {
             throw CVImportServiceError.unreadableDocument
         }
 
         let recognizedText = try await recognizeText(in: cgImage)
         return try buildResult(from: recognizedText, source: .image)
+    }
+
+    private func imageUploadPayload(from image: UIImage, originalData: Data?) throws -> (data: Data, mimeType: CVUploadMimeType) {
+        if let originalData, let detectedMimeType = detectImageMimeType(from: originalData) {
+            return (originalData, detectedMimeType)
+        }
+
+        guard let jpegData = image.jpegData(compressionQuality: 0.9) else {
+            throw CVImportServiceError.unreadableDocument
+        }
+
+        return (jpegData, .jpeg)
+    }
+
+    private func detectImageMimeType(from data: Data) -> CVUploadMimeType? {
+        if data.starts(with: [0x89, 0x50, 0x4E, 0x47]) {
+            return .png
+        }
+
+        if data.starts(with: [0xFF, 0xD8, 0xFF]) {
+            return .jpeg
+        }
+
+        return nil
+    }
+
+    private func makeMultipartBody(
+        fileData: Data,
+        fileName: String,
+        mimeType: CVUploadMimeType,
+        boundary: String
+    ) -> Data {
+        var body = Data()
+        let lineBreak = "\r\n"
+
+        body.append("--\(boundary)\(lineBreak)".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\(lineBreak)".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType.rawValue)\(lineBreak)\(lineBreak)".data(using: .utf8)!)
+        body.append(fileData)
+        body.append(lineBreak.data(using: .utf8)!)
+        body.append("--\(boundary)--\(lineBreak)".data(using: .utf8)!)
+
+        return body
+    }
+
+    private func backendRequestError(statusCode: Int, data: Data) -> NSError {
+        let backendMessage = (try? JSONDecoder().decode(BackendError.self, from: data))
+            .flatMap { $0.detail?.first?.msg ?? $0.detailMessage }
+
+        let fallbackMessage: String
+
+        switch statusCode {
+        case 413:
+            fallbackMessage = "Le fichier dépasse la taille maximale de 10 Mo pour l'import CV."
+        case 415:
+            fallbackMessage = "Le format de fichier n'est pas pris en charge. Utilisez un PDF, un JPEG ou un PNG."
+        case 422:
+            fallbackMessage = "Le CV n'a pas pu être interprété par le backend. Essayez un PDF texte ou une image plus lisible."
+        case 500:
+            fallbackMessage = "Le backend n'a pas pu analyser ce CV pour le moment."
+        default:
+            fallbackMessage = "Erreur serveur pendant l'import CV."
+        }
+
+        return NSError(
+            domain: "",
+            code: statusCode,
+            userInfo: [NSLocalizedDescriptionKey: backendMessage ?? fallbackMessage]
+        )
+    }
+
+    private func formatBackendExperience(_ experience: CVParsedExperience) -> String? {
+        let components = [
+            experience.title.trimmingCharacters(in: .whitespacesAndNewlines),
+            experience.company.trimmingCharacters(in: .whitespacesAndNewlines),
+            experience.period.trimmingCharacters(in: .whitespacesAndNewlines)
+        ]
+        .filter { !$0.isEmpty }
+
+        guard !components.isEmpty else {
+            return nil
+        }
+
+        return components.joined(separator: " — ")
     }
 
     private func recognizeText(in cgImage: CGImage) async throws -> String {

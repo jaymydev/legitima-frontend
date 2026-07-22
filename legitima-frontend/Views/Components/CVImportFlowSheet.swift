@@ -351,7 +351,7 @@ struct CVImportFlowSheet: View {
                 throw CVImportServiceError.unreadableDocument
             }
 
-            return try await cvImportService.extractSummary(from: image)
+            return try await cvImportService.extractSummary(from: image, originalData: data)
         }
 
         await MainActor.run {
