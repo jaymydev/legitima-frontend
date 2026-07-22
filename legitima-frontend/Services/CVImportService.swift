@@ -1,4 +1,6 @@
+import CoreGraphics
 import Foundation
+import ImageIO
 import UIKit
 
 struct CVImportResult {
@@ -20,21 +22,52 @@ private struct CVParsedExperience: Decodable {
 }
 
 enum CVImportServiceError: LocalizedError {
+    case unreadableDocument
     case noTextDetected
-    case unsupportedImageImport
+    case noCameraAvailable
+    case unsupportedFileType
+    case imageConversionFailed
 
     var errorDescription: String? {
         switch self {
+        case .unreadableDocument:
+            return "Le fichier n'a pas pu etre lu. Reessayez avec un PDF, une photo JPEG ou une image PNG lisible."
         case .noTextDetected:
-            return "Nous n'avons pas trouve d'experiences exploitables dans ce PDF. Verifiez qu'il s'agit d'un CV textuel lisible."
-        case .unsupportedImageImport:
-            return "Pour le moment, l'import CV accepte uniquement un PDF textuel. Les photos, captures et scans ne sont pas encore pris en charge."
+            return "Nous n'avons pas trouve d'experience professionnelle exploitable. Verifiez que le CV est lisible et reessayez."
+        case .noCameraAvailable:
+            return "La camera n'est pas disponible sur cet appareil."
+        case .unsupportedFileType:
+            return "Ce format de fichier n'est pas pris en charge. Utilisez un PDF, une photo JPEG ou une image PNG."
+        case .imageConversionFailed:
+            return "L'image n'a pas pu etre preparee pour l'import. Reessayez avec une image plus lisible."
         }
     }
 }
 
 private enum CVUploadMimeType: String {
     case pdf = "application/pdf"
+    case jpeg = "image/jpeg"
+    case png = "image/png"
+
+    var fileExtension: String {
+        switch self {
+        case .pdf:
+            return "pdf"
+        case .jpeg:
+            return "jpg"
+        case .png:
+            return "png"
+        }
+    }
+}
+
+private enum CVDetectedFileType {
+    case pdf
+    case jpeg
+    case png
+    case heic
+    case heif
+    case unknown
 }
 
 final class CVImportService {
@@ -49,9 +82,13 @@ final class CVImportService {
     }
 
     func extractSummary(from image: UIImage, originalData: Data? = nil) async throws -> CVImportResult {
-        _ = image
-        _ = originalData
-        throw CVImportServiceError.unsupportedImageImport
+        let uploadPayload = try imageUploadPayload(from: image, originalData: originalData)
+
+        return try await parseWithBackend(
+            fileData: uploadPayload.data,
+            fileName: uploadPayload.fileName,
+            mimeType: uploadPayload.mimeType
+        )
     }
 
     private func parseWithBackend(
@@ -69,11 +106,11 @@ final class CVImportService {
             )
         }
 
-        guard let url = BackendConfiguration.url(path: "/cv/parse") else {
+        guard let url = BackendConfiguration.cvParseURL(path: "/cv/parse") else {
             throw NSError(
                 domain: "",
                 code: 0,
-                userInfo: [NSLocalizedDescriptionKey: "URL backend invalide."]
+                userInfo: [NSLocalizedDescriptionKey: "URL backend CV invalide."]
             )
         }
 
@@ -136,6 +173,49 @@ final class CVImportService {
         return CVImportResult(steps: uniqueSteps)
     }
 
+    private func imageUploadPayload(from image: UIImage, originalData: Data?) throws -> (data: Data, fileName: String, mimeType: CVUploadMimeType) {
+        if let originalData {
+            switch detectFileType(from: originalData) {
+            case .png:
+                if originalData.count <= BackendConfiguration.maxCVFileSizeBytes {
+                    return (originalData, "cv.png", .png)
+                }
+
+                guard let recompressedJPEG = compressedJPEGData(from: image) else {
+                    throw CVImportServiceError.imageConversionFailed
+                }
+
+                return (recompressedJPEG, "cv.jpg", .jpeg)
+            case .jpeg:
+                if originalData.count <= BackendConfiguration.maxCVFileSizeBytes {
+                    return (originalData, "cv.jpg", .jpeg)
+                }
+
+                guard let recompressedJPEG = compressedJPEGData(from: image) else {
+                    throw CVImportServiceError.imageConversionFailed
+                }
+
+                return (recompressedJPEG, "cv.jpg", .jpeg)
+            case .heic, .heif:
+                guard let convertedJPEG = compressedJPEGData(from: image) else {
+                    throw CVImportServiceError.imageConversionFailed
+                }
+
+                return (convertedJPEG, "cv.jpg", .jpeg)
+            case .pdf:
+                throw CVImportServiceError.unsupportedFileType
+            case .unknown:
+                break
+            }
+        }
+
+        guard let fallbackJPEG = compressedJPEGData(from: image) else {
+            throw CVImportServiceError.imageConversionFailed
+        }
+
+        return (fallbackJPEG, "cv.jpg", .jpeg)
+    }
+
     private func makeMultipartBody(
         fileData: Data,
         fileName: String,
@@ -156,20 +236,18 @@ final class CVImportService {
     }
 
     private func backendRequestError(statusCode: Int, data: Data) -> NSError {
-        let backendMessage = (try? JSONDecoder().decode(BackendError.self, from: data))
-            .flatMap { $0.detail?.first?.msg ?? $0.detailMessage }
-
+        let backendMessage = backendDetailMessage(from: data)
         let fallbackMessage: String
 
         switch statusCode {
         case 413:
             fallbackMessage = "Le fichier depasse la taille maximale de 10 Mo pour l'import CV."
         case 415:
-            fallbackMessage = "Le format de fichier n'est pas pris en charge. Utilisez un PDF textuel."
+            fallbackMessage = "Ce format de fichier n'est pas pris en charge. Utilisez un PDF, une photo JPEG ou une image PNG."
         case 422:
-            fallbackMessage = "Le CV n'a pas pu etre interprete. Utilisez un PDF textuel exploitable, pas un scan, une photo ou une capture."
+            fallbackMessage = "Nous n'avons pas trouve d'experience professionnelle exploitable. Verifiez que le CV est lisible et reessayez."
         case 500:
-            fallbackMessage = "Le backend n'a pas pu analyser ce CV pour le moment."
+            fallbackMessage = "Le traitement du CV est momentanement indisponible. Reessayez dans quelques instants."
         default:
             fallbackMessage = "Erreur serveur pendant l'import CV."
         }
@@ -179,6 +257,103 @@ final class CVImportService {
             code: statusCode,
             userInfo: [NSLocalizedDescriptionKey: backendMessage ?? fallbackMessage]
         )
+    }
+
+    private func backendDetailMessage(from data: Data) -> String? {
+        if let backendError = try? JSONDecoder().decode(BackendError.self, from: data),
+           let message = backendError.detail?.first?.msg ?? backendError.detailMessage {
+            return message
+        }
+
+        if let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let detail = object["detail"] {
+            if let message = detail as? String {
+                return message
+            }
+
+            if let array = detail as? [[String: Any]],
+               let message = array.compactMap({ $0["msg"] as? String }).first {
+                return message
+            }
+        }
+
+        return nil
+    }
+
+    private func detectFileType(from data: Data) -> CVDetectedFileType {
+        if data.starts(with: [0x25, 0x50, 0x44, 0x46]) {
+            return .pdf
+        }
+
+        if data.starts(with: [0xFF, 0xD8, 0xFF]) {
+            return .jpeg
+        }
+
+        if data.starts(with: [0x89, 0x50, 0x4E, 0x47]) {
+            return .png
+        }
+
+        let signatureWindow = min(data.count, 16)
+        if signatureWindow >= 12,
+           let signature = String(data: data.subdata(in: 4..<12), encoding: .ascii)?.lowercased() {
+            if signature.contains("heic") || signature.contains("heix") || signature.contains("hevc") || signature.contains("hevx") {
+                return .heic
+            }
+
+            if signature.contains("mif1") || signature.contains("msf1") {
+                return .heif
+            }
+        }
+
+        return .unknown
+    }
+
+    private func compressedJPEGData(from image: UIImage) -> Data? {
+        let maxSize = BackendConfiguration.maxCVFileSizeBytes
+        let longestEdgeTarget = max(image.size.width, image.size.height) > 2400 ? 2400.0 : max(image.size.width, image.size.height)
+        var workingImage = resizedImageIfNeeded(image, longestEdge: longestEdgeTarget)
+        var quality: CGFloat = 0.9
+
+        while quality >= 0.45 {
+            if let jpegData = workingImage.jpegData(compressionQuality: quality),
+               jpegData.count <= maxSize {
+                return jpegData
+            }
+
+            quality -= 0.15
+        }
+
+        var resizeEdge = max(workingImage.size.width, workingImage.size.height)
+
+        while resizeEdge > 1200 {
+            resizeEdge *= 0.85
+            workingImage = resizedImageIfNeeded(workingImage, longestEdge: resizeEdge)
+
+            if let jpegData = workingImage.jpegData(compressionQuality: 0.7),
+               jpegData.count <= maxSize {
+                return jpegData
+            }
+        }
+
+        return workingImage.jpegData(compressionQuality: 0.6).flatMap { $0.count <= maxSize ? $0 : nil }
+    }
+
+    private func resizedImageIfNeeded(_ image: UIImage, longestEdge: CGFloat) -> UIImage {
+        let currentLongestEdge = max(image.size.width, image.size.height)
+        guard currentLongestEdge > longestEdge, currentLongestEdge > 0 else {
+            return image
+        }
+
+        let scaleRatio = longestEdge / currentLongestEdge
+        let newSize = CGSize(
+            width: image.size.width * scaleRatio,
+            height: image.size.height * scaleRatio
+        )
+
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
     }
 
     private func formatBackendExperience(_ experience: CVParsedExperience) -> String? {

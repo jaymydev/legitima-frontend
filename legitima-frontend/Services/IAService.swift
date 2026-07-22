@@ -1,11 +1,16 @@
 import Foundation
 
 enum BackendConfiguration {
-    static let baseURLString = "https://legitima-backend.onrender.com"
+    static let analyzeBaseURLString = "https://legitima-backend.onrender.com"
+    static let cvParseBaseURLString = "https://legitima-backend-ocr.onrender.com"
     static let maxCVFileSizeBytes = 10 * 1024 * 1024
 
-    static func url(path: String) -> URL? {
-        URL(string: "\(baseURLString)\(path)")
+    static func analyzeURL(path: String) -> URL? {
+        URL(string: "\(analyzeBaseURLString)\(path)")
+    }
+
+    static func cvParseURL(path: String) -> URL? {
+        URL(string: "\(cvParseBaseURLString)\(path)")
     }
 }
 
@@ -38,7 +43,7 @@ final class IAService {
     }
 
     func analyze(request payload: AnalyzeRequest) async throws -> AnalysisResponse {
-        guard let url = BackendConfiguration.url(path: "/analyze") else {
+        guard let url = BackendConfiguration.analyzeURL(path: "/analyze") else {
             throw IAServiceError.invalidURL
         }
 

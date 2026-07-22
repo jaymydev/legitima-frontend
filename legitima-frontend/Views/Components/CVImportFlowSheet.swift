@@ -1,5 +1,7 @@
+import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
+import UIKit
 
 private struct EditableCVStep: Identifiable {
     let id = UUID()
@@ -16,6 +18,8 @@ struct CVImportFlowSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var flowState: CVImportFlowState = .sourceSelection
     @State private var isShowingFileImporter = false
+    @State private var isShowingCamera = false
+    @State private var selectedPhoto: PhotosPickerItem?
     @State private var extractedSteps: [EditableCVStep] = []
     @State private var errorMessage: String?
 
@@ -81,6 +85,27 @@ struct CVImportFlowSheet: View {
                 await handlePDFSelection(result)
             }
         }
+        .onChange(of: selectedPhoto) { _, newValue in
+            guard let newValue else { return }
+
+            Task {
+                await handlePhotoSelection(newValue)
+            }
+        }
+        .sheet(isPresented: $isShowingCamera) {
+            CameraCaptureView(
+                onImagePicked: { image in
+                    isShowingCamera = false
+                    Task {
+                        await handleCapturedImage(image)
+                    }
+                },
+                onCancel: {
+                    isShowingCamera = false
+                }
+            )
+            .ignoresSafeArea()
+        }
     }
 
     private var sourceSelectionContent: some View {
@@ -96,7 +121,7 @@ struct CVImportFlowSheet: View {
                     .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("Utilisez un PDF textuel exploitable. Les photos, captures et scans ne sont pas encore pris en charge.")
+                Text("Vous pouvez importer un PDF, prendre une photo du CV ou choisir une image depuis votre phototheque. Nous extrairons ensuite les experiences avant que vous puissiez les corriger.")
                     .font(.footnote)
                     .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
                     .fixedSize(horizontal: false, vertical: true)
@@ -111,6 +136,30 @@ struct CVImportFlowSheet: View {
                 ) {
                     errorMessage = nil
                     isShowingFileImporter = true
+                }
+
+                PhotosPicker(
+                    selection: $selectedPhoto,
+                    matching: .images
+                ) {
+                    sourceButtonLabel(
+                        icon: "photo.on.rectangle",
+                        title: "Choisir une image"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                sourceButton(
+                    icon: "camera",
+                    title: "Prendre une photo"
+                ) {
+                    guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+                        errorMessage = CVImportServiceError.noCameraAvailable.localizedDescription
+                        return
+                    }
+
+                    errorMessage = nil
+                    isShowingCamera = true
                 }
             }
 
@@ -297,6 +346,27 @@ struct CVImportFlowSheet: View {
             }
         case .failure(let error):
             errorMessage = error.localizedDescription
+        }
+    }
+
+    private func handlePhotoSelection(_ item: PhotosPickerItem) async {
+        await extractUsingSource {
+            guard let data = try await item.loadTransferable(type: Data.self),
+                  let image = UIImage(data: data) else {
+                throw CVImportServiceError.unreadableDocument
+            }
+
+            return try await cvImportService.extractSummary(from: image, originalData: data)
+        }
+
+        await MainActor.run {
+            selectedPhoto = nil
+        }
+    }
+
+    private func handleCapturedImage(_ image: UIImage) async {
+        await extractUsingSource {
+            try await cvImportService.extractSummary(from: image)
         }
     }
 
