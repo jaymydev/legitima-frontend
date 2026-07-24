@@ -6,6 +6,7 @@ final class UserStatus: ObservableObject {
     private enum StorageKeys {
         static let remainingFreeAnalyses = "user_status.remaining_free_analyses"
         static let quotaDayStamp = "user_status.quota_day_stamp"
+        static let configuredDailyLimit = "user_status.configured_daily_limit"
     }
 
     private let defaults: UserDefaults
@@ -19,20 +20,20 @@ final class UserStatus: ObservableObject {
     init(
         defaults: UserDefaults = .standard,
         calendar: Calendar = .current,
-        freeDailyLimit: Int = 2
+        freeDailyLimit: Int = 20
     ) {
         self.defaults = defaults
         self.calendar = calendar
         self.freeDailyLimit = freeDailyLimit
 
-        let storedRemaining = defaults.object(forKey: StorageKeys.remainingFreeAnalyses) as? Int ?? freeDailyLimit
+        let storedLimit = defaults.object(forKey: StorageKeys.configuredDailyLimit) as? Int
+        let storedRemaining = storedLimit == freeDailyLimit
+            ? defaults.object(forKey: StorageKeys.remainingFreeAnalyses) as? Int ?? freeDailyLimit
+            : freeDailyLimit
         remainingFreeAnalyses = storedRemaining
+        defaults.set(freeDailyLimit, forKey: StorageKeys.configuredDailyLimit)
 
-        #if DEBUG
-        resetDevelopmentQuota()
-        #else
         refreshFreeQuotaIfNeeded()
-        #endif
     }
 
     var canStartAnalysis: Bool {
@@ -45,12 +46,12 @@ final class UserStatus: ObservableObject {
         }
 
         if remainingFreeAnalyses <= 0 {
-            return "0 analyse gratuite restante aujourd'hui"
+            return "0 analyse de test restante aujourd'hui"
         }
 
         return remainingFreeAnalyses == 1
-            ? "1 analyse gratuite restante aujourd'hui"
-            : "\(remainingFreeAnalyses) analyses gratuites restantes aujourd'hui"
+            ? "1 analyse de test restante aujourd'hui"
+            : "\(remainingFreeAnalyses) analyses de test restantes aujourd'hui"
     }
 
     func activatePremium() {
@@ -86,13 +87,6 @@ final class UserStatus: ObservableObject {
 
     private func persistQuota() {
         defaults.set(remainingFreeAnalyses, forKey: StorageKeys.remainingFreeAnalyses)
-    }
-
-    private func resetDevelopmentQuota() {
-        let todayStamp = dayStamp(for: Date())
-        defaults.set(todayStamp, forKey: StorageKeys.quotaDayStamp)
-        remainingFreeAnalyses = freeDailyLimit
-        persistQuota()
     }
 
     private func dayStamp(for date: Date) -> String {
