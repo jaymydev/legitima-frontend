@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 final class AppRouter: ObservableObject {
     enum Root {
+        case access
         case onboarding
         case result(AnalysisResponse)
     }
@@ -12,12 +13,21 @@ final class AppRouter: ObservableObject {
         case progression
     }
 
-    @Published var root: Root = .onboarding
+    @Published var root: Root = .access
     @Published var path: [Route] = []
 
     func showResult(_ response: AnalysisResponse) {
         root = .result(response)
         path = []
+    }
+
+    func enterTestMode(savedAnalysis: AnalysisResponse?) {
+        path = []
+        if let savedAnalysis {
+            root = .result(savedAnalysis)
+        } else {
+            root = .onboarding
+        }
     }
 
     func showProgression() {
