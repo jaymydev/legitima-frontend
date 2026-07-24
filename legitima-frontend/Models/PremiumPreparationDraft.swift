@@ -8,6 +8,7 @@ struct PremiumPreparationSnapshot: Codable {
     var baseAnalysis: AnalysisResponse?
 }
 
+@MainActor
 final class PremiumPreparationDraft: ObservableObject {
     @Published var anchorRole: String {
         didSet { persist() }
@@ -24,7 +25,11 @@ final class PremiumPreparationDraft: ObservableObject {
 
     private let storage: ProtectedJSONStore<PremiumPreparationSnapshot>
 
-    init(storage: ProtectedJSONStore<PremiumPreparationSnapshot> = .premiumPreparation) {
+    convenience init() {
+        self.init(storage: .premiumPreparation)
+    }
+
+    init(storage: ProtectedJSONStore<PremiumPreparationSnapshot>) {
         self.storage = storage
         let snapshot = storage.load() ?? PremiumPreparationSnapshot()
         anchorRole = snapshot.anchorRole

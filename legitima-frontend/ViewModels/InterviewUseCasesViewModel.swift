@@ -10,9 +10,16 @@ final class InterviewUseCasesViewModel: ObservableObject {
     private let service: InterviewPreparationService
     private let cache: ProtectedJSONStore<InterviewUseCaseCatalog>
 
+    convenience init() {
+        self.init(
+            service: InterviewPreparationService(),
+            cache: .interviewCatalog
+        )
+    }
+
     init(
-        service: InterviewPreparationService = InterviewPreparationService(),
-        cache: ProtectedJSONStore<InterviewUseCaseCatalog> = .interviewCatalog
+        service: InterviewPreparationService,
+        cache: ProtectedJSONStore<InterviewUseCaseCatalog>
     ) {
         self.service = service
         self.cache = cache
@@ -50,11 +57,24 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
     private let store: InterviewPreparationStore
     private let context: InterviewPreparationContext?
 
+    convenience init(
+        useCase: InterviewUseCase,
+        store: InterviewPreparationStore,
+        context: InterviewPreparationContext? = nil
+    ) {
+        self.init(
+            useCase: useCase,
+            store: store,
+            context: context,
+            service: InterviewPreparationService()
+        )
+    }
+
     init(
         useCase: InterviewUseCase,
         store: InterviewPreparationStore,
         context: InterviewPreparationContext? = nil,
-        service: InterviewPreparationService = InterviewPreparationService()
+        service: InterviewPreparationService
     ) {
         self.useCase = useCase
         self.store = store
