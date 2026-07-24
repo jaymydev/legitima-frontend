@@ -55,7 +55,7 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
 
     private let service: InterviewPreparationService
     private let store: InterviewPreparationStore
-    private let context: InterviewPreparationContext?
+    private var context: InterviewPreparationContext?
 
     convenience init(
         useCase: InterviewUseCase,
@@ -89,6 +89,10 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
 
     func saveDraft() {
         store.saveDraft(useCase: useCase, answers: answers)
+    }
+
+    func updateContext(_ context: InterviewPreparationContext) {
+        self.context = context
     }
 
     func analyze() async {
