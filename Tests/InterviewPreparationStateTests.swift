@@ -100,6 +100,12 @@ struct InterviewPreparationStateTests {
             preconditionFailure("Saved analyses must reopen their result")
         }
         precondition(restored == sampleLeanAnalysis)
+
+        router.showPremiumInterviewEntry()
+        precondition(
+            router.path == [.premiumInterviewEntry],
+            "Premium results must open the guided preparation directly"
+        )
     }
 
     private static func testRecruitmentRequestReusesFreemiumContext() throws {
