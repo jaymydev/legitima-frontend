@@ -59,6 +59,12 @@ catalog-provided `questionnaire_version`, and non-empty answers keyed by `questi
 It returns a generic preparation result containing a summary, titled sections, talking
 points, and an action plan.
 
+For recruitment, the premium flow reuses the target role, experiences, optional
+sensitive point, and freemium analysis through the request `context`. It must not ask
+the user to import the CV again. The premium screens collect only the interview stage,
+strengths and proof, difficult question, desired takeaway, and optional refinements.
+Only the final premium generation action sends a V2 analysis request.
+
 The existing recruitment flow continues to use `POST /analyze`. The V2 integration does
 not change the request or response contract of that endpoint.
 
