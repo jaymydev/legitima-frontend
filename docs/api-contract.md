@@ -32,8 +32,33 @@ The frontend currently expects the backends to expose:
 - `GET https://legitima-backend-ocr.onrender.com/health`
 - `POST https://legitima-backend.onrender.com/analyze`
 - `POST https://legitima-backend-ocr.onrender.com/cv/parse`
+- `GET https://legitima-backend.onrender.com/v2/interview-preparation/use-cases`
+- `POST https://legitima-backend.onrender.com/v2/interview-preparation/analyze`
 
 No other V1 integration route should be consumed by the frontend unless it is explicitly documented here.
+
+## Interview preparation V2
+
+The test-mode entry displays a backend-owned, versioned catalog for six use cases:
+
+- recruitment;
+- internal mobility;
+- role evolution;
+- mid-year review;
+- annual review;
+- performance review.
+
+`GET /v2/interview-preparation/use-cases` returns the display metadata and ordered
+questions. The frontend renders these questions through one generic SwiftUI screen and
+caches the last valid catalog locally.
+
+`POST /v2/interview-preparation/analyze` accepts the selected `use_case_id`, the
+catalog-provided `questionnaire_version`, and non-empty answers keyed by `question_id`.
+It returns a generic preparation result containing a summary, titled sections, talking
+points, and an action plan.
+
+The existing recruitment flow continues to use `POST /analyze`. The V2 integration does
+not change the request or response contract of that endpoint.
 
 ## `POST /cv/parse`
 

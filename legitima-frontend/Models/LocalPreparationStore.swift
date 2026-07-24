@@ -96,6 +96,55 @@ extension ProtectedJSONStore where Value == PremiumPreparationSnapshot {
     }
 }
 
+extension ProtectedJSONStore where Value == InterviewUseCaseCatalog {
+    static var interviewCatalog: Self {
+        Self(fileURL: applicationSupportURL.appendingPathComponent("interview-catalog.json"))
+    }
+}
+
+extension ProtectedJSONStore where Value == SavedInterviewPreparation {
+    static var interviewPreparation: Self {
+        Self(fileURL: applicationSupportURL.appendingPathComponent("interview-preparation.json"))
+    }
+}
+
+@MainActor
+final class InterviewPreparationStore: ObservableObject {
+    @Published private(set) var saved: SavedInterviewPreparation
+
+    private let storage: ProtectedJSONStore<SavedInterviewPreparation>
+
+    init(storage: ProtectedJSONStore<SavedInterviewPreparation> = .interviewPreparation) {
+        self.storage = storage
+        saved = storage.load() ?? SavedInterviewPreparation()
+    }
+
+    func saveDraft(useCase: InterviewUseCase, answers: [String: String]) {
+        saved.useCase = useCase
+        saved.answers = answers
+        saved.updatedAt = .now
+        storage.save(saved)
+    }
+
+    func saveResult(_ result: InterviewPreparationResponse) {
+        saved.result = result
+        saved.updatedAt = .now
+        storage.save(saved)
+    }
+
+    func start(useCase: InterviewUseCase) {
+        if saved.useCase?.id != useCase.id {
+            saved = SavedInterviewPreparation(useCase: useCase)
+            storage.save(saved)
+        }
+    }
+
+    func clear() {
+        saved = SavedInterviewPreparation()
+        storage.remove()
+    }
+}
+
 private var applicationSupportURL: URL {
     let baseURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     return baseURL.appendingPathComponent("Legitima", isDirectory: true)
