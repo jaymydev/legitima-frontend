@@ -123,6 +123,11 @@ struct InterviewQuestionnaireScreen: View {
                     .stroke(Color.black.opacity(0.08), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            AnswerGuidanceView(
+                suggestions: question.suggestions,
+                answer: viewModel.answers[question.id] ?? ""
+            )
         }
         .padding(16)
         .background(Color.white.opacity(0.92))
