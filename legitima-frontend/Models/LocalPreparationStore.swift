@@ -22,7 +22,11 @@ final class LocalPreparationStore: ObservableObject {
 
     private let storage: ProtectedJSONStore<PreparationSnapshot>
 
-    init(storage: ProtectedJSONStore<PreparationSnapshot> = .preparation) {
+    convenience init() {
+        self.init(storage: .preparation)
+    }
+
+    init(storage: ProtectedJSONStore<PreparationSnapshot>) {
         self.storage = storage
         snapshot = storage.load() ?? PreparationSnapshot()
     }
@@ -114,7 +118,11 @@ final class InterviewPreparationStore: ObservableObject {
 
     private let storage: ProtectedJSONStore<SavedInterviewPreparation>
 
-    init(storage: ProtectedJSONStore<SavedInterviewPreparation> = .interviewPreparation) {
+    convenience init() {
+        self.init(storage: .interviewPreparation)
+    }
+
+    init(storage: ProtectedJSONStore<SavedInterviewPreparation>) {
         self.storage = storage
         saved = storage.load() ?? SavedInterviewPreparation()
     }
