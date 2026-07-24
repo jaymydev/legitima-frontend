@@ -32,6 +32,8 @@ struct legitima_frontendApp: App {
                                     router.restartAnalysis()
                                 }
                             )
+                        case .premiumInterviewEntry:
+                            PremiumInterviewEntryScreen()
                         }
                     }
             }
@@ -77,7 +79,7 @@ struct legitima_frontendApp: App {
             LeanResultScreen(
                 response: response,
                 onContinue: {
-                    router.showProgression()
+                    router.showPremiumInterviewEntry()
                 }
             )
 
