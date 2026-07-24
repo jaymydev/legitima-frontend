@@ -7,6 +7,7 @@ struct InterviewPreparationStateTests {
         try testBackendCatalogDecoding()
         try testProtectedDraftAndResultRestoration()
         testRequiredQuestionValidation()
+        testFreemiumEntryStillUsesLeanOnboarding()
         print("Interview preparation state tests passed")
     }
 
@@ -72,6 +73,22 @@ struct InterviewPreparationStateTests {
         )
     }
 
+    @MainActor
+    private static func testFreemiumEntryStillUsesLeanOnboarding() {
+        let router = AppRouter()
+
+        router.enterTestMode(savedAnalysis: nil)
+        guard case .onboarding = router.root else {
+            preconditionFailure("Empty test sessions must open LeanOnboarding")
+        }
+
+        router.enterTestMode(savedAnalysis: sampleLeanAnalysis)
+        guard case .result(let restored) = router.root else {
+            preconditionFailure("Saved analyses must reopen their result")
+        }
+        precondition(restored == sampleLeanAnalysis)
+    }
+
     private static let sampleUseCase = InterviewUseCase(
         id: "mid_year",
         title: "Entretien de mi-année",
@@ -105,5 +122,30 @@ struct InterviewPreparationStateTests {
         ],
         talkingPoints: ["Présenter les résultats."],
         actionPlan: ["Définir les priorités."]
+    )
+
+    private static let sampleLeanAnalysis = AnalysisResponse(
+        analysis: AnalysisSection(
+            strategic_reading: "Lecture",
+            dominant_competencies: "Compétences",
+            career_logic: "Logique"
+        ),
+        sensitive_reframing: SensitiveSection(
+            identified_fragilities: "Fragilité",
+            strategic_reinterpretation: "Réinterprétation",
+            rational_reframing: "Reformulation"
+        ),
+        narrative: NarrativeSection(
+            core_thread: "Fil",
+            positioning_statement: "Positionnement"
+        ),
+        interview_preparation: InterviewSection(
+            probable_objections: "Objections",
+            structured_answers: "Réponses"
+        ),
+        legitimacy_anchor: LegitimacySection(
+            objective_strength: "Force",
+            final_alignment_statement: "Alignement"
+        )
     )
 }

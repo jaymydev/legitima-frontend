@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ContexteEntretienScreen: View {
     @EnvironmentObject private var premiumDraft: PremiumPreparationDraft
-    @State private var typeEntretien = "Recrutement"
     @State private var entrepriseContexte = ""
     @State private var situationActuelle = "En poste"
     @State private var autreSituation = ""
@@ -15,7 +14,6 @@ struct ContexteEntretienScreen: View {
     private let buttonColor = Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255)
 
     private var isIncomplete: Bool {
-        typeEntretien.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
         situationActuelle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
@@ -38,20 +36,8 @@ struct ContexteEntretienScreen: View {
                     headerSection
                     framingCard
 
-                    guidedSelectionCard(
-                        index: "1",
-                        title: "Le type d’entretien",
-                        helper: "Choisissez simplement le cadre principal dans lequel vous allez devoir vous présenter."
-                    ) {
-                        VStack(alignment: .leading, spacing: 12) {
-                            optionRow("Recrutement", selection: $typeEntretien)
-                            optionRow("Mobilité interne", selection: $typeEntretien)
-                            optionRow("Évolution de poste", selection: $typeEntretien)
-                        }
-                    }
-
                     guidedInputCard(
-                        index: "2",
+                        index: "1",
                         title: "Le contexte à garder en tête",
                         helper: "Quelques mots suffisent pour situer l’entreprise, le secteur ou le type d’environnement. Cette info est optionnelle.",
                         content: AnyView(
@@ -75,7 +61,7 @@ struct ContexteEntretienScreen: View {
                     )
 
                     guidedSelectionCard(
-                        index: "3",
+                        index: "2",
                         title: "Votre situation aujourd’hui",
                         helper: "Choisissez la situation qui décrit le mieux votre réalité actuelle."
                     ) {
@@ -146,7 +132,7 @@ struct ContexteEntretienScreen: View {
                 navigate = true
             }
         } message: {
-            Text("Le type d’entretien et la situation actuelle aident à personnaliser la suite. Vous pouvez continuer, mais la préparation sera un peu moins précise.")
+            Text("Votre situation actuelle aide à personnaliser la suite. Vous pouvez continuer, mais la préparation sera un peu moins précise.")
         }
         .navigationDestination(isPresented: $navigate) {
             ParcoursProfessionnelScreen()
