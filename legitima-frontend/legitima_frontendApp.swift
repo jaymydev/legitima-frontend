@@ -13,6 +13,7 @@ struct legitima_frontendApp: App {
     @StateObject private var userStatus = UserStatus()
     @StateObject private var premiumDraft = PremiumPreparationDraft()
     @StateObject private var preparationStore = LocalPreparationStore()
+    @StateObject private var interviewPreparationStore = InterviewPreparationStore()
 
     var body: some Scene {
         WindowGroup {
@@ -36,6 +37,7 @@ struct legitima_frontendApp: App {
             .environmentObject(userStatus)
             .environmentObject(premiumDraft)
             .environmentObject(preparationStore)
+            .environmentObject(interviewPreparationStore)
             .environmentObject(router)
         }
     }
@@ -50,7 +52,28 @@ struct legitima_frontendApp: App {
                     if let analysis = preparationStore.snapshot.analysis {
                         premiumDraft.baseAnalysis = analysis
                     }
-                    router.enterTestMode(savedAnalysis: preparationStore.snapshot.analysis)
+                    router.enterTestMode()
+                }
+            )
+
+        case .interviewUseCases:
+            InterviewUseCaseSelectionScreen(
+                savedPreparation: interviewPreparationStore.saved,
+                onSelect: { useCase in
+                    if useCase.id == "recruitment" {
+                        router.startRecruitment(savedAnalysis: preparationStore.snapshot.analysis)
+                    } else {
+                        interviewPreparationStore.start(useCase: useCase)
+                        router.startInterviewQuestionnaire(useCase)
+                    }
+                },
+                onResume: { saved in
+                    guard let useCase = saved.useCase else { return }
+                    if let result = saved.result {
+                        router.showInterviewPreparationResult(result)
+                    } else {
+                        router.startInterviewQuestionnaire(useCase)
+                    }
                 }
             )
 
@@ -68,6 +91,27 @@ struct legitima_frontendApp: App {
                 response: response,
                 onContinue: {
                     router.showProgression()
+                }
+            )
+
+        case .interviewQuestionnaire(let useCase):
+            InterviewQuestionnaireScreen(
+                useCase: useCase,
+                store: interviewPreparationStore,
+                onComplete: { response in
+                    userStatus.consumeFreeAnalysisIfNeeded()
+                    router.showInterviewPreparationResult(response)
+                },
+                onBack: {
+                    router.showInterviewUseCases()
+                }
+            )
+
+        case .interviewPreparationResult(let response):
+            InterviewPreparationResultScreen(
+                response: response,
+                onChooseAnother: {
+                    router.showInterviewUseCases()
                 }
             )
         }
