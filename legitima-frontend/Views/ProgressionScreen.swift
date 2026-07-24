@@ -305,7 +305,7 @@ struct ProgressionScreen: View {
             .shadow(color: buttonColor.opacity(0.28), radius: 12, x: 0, y: 8)
         }
         .navigationDestination(isPresented: $navigateToPremiumFlow) {
-            ContexteEntretienScreen()
+            PremiumInterviewEntryScreen()
         }
     }
 

@@ -5,11 +5,8 @@ import SwiftUI
 final class AppRouter: ObservableObject {
     enum Root {
         case access
-        case interviewUseCases
         case onboarding
         case result(AnalysisResponse)
-        case interviewQuestionnaire(InterviewUseCase)
-        case interviewPreparationResult(InterviewPreparationResponse)
     }
 
     enum Route: Hashable {
@@ -24,29 +21,9 @@ final class AppRouter: ObservableObject {
         path = []
     }
 
-    func enterTestMode() {
-        path = []
-        root = .interviewUseCases
-    }
-
-    func showInterviewUseCases() {
-        path = []
-        root = .interviewUseCases
-    }
-
-    func startRecruitment(savedAnalysis: AnalysisResponse?) {
+    func enterTestMode(savedAnalysis: AnalysisResponse?) {
         path = []
         root = savedAnalysis.map(Root.result) ?? .onboarding
-    }
-
-    func startInterviewQuestionnaire(_ useCase: InterviewUseCase) {
-        path = []
-        root = .interviewQuestionnaire(useCase)
-    }
-
-    func showInterviewPreparationResult(_ response: InterviewPreparationResponse) {
-        path = []
-        root = .interviewPreparationResult(response)
     }
 
     func showProgression() {

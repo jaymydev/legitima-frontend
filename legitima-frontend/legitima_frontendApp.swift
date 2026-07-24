@@ -52,28 +52,7 @@ struct legitima_frontendApp: App {
                     if let analysis = preparationStore.snapshot.analysis {
                         premiumDraft.baseAnalysis = analysis
                     }
-                    router.enterTestMode()
-                }
-            )
-
-        case .interviewUseCases:
-            InterviewUseCaseSelectionScreen(
-                savedPreparation: interviewPreparationStore.saved,
-                onSelect: { useCase in
-                    if useCase.id == "recruitment" {
-                        router.startRecruitment(savedAnalysis: preparationStore.snapshot.analysis)
-                    } else {
-                        interviewPreparationStore.start(useCase: useCase)
-                        router.startInterviewQuestionnaire(useCase)
-                    }
-                },
-                onResume: { saved in
-                    guard let useCase = saved.useCase else { return }
-                    if let result = saved.result {
-                        router.showInterviewPreparationResult(result)
-                    } else {
-                        router.startInterviewQuestionnaire(useCase)
-                    }
+                    router.enterTestMode(savedAnalysis: preparationStore.snapshot.analysis)
                 }
             )
 
@@ -94,26 +73,6 @@ struct legitima_frontendApp: App {
                 }
             )
 
-        case .interviewQuestionnaire(let useCase):
-            InterviewQuestionnaireScreen(
-                useCase: useCase,
-                store: interviewPreparationStore,
-                onComplete: { response in
-                    userStatus.consumeFreeAnalysisIfNeeded()
-                    router.showInterviewPreparationResult(response)
-                },
-                onBack: {
-                    router.showInterviewUseCases()
-                }
-            )
-
-        case .interviewPreparationResult(let response):
-            InterviewPreparationResultScreen(
-                response: response,
-                onChooseAnother: {
-                    router.showInterviewUseCases()
-                }
-            )
         }
     }
 }
