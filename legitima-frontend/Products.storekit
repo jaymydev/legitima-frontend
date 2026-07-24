@@ -1,0 +1,32 @@
+{
+  "identifier" : "D53E12A4-FA04-4D08-AE67-34B1345087BF",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "A72D8814-1972-4BEE-902E-73BE66B72831",
+      "localizations" : [
+        {
+          "description" : "Débloque la préparation d’entretien Premium en environnement de test.",
+          "displayName" : "Legitima Premium",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.milehana.legitima.premium.test",
+      "referenceName" : "Legitima Premium Test",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "fr_FR",
+    "_storefront" : "FRA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
