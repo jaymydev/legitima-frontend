@@ -39,9 +39,10 @@ struct InterviewQuestion: Codable, Equatable, Identifiable {
     let helper: String
     let required: Bool
     let inputType: String
+    let options: [String]
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, helper, required
+        case id, title, helper, required, options
         case inputType = "input_type"
     }
 }
@@ -60,11 +61,26 @@ struct InterviewPreparationRequest: Codable, Equatable {
     let useCaseID: String
     let questionnaireVersion: String
     let answers: [InterviewAnswer]
+    let context: InterviewPreparationContext?
 
     private enum CodingKeys: String, CodingKey {
         case useCaseID = "use_case_id"
         case questionnaireVersion = "questionnaire_version"
-        case answers
+        case answers, context
+    }
+}
+
+struct InterviewPreparationContext: Codable, Equatable {
+    let targetRole: String
+    let careerExperiences: String
+    let sensitivePoint: String
+    let freemiumAnalysis: String
+
+    private enum CodingKeys: String, CodingKey {
+        case targetRole = "target_role"
+        case careerExperiences = "career_experiences"
+        case sensitivePoint = "sensitive_point"
+        case freemiumAnalysis = "freemium_analysis"
     }
 }
 

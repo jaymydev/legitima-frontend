@@ -48,14 +48,17 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
 
     private let service: InterviewPreparationService
     private let store: InterviewPreparationStore
+    private let context: InterviewPreparationContext?
 
     init(
         useCase: InterviewUseCase,
         store: InterviewPreparationStore,
+        context: InterviewPreparationContext? = nil,
         service: InterviewPreparationService = InterviewPreparationService()
     ) {
         self.useCase = useCase
         self.store = store
+        self.context = context
         self.service = service
         answers = store.saved.useCase?.id == useCase.id ? store.saved.answers : [:]
     }
@@ -84,7 +87,8 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
             answers: useCase.questions.compactMap { question in
                 let value = (answers[question.id] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 return value.isEmpty ? nil : InterviewAnswer(questionID: question.id, answer: value)
-            }
+            },
+            context: context
         )
 
         do {
