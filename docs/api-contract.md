@@ -39,7 +39,7 @@ No other V1 integration route should be consumed by the frontend unless it is ex
 
 ## Interview preparation V2
 
-The test-mode entry displays a backend-owned, versioned catalog for six use cases:
+The premium preparation entry displays a backend-owned, versioned catalog for six use cases:
 
 - recruitment;
 - internal mobility;
@@ -50,7 +50,9 @@ The test-mode entry displays a backend-owned, versioned catalog for six use case
 
 `GET /v2/interview-preparation/use-cases` returns the display metadata and ordered
 questions. The frontend renders these questions through one generic SwiftUI screen and
-caches the last valid catalog locally.
+caches the last valid catalog locally. The freemium LeanOnboarding remains separate and
+continues to collect only the target role, career experiences, and optional sensitive
+point before calling `POST /analyze`.
 
 `POST /v2/interview-preparation/analyze` accepts the selected `use_case_id`, the
 catalog-provided `questionnaire_version`, and non-empty answers keyed by `question_id`.
