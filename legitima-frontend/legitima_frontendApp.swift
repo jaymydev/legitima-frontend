@@ -14,6 +14,7 @@ struct legitima_frontendApp: App {
     @StateObject private var premiumDraft = PremiumPreparationDraft()
     @StateObject private var preparationStore = LocalPreparationStore()
     @StateObject private var interviewPreparationStore = InterviewPreparationStore()
+    @StateObject private var purchaseManager = PremiumPurchaseManager()
 
     var body: some Scene {
         WindowGroup {
@@ -39,6 +40,13 @@ struct legitima_frontendApp: App {
             .environmentObject(preparationStore)
             .environmentObject(interviewPreparationStore)
             .environmentObject(router)
+            .environmentObject(purchaseManager)
+            .task {
+                await purchaseManager.loadProduct()
+                if await purchaseManager.hasPremiumEntitlement() {
+                    userStatus.activatePremium()
+                }
+            }
         }
     }
 
