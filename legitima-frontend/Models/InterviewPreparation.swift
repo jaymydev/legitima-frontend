@@ -1,5 +1,14 @@
 import Foundation
 
+enum InterviewAnswerQuality {
+    static let recommendedMinimumCharacterCount = 4
+
+    static func isTooShort(_ answer: String) -> Bool {
+        let trimmed = answer.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed.count < recommendedMinimumCharacterCount
+    }
+}
+
 struct InterviewUseCaseCatalog: Codable, Equatable {
     let useCases: [InterviewUseCase]
 
@@ -40,10 +49,40 @@ struct InterviewQuestion: Codable, Equatable, Identifiable {
     let required: Bool
     let inputType: String
     let options: [String]
+    let suggestions: [String]
 
     private enum CodingKeys: String, CodingKey {
-        case id, title, helper, required, options
+        case id, title, helper, required, options, suggestions
         case inputType = "input_type"
+    }
+
+    init(
+        id: String,
+        title: String,
+        helper: String,
+        required: Bool,
+        inputType: String,
+        options: [String] = [],
+        suggestions: [String] = []
+    ) {
+        self.id = id
+        self.title = title
+        self.helper = helper
+        self.required = required
+        self.inputType = inputType
+        self.options = options
+        self.suggestions = suggestions
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        helper = try container.decode(String.self, forKey: .helper)
+        required = try container.decode(Bool.self, forKey: .required)
+        inputType = try container.decode(String.self, forKey: .inputType)
+        options = try container.decodeIfPresent([String].self, forKey: .options) ?? []
+        suggestions = try container.decodeIfPresent([String].self, forKey: .suggestions) ?? []
     }
 }
 

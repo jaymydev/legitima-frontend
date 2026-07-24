@@ -51,6 +51,11 @@ struct RecruitmentTextCard: View {
                     .stroke(Color.black.opacity(0.08), lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            AnswerGuidanceView(
+                suggestions: question.suggestions,
+                answer: answer
+            )
         }
         .recruitmentCardStyle()
     }
