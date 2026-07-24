@@ -1,5 +1,32 @@
 import SwiftUI
 
+struct RecruitmentTargetRoleCard: View {
+    @Binding var targetRole: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Quel poste visez-vous ?")
+                    .font(.headline)
+                Text("Vous pouvez l’actualiser si votre projet a changé depuis la première analyse.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            TextField("Ex. Responsable de projet", text: $targetRole)
+                .textInputAutocapitalization(.sentences)
+                .padding(14)
+                .background(Color.white)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .recruitmentCardStyle()
+    }
+}
+
 struct RecruitmentChoiceCard: View {
     let question: InterviewQuestion
     @Binding var selection: String

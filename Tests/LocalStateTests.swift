@@ -31,13 +31,18 @@ struct LocalStateTests {
         precondition(restored.snapshot.sensitivePoint == "Transition en 2025")
         precondition(restored.snapshot.analysis == sampleAnalysis)
 
-        restored.beginNewAnalysis()
+        restored.updateTargetRole("Directrice produit")
+        let updatedRole = LocalPreparationStore(storage: storage)
+        precondition(updatedRole.snapshot.targetRole == "Directrice produit")
+        precondition(updatedRole.snapshot.analysis == sampleAnalysis)
+
+        updatedRole.beginNewAnalysis()
         let restarted = LocalPreparationStore(storage: storage)
         precondition(restarted.hasSavedWork)
         precondition(restarted.snapshot.analysis == nil)
-        precondition(restarted.snapshot.targetRole == "Responsable produit")
+        precondition(restarted.snapshot.targetRole == "Directrice produit")
 
-        restored.clear()
+        restarted.clear()
         precondition(!LocalPreparationStore(storage: storage).hasSavedWork)
         try? FileManager.default.removeItem(at: directory)
     }

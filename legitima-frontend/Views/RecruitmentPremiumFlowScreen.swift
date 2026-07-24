@@ -3,8 +3,10 @@ import SwiftUI
 struct RecruitmentPremiumFlowScreen: View {
     @StateObject private var viewModel: InterviewQuestionnaireViewModel
     @State private var step = 0
+    @State private var targetRole: String
 
     let context: InterviewPreparationContext
+    let onTargetRoleChange: (String) -> Void
     let onComplete: (InterviewPreparationResponse) -> Void
 
     private let accent = Color(red: 35 / 255, green: 105 / 255, blue: 109 / 255)
@@ -13,6 +15,7 @@ struct RecruitmentPremiumFlowScreen: View {
         useCase: InterviewUseCase,
         store: InterviewPreparationStore,
         context: InterviewPreparationContext,
+        onTargetRoleChange: @escaping (String) -> Void,
         onComplete: @escaping (InterviewPreparationResponse) -> Void
     ) {
         _viewModel = StateObject(
@@ -22,7 +25,9 @@ struct RecruitmentPremiumFlowScreen: View {
                 context: context
             )
         )
+        _targetRole = State(initialValue: context.targetRole)
         self.context = context
+        self.onTargetRoleChange = onTargetRoleChange
         self.onComplete = onComplete
     }
 
@@ -82,6 +87,16 @@ struct RecruitmentPremiumFlowScreen: View {
         .onChange(of: viewModel.answers) { _, _ in
             viewModel.saveDraft()
         }
+        .onChange(of: targetRole) { _, newValue in
+            let updatedContext = InterviewPreparationContext(
+                targetRole: newValue,
+                careerExperiences: context.careerExperiences,
+                sensitivePoint: context.sensitivePoint,
+                freemiumAnalysis: context.freemiumAnalysis
+            )
+            viewModel.updateContext(updatedContext)
+            onTargetRoleChange(newValue)
+        }
         .onChange(of: viewModel.result) { _, result in
             if let result {
                 onComplete(result)
@@ -114,6 +129,7 @@ struct RecruitmentPremiumFlowScreen: View {
 
     private var interviewContextStep: some View {
         VStack(spacing: 16) {
+            RecruitmentTargetRoleCard(targetRole: $targetRole)
             choiceCard(questionID: "interview_stage")
             textCard(questionID: "company_context", minHeight: 110)
             choiceCard(questionID: "interviewer")
@@ -152,7 +168,7 @@ struct RecruitmentPremiumFlowScreen: View {
         VStack(spacing: 16) {
             existingDataCard(
                 title: "Poste visé",
-                content: context.targetRole,
+                content: targetRole,
                 icon: "scope"
             )
             textCard(questionID: "desired_takeaway", minHeight: 120)
@@ -240,11 +256,14 @@ struct RecruitmentPremiumFlowScreen: View {
     }
 
     private var isCurrentStepComplete: Bool {
-        requiredQuestionIDsForCurrentStep.allSatisfy {
+        let requiredAnswersAreComplete = requiredQuestionIDsForCurrentStep.allSatisfy {
             !(viewModel.answers[$0] ?? "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
                 .isEmpty
         }
+        let targetRoleIsComplete = step != 0
+            || !targetRole.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return requiredAnswersAreComplete && targetRoleIsComplete
     }
 
     private var requiredQuestionIDsForCurrentStep: [String] {
