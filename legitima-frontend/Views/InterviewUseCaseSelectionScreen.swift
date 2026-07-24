@@ -57,6 +57,8 @@ struct InterviewUseCaseSelectionScreen: View {
                         ForEach(viewModel.useCases) { useCase in
                             useCaseCard(useCase)
                         }
+                        .disabled(viewModel.isLoading)
+                        .opacity(viewModel.isLoading ? 0.7 : 1)
                     }
 
                     if let errorMessage = viewModel.errorMessage {

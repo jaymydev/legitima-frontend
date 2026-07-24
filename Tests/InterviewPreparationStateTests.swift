@@ -8,6 +8,7 @@ struct InterviewPreparationStateTests {
         try testProtectedDraftAndResultRestoration()
         testRequiredQuestionValidation()
         testFreemiumEntryStillUsesLeanOnboarding()
+        try testRecruitmentRequestReusesFreemiumContext()
         print("Interview preparation state tests passed")
     }
 
@@ -27,7 +28,8 @@ struct InterviewPreparationStateTests {
                   "title": "Quel est votre rôle ?",
                   "helper": "Résumez votre périmètre.",
                   "required": true,
-                  "input_type": "long_text"
+                  "input_type": "long_text",
+                  "options": []
                 }
               ]
             }
@@ -89,6 +91,32 @@ struct InterviewPreparationStateTests {
         precondition(restored == sampleLeanAnalysis)
     }
 
+    private static func testRecruitmentRequestReusesFreemiumContext() throws {
+        let request = InterviewPreparationRequest(
+            useCaseID: "recruitment",
+            questionnaireVersion: "1.1",
+            answers: [
+                InterviewAnswer(questionID: "interview_stage", answer: "Entretien manager"),
+                InterviewAnswer(questionID: "desired_takeaway", answer: "Ma légitimité"),
+            ],
+            context: InterviewPreparationContext(
+                targetRole: "Responsable produit",
+                careerExperiences: "Coordination de projets",
+                sensitivePoint: "Transition",
+                freemiumAnalysis: "Parcours cohérent"
+            )
+        )
+
+        let encoded = try JSONEncoder().encode(request)
+        let object = try JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        let context = object?["context"] as? [String: String]
+
+        precondition(context?["target_role"] == "Responsable produit")
+        precondition(context?["career_experiences"] == "Coordination de projets")
+        precondition(object?["file"] == nil)
+        precondition(object?["cv"] == nil)
+    }
+
     private static let sampleUseCase = InterviewUseCase(
         id: "mid_year",
         title: "Entretien de mi-année",
@@ -101,14 +129,16 @@ struct InterviewPreparationStateTests {
                 title: "Quel est votre rôle ?",
                 helper: "Résumez votre périmètre.",
                 required: true,
-                inputType: "long_text"
+                inputType: "long_text",
+                options: []
             ),
             InterviewQuestion(
                 id: "optional",
                 title: "Un obstacle ?",
                 helper: "Facultatif.",
                 required: false,
-                inputType: "long_text"
+                inputType: "long_text",
+                options: []
             ),
         ]
     )
