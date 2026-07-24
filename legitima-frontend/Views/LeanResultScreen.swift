@@ -64,7 +64,7 @@ struct LeanResultScreen: View {
                         icon: "checkmark.seal.fill",
                         title: "Ancrage de légitimité",
                         content: userStatus.isPremium
-                            ? response.legitimacy_anchor.objective_strength + "\n\n" + response.legitimacy_anchor.final_alignment_statement
+                            ? response.legitimacy_anchor.objective_strength
                             : lockedPreviewText,
                         backgroundColor: Color(red: 228 / 255, green: 239 / 255, blue: 253 / 255),
                         isLocked: !userStatus.isPremium
