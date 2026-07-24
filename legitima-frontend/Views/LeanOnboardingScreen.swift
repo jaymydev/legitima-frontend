@@ -3,6 +3,7 @@ import UIKit
 
 struct LeanOnboardingScreen: View {
     @EnvironmentObject private var userStatus: UserStatus
+    @EnvironmentObject private var preparationStore: LocalPreparationStore
     @StateObject private var viewModel = LeanOnboardingViewModel()
     @State private var isShowingCVImportFlow = false
     let onAnalysisComplete: (AnalysisResponse) -> Void
@@ -161,7 +162,20 @@ struct LeanOnboardingScreen: View {
         }
         .onAppear {
             userStatus.refreshFreeQuotaIfNeeded()
+            let saved = preparationStore.snapshot
+            if viewModel.posteVise.isEmpty {
+                viewModel.posteVise = saved.targetRole
+            }
+            if viewModel.parcoursResume.isEmpty {
+                viewModel.parcoursResume = saved.careerSummary
+            }
+            if viewModel.zoneSensible.isEmpty {
+                viewModel.zoneSensible = saved.sensitivePoint
+            }
         }
+        .onChange(of: viewModel.posteVise) { _, _ in saveDraft() }
+        .onChange(of: viewModel.parcoursResume) { _, _ in saveDraft() }
+        .onChange(of: viewModel.zoneSensible) { _, _ in saveDraft() }
         .sheet(isPresented: $isShowingCVImportFlow) {
             CVImportFlowSheet { importedSummary in
                 viewModel.parcoursResume = importedSummary
@@ -200,14 +214,14 @@ struct LeanOnboardingScreen: View {
                 .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(userStatus.isPremium ? "Accès premium" : "Accès freemium")
+                Text(userStatus.isPremium ? "Accès premium" : "Mode test")
                     .font(.headline)
                     .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
                 Text(
                     userStatus.isPremium
                     ? "Vos analyses premium sont disponibles sans limite quotidienne."
-                    : "Le mode gratuit inclut jusqu'à 2 analyses par jour."
+                    : "Le mode test inclut jusqu'à 20 analyses réussies par jour."
                 )
                 .font(.subheadline)
                 .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
@@ -247,12 +261,20 @@ struct LeanOnboardingScreen: View {
         userStatus.refreshFreeQuotaIfNeeded()
 
         guard userStatus.canStartAnalysis else {
-            viewModel.errorMessage = "Vous avez atteint vos 2 analyses gratuites pour aujourd'hui. Revenez demain ou passez au premium."
+            viewModel.errorMessage = "Vous avez atteint vos 20 analyses de test pour aujourd'hui. Votre travail reste disponible et le quota sera réinitialisé demain."
             return
         }
 
         dismissKeyboard()
         viewModel.analyze()
+    }
+
+    private func saveDraft() {
+        preparationStore.saveDraft(
+            targetRole: viewModel.posteVise,
+            careerSummary: viewModel.parcoursResume,
+            sensitivePoint: viewModel.zoneSensible
+        )
     }
 
     private func dismissKeyboard() {
