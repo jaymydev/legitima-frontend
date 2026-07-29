@@ -3,13 +3,10 @@ import SwiftUI
 struct LeanResultScreen: View {
     @EnvironmentObject private var userStatus: UserStatus
     @EnvironmentObject private var purchaseManager: PremiumPurchaseManager
+    @EnvironmentObject private var interviewPreparationStore: InterviewPreparationStore
     let response: AnalysisResponse
     let onContinue: () -> Void
     let onRestartAnalysis: () -> Void
-    private let lockedPreviewText = """
-    Disponible dans la préparation complète.
-    Débloquez la suite pour transformer cette lecture en réponses plus claires et plus défendables.
-    """
 
     var body: some View {
         ZStack {
@@ -61,58 +58,43 @@ struct LeanResultScreen: View {
                         backgroundColor: Color(red: 255 / 255, green: 236 / 255, blue: 228 / 255)
                     )
 
-                    sectionCard(
-                        icon: "shield.fill",
-                        title: "Anticipation des objections",
-                        content: userStatus.isPremium
-                            ? response.interview_preparation.probable_objections + "\n\n" + response.interview_preparation.structured_answers
-                            : lockedPreviewText,
-                        backgroundColor: Color(red: 255 / 255, green: 239 / 255, blue: 221 / 255),
-                        isLocked: !userStatus.isPremium
-                    )
+                    if userStatus.isPremium {
+                        premiumPreparationCard
+                    } else {
+                        sectionCard(
+                            icon: "shield.fill",
+                            title: "Anticipation des objections",
+                            content: "La préparation complète génère les objections probables de votre interlocuteur et des réponses défendables, construites à partir de votre fil conducteur.",
+                            backgroundColor: Color(red: 255 / 255, green: 239 / 255, blue: 221 / 255),
+                            isLocked: true
+                        )
 
-                    sectionCard(
-                        icon: "checkmark.seal.fill",
-                        title: "Ancrage de légitimité",
-                        content: userStatus.isPremium
-                            ? response.legitimacy_anchor.objective_strength
-                            : lockedPreviewText,
-                        backgroundColor: Color(red: 228 / 255, green: 239 / 255, blue: 253 / 255),
-                        isLocked: !userStatus.isPremium
-                    )
+                        sectionCard(
+                            icon: "checkmark.seal.fill",
+                            title: "Ancrage de légitimité",
+                            content: "La préparation complète ancre votre légitimité : des arguments objectifs pour assumer votre parcours face à votre interlocuteur.",
+                            backgroundColor: Color(red: 228 / 255, green: 239 / 255, blue: 253 / 255),
+                            isLocked: true
+                        )
 
-                    sectionCard(
-                        icon: "sparkles",
-                        title: "Synthèse stratégique finale",
-                        content: userStatus.isPremium
-                            ? unlockedSummary
-                            : lockedPreviewText,
-                        backgroundColor: Color(red: 242 / 255, green: 233 / 255, blue: 252 / 255),
-                        isLocked: !userStatus.isPremium
-                    )
+                        sectionCard(
+                            icon: "sparkles",
+                            title: "Synthèse stratégique finale",
+                            content: "La préparation complète se termine par une synthèse actionnable : points à faire passer et plan d'action pour le jour J.",
+                            backgroundColor: Color(red: 242 / 255, green: 233 / 255, blue: 252 / 255),
+                            isLocked: true
+                        )
 
-                    if !userStatus.isPremium {
                         PremiumUnlockCard(
                             purchaseManager: purchaseManager,
-                            onUnlocked: userStatus.activatePremium
+                            onUnlocked: {
+                                userStatus.activatePremium()
+                                onContinue()
+                            }
                         )
 
                         freeRetrySection
                     }
-
-                    if userStatus.isPremium {
-                        Button(action: onContinue) {
-                            Text("Commencer ma préparation Premium")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
-                            .foregroundColor(.white)
-                            .cornerRadius(14)
-                    }
-                        .padding(.top, 8)
-                    }
-
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 30)
@@ -149,14 +131,62 @@ struct LeanResultScreen: View {
         .padding(.top, 4)
     }
 
-    private var unlockedSummary: String {
-        [
-            response.analysis.strategic_reading,
-            response.narrative.positioning_statement,
-            response.legitimacy_anchor.final_alignment_statement
-        ]
-        .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        .joined(separator: "\n\n")
+    private var premiumPreparationCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("VOTRE PRÉPARATION PREMIUM", systemImage: "crown.fill")
+                .font(.caption.bold())
+                .foregroundColor(Color(red: 185 / 255, green: 132 / 255, blue: 43 / 255))
+
+            if let result = interviewPreparationStore.saved.result {
+                Text(result.title)
+                    .font(.headline)
+                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+
+                Text(result.summary)
+                    .font(.subheadline)
+                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .lineLimit(4)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("Votre préparation guidée vous attend")
+                    .font(.headline)
+                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+
+                Text("Quelques questions ciblées sur votre entretien, puis nous générons vos réponses aux objections, votre ancrage de légitimité et votre synthèse finale.")
+                    .font(.subheadline)
+                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Button(action: onContinue) {
+                Text(premiumPreparationButtonTitle)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .foregroundColor(.white)
+                    .cornerRadius(14)
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.white.opacity(0.92))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color(red: 185 / 255, green: 132 / 255, blue: 43 / 255).opacity(0.25), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+    }
+
+    private var premiumPreparationButtonTitle: String {
+        if interviewPreparationStore.saved.result != nil {
+            return "Revoir ma préparation"
+        }
+        return interviewPreparationStore.saved.answers.isEmpty
+            ? "Commencer ma préparation"
+            : "Reprendre ma préparation"
     }
 
     private var resultHeroSection: some View {
@@ -241,7 +271,7 @@ struct LeanResultScreen: View {
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
 
-                Text("Vos contenus premium sont maintenant visibles ici. Prenez-les en main, puis passez au hub de préparation guidée.")
+                Text("Votre accès premium est actif. Reprenez votre préparation guidée quand vous êtes prêt.")
                     .font(.subheadline)
                     .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
             }
@@ -348,5 +378,6 @@ struct LeanResultScreen_Previews: PreviewProvider {
         )
         .environmentObject(UserStatus())
         .environmentObject(PremiumPurchaseManager())
+        .environmentObject(InterviewPreparationStore())
     }
 }
