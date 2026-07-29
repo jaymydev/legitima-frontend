@@ -5,6 +5,8 @@ struct LocalStateTests {
     @MainActor
     static func main() throws {
         try testDraftAndAnalysisRestoration()
+        try testInterviewDatePersistence()
+        testInterviewCountdown()
         testDailyTestQuota()
         testSimulatedPremiumUnlockPersistence()
         print("Local state tests passed")
@@ -46,6 +48,58 @@ struct LocalStateTests {
         restarted.clear()
         precondition(!LocalPreparationStore(storage: storage).hasSavedWork)
         try? FileManager.default.removeItem(at: directory)
+    }
+
+    @MainActor
+    private static func testInterviewDatePersistence() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let storage = ProtectedJSONStore<PreparationSnapshot>(
+            fileURL: directory.appendingPathComponent("preparation.json")
+        )
+        let store = LocalPreparationStore(storage: storage)
+
+        precondition(store.snapshot.interviewDate == nil)
+
+        let interviewDate = Calendar.current.date(byAdding: .day, value: 5, to: .now)!
+        store.updateInterviewDate(interviewDate)
+
+        let restored = LocalPreparationStore(storage: storage)
+        precondition(restored.snapshot.interviewDate != nil)
+
+        restored.updateInterviewDate(nil)
+        precondition(LocalPreparationStore(storage: storage).snapshot.interviewDate == nil)
+
+        // Snapshots saved before the interviewDate field existed must still decode.
+        let legacyJSON = """
+        {"targetRole":"Rôle","careerSummary":"Résumé","sensitivePoint":"","updatedAt":0}
+        """.data(using: .utf8)!
+        let legacy = try JSONDecoder().decode(PreparationSnapshot.self, from: legacyJSON)
+        precondition(legacy.interviewDate == nil)
+        precondition(legacy.targetRole == "Rôle")
+
+        try? FileManager.default.removeItem(at: directory)
+    }
+
+    private static func testInterviewCountdown() {
+        let calendar = Calendar.current
+        let now = Date()
+        let today = calendar.startOfDay(for: now)
+
+        precondition(InterviewCountdown.daysUntil(now, from: now) == 0)
+        precondition(
+            InterviewCountdown.daysUntil(calendar.date(byAdding: .day, value: 1, to: today)!, from: now) == 1
+        )
+        precondition(
+            InterviewCountdown.daysUntil(calendar.date(byAdding: .day, value: 12, to: today)!, from: now) == 12
+        )
+        precondition(
+            InterviewCountdown.daysUntil(calendar.date(byAdding: .day, value: -1, to: today)!, from: now) == nil
+        )
+
+        precondition(InterviewCountdown.label(daysUntil: 0) == "Votre entretien a lieu aujourd'hui")
+        precondition(InterviewCountdown.label(daysUntil: 1) == "Votre entretien a lieu demain")
+        precondition(InterviewCountdown.label(daysUntil: 5) == "Votre entretien a lieu dans 5 jours")
     }
 
     @MainActor

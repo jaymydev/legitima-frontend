@@ -4,6 +4,7 @@ struct LeanResultScreen: View {
     @EnvironmentObject private var userStatus: UserStatus
     @EnvironmentObject private var purchaseManager: PremiumPurchaseManager
     @EnvironmentObject private var interviewPreparationStore: InterviewPreparationStore
+    @EnvironmentObject private var preparationStore: LocalPreparationStore
     let response: AnalysisResponse
     let onContinue: () -> Void
     let onRestartAnalysis: () -> Void
@@ -23,6 +24,10 @@ struct LeanResultScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     resultHeroSection
+
+                    if let days = interviewCountdownDays {
+                        interviewCountdownCard(days: days)
+                    }
 
                     if userStatus.hasSeenPremiumUnlock {
                         premiumUnlockBanner
@@ -129,6 +134,44 @@ struct LeanResultScreen: View {
                 .foregroundColor(.secondary)
         }
         .padding(.top, 4)
+    }
+
+    private var interviewCountdownDays: Int? {
+        guard let date = preparationStore.snapshot.interviewDate else { return nil }
+        return InterviewCountdown.daysUntil(date)
+    }
+
+    private func interviewCountdownCard(days: Int) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "calendar")
+                .font(.title3)
+                .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(InterviewCountdown.label(daysUntil: days))
+                    .font(.headline)
+                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+
+                Text(
+                    userStatus.isPremium
+                        ? "Gardez votre préparation à portée de main pour la révision finale."
+                        : "Transformez cette lecture en réponses prêtes avant le jour J."
+                )
+                .font(.subheadline)
+                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.white.opacity(0.92))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.2), lineWidth: 1)
+        )
     }
 
     private var premiumPreparationCard: some View {
@@ -379,5 +422,6 @@ struct LeanResultScreen_Previews: PreviewProvider {
         .environmentObject(UserStatus())
         .environmentObject(PremiumPurchaseManager())
         .environmentObject(InterviewPreparationStore())
+        .environmentObject(LocalPreparationStore())
     }
 }

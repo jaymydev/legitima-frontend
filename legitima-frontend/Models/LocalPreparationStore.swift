@@ -5,6 +5,7 @@ struct PreparationSnapshot: Codable, Equatable {
     var targetRole: String = ""
     var careerSummary: String = ""
     var sensitivePoint: String = ""
+    var interviewDate: Date?
     var analysis: AnalysisResponse?
     var updatedAt: Date = .now
 
@@ -13,6 +14,34 @@ struct PreparationSnapshot: Codable, Equatable {
             || !targetRole.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             || !careerSummary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             || !sensitivePoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+}
+
+enum InterviewCountdown {
+    /// Whole days between today and the interview day, or nil when the date is past.
+    static func daysUntil(
+        _ date: Date,
+        from reference: Date = .now,
+        calendar: Calendar = .current
+    ) -> Int? {
+        let start = calendar.startOfDay(for: reference)
+        let target = calendar.startOfDay(for: date)
+        guard let days = calendar.dateComponents([.day], from: start, to: target).day,
+              days >= 0 else {
+            return nil
+        }
+        return days
+    }
+
+    static func label(daysUntil days: Int) -> String {
+        switch days {
+        case 0:
+            return "Votre entretien a lieu aujourd'hui"
+        case 1:
+            return "Votre entretien a lieu demain"
+        default:
+            return "Votre entretien a lieu dans \(days) jours"
+        }
     }
 }
 
@@ -49,6 +78,11 @@ final class LocalPreparationStore: ObservableObject {
 
     func updateTargetRole(_ targetRole: String) {
         snapshot.targetRole = targetRole
+        persist()
+    }
+
+    func updateInterviewDate(_ interviewDate: Date?) {
+        snapshot.interviewDate = interviewDate
         persist()
     }
 
