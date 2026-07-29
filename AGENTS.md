@@ -4,23 +4,28 @@
 
 This repository contains the Swift iOS application for Legitima.
 
-The app provides a guided interview preparation journey for users who need to explain and assume a non-linear or fragmented career path with legitimacy.
+The app helps users defend a non-linear, fragmented, or atypical career path in a specific interview, starting from the reframed narrative thread of their career.
+
+The product model is a two-tier sequence (see docs/product-decision-v2.md, the product reference):
+- **Free tier = diagnosis.** A lean analysis that demonstrates the mechanism: strategic reading, career logic, sensitive period reframing.
+- **Paid tier = guided preparation.** The mechanism applied to the user's specific interview type: rich input collected step by step, real computation via the interview-preparation endpoints, exportable synthesis.
+
+A purchase must always trigger real new computation. Never gate already-downloaded content behind the paywall.
 
 ## Product boundaries
 
 The iOS app must support:
-- guided onboarding;
-- target role input;
-- career path input;
-- sensitive period review;
-- strategic reframing display;
-- professional narrative construction;
-- difficult question preparation;
-- final preparation summary.
+- lean free onboarding (target role, career path, optional sensitive point);
+- strategic reframing display as the free diagnosis;
+- premium purchase via StoreKit (simulated fallback for testing);
+- guided premium preparation as a direct continuation of the free analysis (no re-entry of already-provided context);
+- difficult question preparation and structured answers;
+- exportable final preparation summary;
+- interview date capture and interview-type-specific preparations.
 
 The iOS app must not add without explicit human approval:
-- payment;
-- subscription;
+- subscription or recurring billing (one-shot purchase is the approved model);
+- push or local notifications;
 - social features;
 - recruiter features;
 - CV generation as the main product;
@@ -30,6 +35,7 @@ The iOS app must not add without explicit human approval:
 
 ## Technical rules
 
+- Read docs/product-decision-v2.md before any product-facing change; it defines the free/paid split, the purchase moment, and the retention model.
 - Use SwiftUI unless the existing codebase requires otherwise.
 - Keep views small and readable.
 - Separate View, ViewModel, Model, and API client logic.
