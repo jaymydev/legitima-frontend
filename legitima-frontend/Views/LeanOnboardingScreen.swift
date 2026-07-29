@@ -6,6 +6,8 @@ struct LeanOnboardingScreen: View {
     @EnvironmentObject private var preparationStore: LocalPreparationStore
     @StateObject private var viewModel = LeanOnboardingViewModel()
     @State private var isShowingCVImportFlow = false
+    @State private var hasInterviewDate = false
+    @State private var interviewDate = Date()
     let onAnalysisComplete: (AnalysisResponse) -> Void
 
     init(onAnalysisComplete: @escaping (AnalysisResponse) -> Void) {
@@ -125,6 +127,29 @@ struct LeanOnboardingScreen: View {
                         }
                     )
 
+                    inputCard(
+                        label: "Date de l'entretien (optionnel)",
+                        helper: "Elle nous sert à rythmer votre préparation jusqu'au jour J.",
+                        field: {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Toggle("J'ai déjà une date d'entretien", isOn: $hasInterviewDate.animation())
+                                    .font(.subheadline)
+                                    .tint(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+
+                                if hasInterviewDate {
+                                    DatePicker(
+                                        "Date de l'entretien",
+                                        selection: $interviewDate,
+                                        in: Calendar.current.startOfDay(for: Date())...,
+                                        displayedComponents: .date
+                                    )
+                                    .datePickerStyle(.compact)
+                                    .labelsHidden()
+                                }
+                            }
+                        }
+                    )
+
                     Button(action: startAnalysis) {
                         Text("Analyser mon parcours")
                             .fontWeight(.semibold)
@@ -172,10 +197,16 @@ struct LeanOnboardingScreen: View {
             if viewModel.zoneSensible.isEmpty {
                 viewModel.zoneSensible = saved.sensitivePoint
             }
+            if let savedDate = saved.interviewDate {
+                hasInterviewDate = true
+                interviewDate = savedDate
+            }
         }
         .onChange(of: viewModel.posteVise) { _, _ in saveDraft() }
         .onChange(of: viewModel.parcoursResume) { _, _ in saveDraft() }
         .onChange(of: viewModel.zoneSensible) { _, _ in saveDraft() }
+        .onChange(of: hasInterviewDate) { _, _ in saveInterviewDate() }
+        .onChange(of: interviewDate) { _, _ in saveInterviewDate() }
         .sheet(isPresented: $isShowingCVImportFlow) {
             CVImportFlowSheet { importedSummary in
                 viewModel.parcoursResume = importedSummary
@@ -275,6 +306,10 @@ struct LeanOnboardingScreen: View {
             careerSummary: viewModel.parcoursResume,
             sensitivePoint: viewModel.zoneSensible
         )
+    }
+
+    private func saveInterviewDate() {
+        preparationStore.updateInterviewDate(hasInterviewDate ? interviewDate : nil)
     }
 
     private func dismissKeyboard() {
