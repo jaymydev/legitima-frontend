@@ -6,6 +6,7 @@ struct LocalStateTests {
     static func main() throws {
         try testDraftAndAnalysisRestoration()
         testDailyTestQuota()
+        testSimulatedPremiumUnlockPersistence()
         print("Local state tests passed")
     }
 
@@ -68,6 +69,27 @@ struct LocalStateTests {
 
         precondition(status.remainingFreeAnalyses == 0)
         precondition(!status.canStartAnalysis)
+    }
+
+    @MainActor
+    private static func testSimulatedPremiumUnlockPersistence() {
+        let suiteName = "LocalStateTests.premium.\(UUID().uuidString)"
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            preconditionFailure("Unable to create isolated UserDefaults")
+        }
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let store = SimulatedPremiumUnlockStore(defaults: defaults)
+        precondition(!store.isUnlocked)
+
+        store.unlock()
+        precondition(store.isUnlocked)
+
+        let reloaded = SimulatedPremiumUnlockStore(defaults: defaults)
+        precondition(reloaded.isUnlocked)
+
+        reloaded.reset()
+        precondition(!store.isUnlocked)
     }
 
     private static let sampleAnalysis = AnalysisResponse(

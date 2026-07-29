@@ -14,3 +14,17 @@ or delete the local transaction and repeat the flow.
 The app unlocks Premium only after a verified StoreKit transaction. Cancellation
 keeps the freemium state, pending purchases display a message, and **Restaurer mes
 achats** calls `AppStore.sync()` before checking current entitlements.
+
+## Simulated fallback (TestFlight)
+
+StoreKit configuration files only apply when the app is launched through the
+Xcode scheme. On TestFlight (or any build where the test product cannot be
+loaded), the purchase automatically falls back to a **local simulation**:
+
+- **Débloquer Premium** unlocks Premium locally, without any payment;
+- the unlock is persisted (`premium.simulated_unlock` in UserDefaults) and
+  restored at launch and by **Restaurer mes achats**;
+- the card shows "Simulation locale — aucun débit réel" in that mode.
+
+When a real product exists in App Store Connect, the StoreKit flow takes over
+again automatically.

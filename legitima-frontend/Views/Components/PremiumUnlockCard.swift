@@ -42,11 +42,16 @@ struct PremiumUnlockCard: View {
                 .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             }
-            .disabled(purchaseManager.product == nil || purchaseManager.isProcessing)
+            .disabled(!purchaseManager.canPurchase)
 
-            Label("Simulation StoreKit — aucun débit réel", systemImage: "checkmark.shield")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Label(
+                purchaseManager.usesSimulatedFallback
+                    ? "Simulation locale — aucun débit réel"
+                    : "Simulation StoreKit — aucun débit réel",
+                systemImage: "checkmark.shield"
+            )
+            .font(.caption)
+            .foregroundColor(.secondary)
 
             Button("Restaurer mes achats") {
                 Task {
