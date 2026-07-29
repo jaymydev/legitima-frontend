@@ -9,7 +9,7 @@ struct RecruitmentPremiumFlowScreen: View {
     let onTargetRoleChange: (String) -> Void
     let onComplete: (InterviewPreparationResponse) -> Void
 
-    private let accent = Color(red: 35 / 255, green: 105 / 255, blue: 109 / 255)
+    private let accent = LegitimaColors.accent
 
     init(
         useCase: InterviewUseCase,
@@ -35,8 +35,8 @@ struct RecruitmentPremiumFlowScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 218 / 255, green: 249 / 255, blue: 246 / 255),
-                    Color(red: 247 / 255, green: 242 / 255, blue: 232 / 255)
+                    Color(light: .rgb(218, 249, 246), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(247, 242, 232), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -187,7 +187,7 @@ struct RecruitmentPremiumFlowScreen: View {
                 .padding(.horizontal, 18)
                 .padding(.vertical, 15)
                 .foregroundColor(accent)
-                .background(Color.white.opacity(0.9))
+                .background(LegitimaColors.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 15))
             }
 
@@ -203,7 +203,7 @@ struct RecruitmentPremiumFlowScreen: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
                     .foregroundColor(.white)
-                    .background(accent)
+                    .background(LegitimaColors.accentSurface)
                     .clipShape(RoundedRectangle(cornerRadius: 15))
             }
             .disabled(!isCurrentStepComplete || viewModel.isLoading)

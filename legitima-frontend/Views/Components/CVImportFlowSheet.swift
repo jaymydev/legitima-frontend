@@ -34,8 +34,8 @@ struct CVImportFlowSheet: View {
             ZStack {
                 LinearGradient(
                     colors: [
-                        Color(red: 207 / 255, green: 252 / 255, blue: 249 / 255),
-                        Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255)
+                        Color(light: .rgb(207, 252, 249), dark: LegitimaColors.darkBackgroundTop),
+                        Color(light: .rgb(237, 243, 243), dark: LegitimaColors.darkBackgroundBottom)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -71,7 +71,7 @@ struct CVImportFlowSheet: View {
                         }
                     } label: {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .foregroundColor(LegitimaColors.ink)
                     }
                 }
             }
@@ -114,16 +114,16 @@ struct CVImportFlowSheet: View {
                 Text("Importer votre CV")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
 
                 Text(introText)
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text("Vous pouvez importer un PDF, prendre une photo du CV ou choisir une image depuis votre phototheque. Nous extrairons ensuite les experiences avant que vous puissiez les corriger.")
                     .font(.footnote)
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -173,7 +173,7 @@ struct CVImportFlowSheet: View {
                 dismiss()
             }
             .font(.headline)
-            .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+            .foregroundColor(LegitimaColors.accent)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 4)
         }
@@ -182,21 +182,21 @@ struct CVImportFlowSheet: View {
     private var extractingContent: some View {
         VStack(spacing: 18) {
             ProgressView()
-                .tint(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .tint(LegitimaColors.accent)
                 .scaleEffect(1.2)
 
             Text("Préparation de votre résumé")
                 .font(.title3.weight(.semibold))
-                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                .foregroundColor(LegitimaColors.ink)
 
             Text("Nous extrayons les étapes les plus utiles pour comprendre votre trajectoire.")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .foregroundColor(LegitimaColors.muted)
         }
         .frame(maxWidth: .infinity)
         .padding(28)
-        .background(Color.white.opacity(0.94))
+        .background(LegitimaColors.surface)
         .cornerRadius(24)
         .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
         .padding(.top, 80)
@@ -208,11 +208,11 @@ struct CVImportFlowSheet: View {
                 Text("Vérifiez les étapes retenues")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
 
                 Text("Nous avons extrait les étapes les plus utiles pour comprendre votre trajectoire.")
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -221,37 +221,37 @@ struct CVImportFlowSheet: View {
                     HStack(alignment: .top, spacing: 12) {
                         Text("\(index + 1).")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                            .foregroundColor(LegitimaColors.accent)
                             .frame(width: 22, alignment: .leading)
 
                         TextField("", text: $extractedSteps[index].text)
                             .textInputAutocapitalization(.sentences)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .foregroundColor(LegitimaColors.ink)
                     }
                     .padding(14)
-                    .background(Color.white)
+                    .background(LegitimaColors.field)
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.black.opacity(0.06), lineWidth: 1)
+                            .stroke(LegitimaColors.hairline, lineWidth: 1)
                     )
                     .cornerRadius(14)
                 }
             }
             .padding(16)
-            .background(Color.white.opacity(0.94))
+            .background(LegitimaColors.surface)
             .cornerRadius(20)
             .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
 
             Text(reviewFootnote)
                 .font(.footnote)
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .foregroundColor(LegitimaColors.muted)
 
             Button(action: useImportedSummary) {
                 Text(applyButtonTitle)
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .background(LegitimaColors.accentSurface)
                     .foregroundColor(.white)
                     .cornerRadius(14)
             }
@@ -263,7 +263,7 @@ struct CVImportFlowSheet: View {
                 }
             }
             .font(.headline)
-            .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+            .foregroundColor(LegitimaColors.accent)
             .frame(maxWidth: .infinity, alignment: .center)
         }
     }
@@ -272,22 +272,22 @@ struct CVImportFlowSheet: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color(red: 231 / 255, green: 246 / 255, blue: 244 / 255))
+                    .fill(Color(light: .rgb(231, 246, 244), dark: .rgb(30, 42, 41)))
                     .frame(width: 180, height: 180)
 
                 RoundedRectangle(cornerRadius: 18)
-                    .fill(Color.white)
+                    .fill(LegitimaColors.surfaceStrong)
                     .frame(width: 102, height: 138)
                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("CV")
                         .font(.title3.weight(.bold))
-                        .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                        .foregroundColor(LegitimaColors.accent)
 
                     ForEach(0..<5, id: \.self) { _ in
                         Capsule()
-                            .fill(Color(red: 227 / 255, green: 233 / 255, blue: 233 / 255))
+                            .fill(Color(light: .rgb(227, 233, 233), dark: .rgb(55, 63, 64)))
                             .frame(width: 54, height: 6)
                     }
                 }
@@ -296,7 +296,7 @@ struct CVImportFlowSheet: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity)
-        .background(Color.white.opacity(0.92))
+        .background(LegitimaColors.surface)
         .cornerRadius(24)
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
@@ -311,21 +311,21 @@ struct CVImportFlowSheet: View {
     private func sourceButtonLabel(icon: String, title: String) -> some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .foregroundColor(LegitimaColors.accent)
                 .frame(width: 24, height: 24)
 
             Text(title)
                 .font(.headline)
-                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                .foregroundColor(LegitimaColors.ink)
 
             Spacer()
 
             Image(systemName: "chevron.right")
                 .font(.footnote.weight(.semibold))
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .foregroundColor(LegitimaColors.muted)
         }
         .padding(18)
-        .background(Color.white.opacity(0.94))
+        .background(LegitimaColors.surface)
         .cornerRadius(18)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }

@@ -11,9 +11,9 @@ struct InterviewUseCaseSelectionScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 218 / 255, green: 249 / 255, blue: 246 / 255),
-                    Color(red: 247 / 255, green: 242 / 255, blue: 232 / 255),
-                    Color(red: 232 / 255, green: 241 / 255, blue: 245 / 255)
+                    Color(light: .rgb(218, 249, 246), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(247, 242, 232), dark: LegitimaColors.darkBackgroundMid),
+                    Color(light: .rgb(232, 241, 245), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -43,8 +43,8 @@ struct InterviewUseCaseSelectionScreen: View {
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(16)
-                            .foregroundColor(Color(red: 31 / 255, green: 92 / 255, blue: 96 / 255))
-                            .background(Color.white.opacity(0.9))
+                            .foregroundColor(LegitimaColors.accent)
+                            .background(LegitimaColors.surface)
                             .clipShape(RoundedRectangle(cornerRadius: 18))
                         }
                     }
@@ -94,8 +94,8 @@ struct InterviewUseCaseSelectionScreen: View {
                 Image(systemName: icon(for: useCase.id))
                     .font(.title2)
                     .frame(width: 48, height: 48)
-                    .foregroundColor(Color(red: 31 / 255, green: 92 / 255, blue: 96 / 255))
-                    .background(Color(red: 226 / 255, green: 244 / 255, blue: 240 / 255))
+                    .foregroundColor(LegitimaColors.accent)
+                    .background(LegitimaColors.chip)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
 
                 VStack(alignment: .leading, spacing: 7) {
@@ -114,7 +114,7 @@ struct InterviewUseCaseSelectionScreen: View {
                     .foregroundColor(.secondary)
             }
             .padding(18)
-            .background(Color.white.opacity(0.9))
+            .background(LegitimaColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 6)
         }

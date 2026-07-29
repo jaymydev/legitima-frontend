@@ -10,9 +10,9 @@ struct TestAccessScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 218 / 255, green: 249 / 255, blue: 246 / 255),
-                    Color(red: 247 / 255, green: 242 / 255, blue: 232 / 255),
-                    Color(red: 232 / 255, green: 241 / 255, blue: 245 / 255)
+                    Color(light: .rgb(218, 249, 246), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(247, 242, 232), dark: LegitimaColors.darkBackgroundMid),
+                    Color(light: .rgb(232, 241, 245), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -27,12 +27,12 @@ struct TestAccessScreen: View {
                         Text("Bienvenue sur\nLegitima")
                             .font(.system(size: 42, weight: .bold, design: .rounded))
                             .multilineTextAlignment(.center)
-                            .foregroundColor(Color(red: 42 / 255, green: 48 / 255, blue: 48 / 255))
+                            .foregroundColor(LegitimaColors.ink)
 
                         Text("Préparez votre parcours professionnel avec clarté, puis retrouvez votre travail à tout moment.")
                             .font(.body)
                             .multilineTextAlignment(.center)
-                            .foregroundColor(Color(red: 88 / 255, green: 96 / 255, blue: 96 / 255))
+                            .foregroundColor(LegitimaColors.muted)
                             .padding(.horizontal, 14)
                     }
 
@@ -49,7 +49,7 @@ struct TestAccessScreen: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .foregroundColor(.white)
-                            .background(Color(red: 37 / 255, green: 106 / 255, blue: 110 / 255))
+                            .background(LegitimaColors.accentSurface)
                             .clipShape(RoundedRectangle(cornerRadius: 18))
                         }
 
@@ -57,14 +57,14 @@ struct TestAccessScreen: View {
                         accountButton(title: "Créer un nouveau compte", action: .createAccount)
                     }
                     .padding(20)
-                    .background(Color.white.opacity(0.78))
+                    .background(LegitimaColors.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 26))
                     .shadow(color: .black.opacity(0.07), radius: 18, x: 0, y: 10)
 
                     Text("Le mode test conserve votre préparation sur cet appareil. La synchronisation entre appareils arrivera avec les comptes.")
                         .font(.footnote)
                         .multilineTextAlignment(.center)
-                        .foregroundColor(Color(red: 88 / 255, green: 96 / 255, blue: 96 / 255))
+                        .foregroundColor(LegitimaColors.muted)
                         .padding(.horizontal, 20)
 
                     Spacer(minLength: 30)
@@ -93,16 +93,16 @@ struct TestAccessScreen: View {
                 Spacer()
                 Text("Bientôt")
                     .font(.caption.weight(.bold))
-                    .foregroundColor(Color(red: 37 / 255, green: 106 / 255, blue: 110 / 255))
+                    .foregroundColor(LegitimaColors.accent)
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 18)
             .padding(.vertical, 15)
-            .foregroundColor(Color(red: 42 / 255, green: 48 / 255, blue: 48 / 255))
-            .background(Color.white.opacity(0.88))
+            .foregroundColor(LegitimaColors.ink)
+            .background(LegitimaColors.field)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.black.opacity(0.07), lineWidth: 1)
+                    .stroke(LegitimaColors.hairline, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
