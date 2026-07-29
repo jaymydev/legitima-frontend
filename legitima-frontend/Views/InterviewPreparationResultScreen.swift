@@ -4,6 +4,8 @@ struct InterviewPreparationResultScreen: View {
     let response: InterviewPreparationResponse
     let onChooseAnother: () -> Void
 
+    @State private var exportURL: URL?
+
     var body: some View {
         ZStack {
             LinearGradient(
@@ -39,6 +41,18 @@ struct InterviewPreparationResultScreen: View {
                         items: response.actionPlan
                     )
 
+                    if let exportURL {
+                        ShareLink(item: exportURL) {
+                            Label("Exporter ma synthèse (PDF)", systemImage: "square.and.arrow.up")
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .foregroundColor(.white)
+                                .background(Color(red: 35 / 255, green: 105 / 255, blue: 109 / 255))
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
+                    }
+
                     Button(action: onChooseAnother) {
                         Text("Préparer un autre entretien")
                             .fontWeight(.semibold)
@@ -53,6 +67,11 @@ struct InterviewPreparationResultScreen: View {
                 .padding(22)
                 .frame(maxWidth: .infinity)
             }
+        }
+        .task(id: response) {
+            exportURL = PreparationPDFExporter.writeTemporaryPDF(
+                for: PreparationExportContent(response: response)
+            )
         }
     }
 
