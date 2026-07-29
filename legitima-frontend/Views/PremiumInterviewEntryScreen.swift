@@ -104,8 +104,8 @@ struct PremiumInterviewEntryScreen: View {
     private var entryBackground: some View {
         LinearGradient(
             colors: [
-                Color(red: 218 / 255, green: 249 / 255, blue: 246 / 255),
-                Color(red: 247 / 255, green: 242 / 255, blue: 232 / 255)
+                Color(light: .rgb(218, 249, 246), dark: LegitimaColors.darkBackgroundTop),
+                Color(light: .rgb(247, 242, 232), dark: LegitimaColors.darkBackgroundBottom)
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing

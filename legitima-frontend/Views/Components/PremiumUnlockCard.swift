@@ -8,7 +8,7 @@ struct PremiumUnlockCard: View {
         VStack(spacing: 16) {
             Label("LEGITIMA PREMIUM", systemImage: "crown.fill")
                 .font(.caption.bold())
-                .foregroundColor(Color(red: 185 / 255, green: 132 / 255, blue: 43 / 255))
+                .foregroundColor(LegitimaColors.gold)
 
             Text("Transformez cette analyse\nen préparation concrète")
                 .font(.title2.bold())
@@ -39,7 +39,7 @@ struct PremiumUnlockCard: View {
                 .frame(maxWidth: .infinity)
                 .padding()
                 .foregroundColor(.white)
-                .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .background(LegitimaColors.accentSurface)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             }
             .disabled(!purchaseManager.canPurchase)
@@ -73,7 +73,10 @@ struct PremiumUnlockCard: View {
         .padding(20)
         .background(
             LinearGradient(
-                colors: [.white, Color(red: 249 / 255, green: 245 / 255, blue: 235 / 255)],
+                colors: [
+                    Color(light: .white, dark: .rgb(41, 48, 49)),
+                    Color(light: .rgb(249, 245, 235), dark: .rgb(38, 42, 40)),
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

@@ -13,8 +13,8 @@ struct LeanResultScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 246 / 255, green: 252 / 255, blue: 249 / 255),
-                    Color(red: 238 / 255, green: 246 / 255, blue: 247 / 255)
+                    Color(light: .rgb(246, 252, 249), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(238, 246, 247), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -37,7 +37,7 @@ struct LeanResultScreen: View {
                         icon: "lightbulb.fill",
                         title: "Compréhension stratégique",
                         content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
-                        backgroundColor: Color(red: 227 / 255, green: 245 / 255, blue: 236 / 255)
+                        backgroundColor: Color(light: .rgb(227, 245, 236), dark: .rgb(30, 44, 37))
                     )
 
                     if !userStatus.isPremium {
@@ -46,21 +46,21 @@ struct LeanResultScreen: View {
                             Text("POUR ALLER PLUS LOIN").font(.caption.bold())
                             Rectangle().frame(height: 1)
                         }
-                        .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.35))
+                        .foregroundColor(LegitimaColors.accent.opacity(0.35))
                     }
 
                     sectionCard(
                         icon: "arrow.triangle.branch",
                         title: "Relecture structurée du parcours",
                         content: response.analysis.career_logic + "\n\n" + response.narrative.core_thread,
-                        backgroundColor: Color(red: 255 / 255, green: 247 / 255, blue: 225 / 255)
+                        backgroundColor: Color(light: .rgb(255, 247, 225), dark: .rgb(45, 41, 29))
                     )
 
                     sectionCard(
                         icon: "exclamationmark.bubble.fill",
                         title: "Requalification des zones sensibles",
                         content: response.sensitive_reframing.identified_fragilities + "\n\n" + response.sensitive_reframing.strategic_reinterpretation + "\n\n" + response.sensitive_reframing.rational_reframing,
-                        backgroundColor: Color(red: 255 / 255, green: 236 / 255, blue: 228 / 255)
+                        backgroundColor: Color(light: .rgb(255, 236, 228), dark: .rgb(46, 36, 31))
                     )
 
                     if userStatus.isPremium {
@@ -70,7 +70,7 @@ struct LeanResultScreen: View {
                             icon: "shield.fill",
                             title: "Anticipation des objections",
                             content: "La préparation complète génère les objections probables de votre interlocuteur et des réponses défendables, construites à partir de votre fil conducteur.",
-                            backgroundColor: Color(red: 255 / 255, green: 239 / 255, blue: 221 / 255),
+                            backgroundColor: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28)),
                             isLocked: true
                         )
 
@@ -78,7 +78,7 @@ struct LeanResultScreen: View {
                             icon: "checkmark.seal.fill",
                             title: "Ancrage de légitimité",
                             content: "La préparation complète ancre votre légitimité : des arguments objectifs pour assumer votre parcours face à votre interlocuteur.",
-                            backgroundColor: Color(red: 228 / 255, green: 239 / 255, blue: 253 / 255),
+                            backgroundColor: Color(light: .rgb(228, 239, 253), dark: .rgb(30, 38, 49)),
                             isLocked: true
                         )
 
@@ -86,7 +86,7 @@ struct LeanResultScreen: View {
                             icon: "sparkles",
                             title: "Synthèse stratégique finale",
                             content: "La préparation complète se termine par une synthèse actionnable : points à faire passer et plan d'action pour le jour J.",
-                            backgroundColor: Color(red: 242 / 255, green: 233 / 255, blue: 252 / 255),
+                            backgroundColor: Color(light: .rgb(242, 233, 252), dark: .rgb(39, 33, 48)),
                             isLocked: true
                         )
 
@@ -118,11 +118,11 @@ struct LeanResultScreen: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
-                    .background(Color.white.opacity(0.9))
+                    .foregroundColor(LegitimaColors.accent)
+                    .background(LegitimaColors.surface)
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.4), lineWidth: 1)
+                            .stroke(LegitimaColors.accent.opacity(0.4), lineWidth: 1)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 14))
             }
@@ -145,12 +145,12 @@ struct LeanResultScreen: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "calendar")
                 .font(.title3)
-                .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .foregroundColor(LegitimaColors.accent)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(InterviewCountdown.label(daysUntil: days))
                     .font(.headline)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
 
                 Text(
                     userStatus.isPremium
@@ -158,7 +158,7 @@ struct LeanResultScreen: View {
                         : "Transformez cette lecture en réponses prêtes avant le jour J."
                 )
                 .font(.subheadline)
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .foregroundColor(LegitimaColors.muted)
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -166,11 +166,11 @@ struct LeanResultScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18)
-                .fill(Color.white.opacity(0.92))
+                .fill(LegitimaColors.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.2), lineWidth: 1)
+                .stroke(LegitimaColors.accent.opacity(0.2), lineWidth: 1)
         )
     }
 
@@ -178,26 +178,26 @@ struct LeanResultScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("VOTRE PRÉPARATION PREMIUM", systemImage: "crown.fill")
                 .font(.caption.bold())
-                .foregroundColor(Color(red: 185 / 255, green: 132 / 255, blue: 43 / 255))
+                .foregroundColor(LegitimaColors.gold)
 
             if let result = interviewPreparationStore.saved.result {
                 Text(result.title)
                     .font(.headline)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
 
                 Text(result.summary)
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
                     .lineLimit(4)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 Text("Votre préparation guidée vous attend")
                     .font(.headline)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
 
                 Text("Quelques questions ciblées sur votre entretien, puis nous générons vos réponses aux objections, votre ancrage de légitimité et votre synthèse finale.")
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
@@ -206,7 +206,7 @@ struct LeanResultScreen: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .background(LegitimaColors.accentSurface)
                     .foregroundColor(.white)
                     .cornerRadius(14)
             }
@@ -214,11 +214,11 @@ struct LeanResultScreen: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 18)
-                .fill(Color.white.opacity(0.92))
+                .fill(LegitimaColors.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color(red: 185 / 255, green: 132 / 255, blue: 43 / 255).opacity(0.25), lineWidth: 1)
+                .stroke(LegitimaColors.gold.opacity(0.25), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
@@ -236,19 +236,19 @@ struct LeanResultScreen: View {
         VStack(alignment: .leading, spacing: 14) {
             Text("LECTURE STRATÉGIQUE")
                 .font(.caption.weight(.bold))
-                .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .foregroundColor(LegitimaColors.accent)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 7)
-                .background(Color.white.opacity(0.82))
+                .background(LegitimaColors.surface)
                 .clipShape(Capsule())
 
             Text("Votre parcours commence à prendre forme")
                 .font(.system(size: 31, weight: .bold, design: .rounded))
-                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                .foregroundColor(LegitimaColors.ink)
 
             Text("Vous avez maintenant une première lecture solide. La préparation complète sert à transformer cette matière en récit, en réponses et en posture d’entretien.")
                 .font(.subheadline)
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .foregroundColor(LegitimaColors.muted)
                 .fixedSize(horizontal: false, vertical: true)
 
             insightHighlightCard
@@ -259,30 +259,30 @@ struct LeanResultScreen: View {
         HStack(alignment: .top, spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(Color(red: 227 / 255, green: 245 / 255, blue: 236 / 255))
+                    .fill(Color(light: .rgb(227, 245, 236), dark: .rgb(30, 44, 37)))
                     .frame(width: 44, height: 44)
 
                 Image(systemName: "sparkles")
                     .font(.headline)
-                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .foregroundColor(LegitimaColors.accent)
             }
 
             VStack(alignment: .leading, spacing: 7) {
                 Text("Le point clé")
                     .font(.caption.weight(.bold))
-                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .foregroundColor(LegitimaColors.accent)
 
                 Text(heroInsightText)
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(16)
-        .background(Color.white.opacity(0.9))
+        .background(LegitimaColors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.black.opacity(0.04), lineWidth: 1)
+                .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
@@ -306,17 +306,17 @@ struct LeanResultScreen: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "sparkles.rectangle.stack.fill")
                 .font(.title3)
-                .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .foregroundColor(LegitimaColors.accent)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Préparation complète activée")
                     .font(.headline)
                     .fontWeight(.bold)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
 
                 Text("Votre accès premium est actif. Reprenez votre préparation guidée quand vous êtes prêt.")
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
             }
 
             Spacer(minLength: 0)
@@ -326,9 +326,9 @@ struct LeanResultScreen: View {
             }) {
                 Image(systemName: "xmark")
                     .font(.caption.weight(.bold))
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
                     .padding(8)
-                    .background(Color.white.opacity(0.8))
+                    .background(LegitimaColors.surface)
                     .clipShape(Circle())
             }
             .buttonStyle(.plain)
@@ -336,11 +336,11 @@ struct LeanResultScreen: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 18)
-                .fill(Color(red: 226 / 255, green: 247 / 255, blue: 239 / 255))
+                .fill(Color(light: .rgb(226, 247, 239), dark: .rgb(28, 44, 38)))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.18), lineWidth: 1)
+                .stroke(LegitimaColors.accent.opacity(0.18), lineWidth: 1)
         )
     }
 
@@ -354,7 +354,7 @@ struct LeanResultScreen: View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                .foregroundColor(LegitimaColors.ink)
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 6) {
@@ -366,12 +366,12 @@ struct LeanResultScreen: View {
                     Text(title)
                         .font(.headline)
                         .fontWeight(.bold)
-                        .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                        .foregroundColor(LegitimaColors.ink)
                 }
 
                 Text(content)
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 62 / 255, green: 67 / 255, blue: 67 / 255))
+                    .foregroundColor(LegitimaColors.body)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -383,7 +383,7 @@ struct LeanResultScreen: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }

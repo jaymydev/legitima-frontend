@@ -16,11 +16,11 @@ struct AnalysisLoadingCard: View {
                     Text(title)
                         .font(.headline)
                         .fontWeight(.semibold)
-                        .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                        .foregroundColor(LegitimaColors.ink)
 
                     Text(subtitle)
                         .font(.subheadline)
-                        .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                        .foregroundColor(LegitimaColors.muted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -38,10 +38,10 @@ struct AnalysisLoadingCard: View {
             }
         }
         .padding(18)
-        .background(Color.white)
+        .background(LegitimaColors.surfaceStrong)
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(Color(red: 225 / 255, green: 232 / 255, blue: 232 / 255), lineWidth: 1)
+                .stroke(Color(light: .rgb(225, 232, 232), dark: .rgb(52, 60, 61)), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: Color.black.opacity(0.18), radius: 28, x: 0, y: 14)
@@ -87,7 +87,7 @@ struct AnalysisLoadingCard: View {
                 LinearGradient(
                     colors: [
                         accent.opacity(0.10),
-                        Color.white.opacity(0.95),
+                        Color(light: UIColor.white.withAlphaComponent(0.95), dark: UIColor.white.withAlphaComponent(0.25)),
                         accent.opacity(0.18)
                     ],
                     startPoint: isAnimating ? .leading : .trailing,
@@ -108,7 +108,7 @@ struct AnalysisLoadingCard_Previews: PreviewProvider {
         AnalysisLoadingCard(
             title: "Analyse en cours",
             subtitle: "Nous transformons votre matiere brute en une lecture strategique claire.",
-            accent: Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255)
+            accent: LegitimaColors.accent
         )
         .padding()
         .background(Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255))

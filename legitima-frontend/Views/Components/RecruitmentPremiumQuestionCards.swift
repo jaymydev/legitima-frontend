@@ -16,10 +16,10 @@ struct RecruitmentTargetRoleCard: View {
             TextField("Ex. Responsable de projet", text: $targetRole)
                 .textInputAutocapitalization(.sentences)
                 .padding(14)
-                .background(Color.white)
+                .background(LegitimaColors.field)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                        .stroke(LegitimaColors.hairline, lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
@@ -47,8 +47,8 @@ struct RecruitmentChoiceCard: View {
                     .padding(.vertical, 10)
                     .background(
                         selection == option
-                            ? accent
-                            : Color(red: 232 / 255, green: 247 / 255, blue: 243 / 255)
+                            ? LegitimaColors.accentSurface
+                            : Color(light: .rgb(232, 247, 243), dark: .rgb(33, 47, 44))
                     )
                     .clipShape(Capsule())
                 }
@@ -70,12 +70,12 @@ struct RecruitmentTextCard: View {
             PlaceholderTextEditor(
                 placeholder: "Votre réponse",
                 text: $answer,
-                primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
+                primaryColor: LegitimaColors.ink,
                 minHeight: minHeight
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                    .stroke(LegitimaColors.hairline, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
@@ -111,7 +111,7 @@ struct RecruitmentExistingDataCard: View {
             Spacer(minLength: 0)
         }
         .padding(16)
-        .background(Color.white.opacity(0.72))
+        .background(LegitimaColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
@@ -192,7 +192,7 @@ private extension View {
     func recruitmentCardStyle() -> some View {
         padding(17)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white.opacity(0.92))
+            .background(LegitimaColors.surface)
             .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }

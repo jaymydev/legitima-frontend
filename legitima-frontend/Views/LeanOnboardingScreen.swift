@@ -18,8 +18,8 @@ struct LeanOnboardingScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 207 / 255, green: 252 / 255, blue: 249 / 255),
-                    Color(red: 237 / 255, green: 243 / 255, blue: 243 / 255)
+                    Color(light: .rgb(207, 252, 249), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(237, 243, 243), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -32,11 +32,11 @@ struct LeanOnboardingScreen: View {
                         Text("Reprenez le contrôle de votre récit professionnel.")
                             .font(.largeTitle)
                             .fontWeight(.bold)
-                            .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                            .foregroundColor(LegitimaColors.ink)
 
                         Text("Obtenez une lecture stratégique claire, en moins de 90 secondes.")
                             .font(.subheadline)
-                            .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                            .foregroundColor(LegitimaColors.muted)
                     }
 
                     quotaCard
@@ -49,17 +49,17 @@ struct LeanOnboardingScreen: View {
                                 "",
                                 text: $viewModel.posteVise,
                                 prompt: Text("Ex : Product Manager Senior")
-                                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255).opacity(0.82))
+                                    .foregroundColor(LegitimaColors.muted.opacity(0.82))
                             )
                                 .textInputAutocapitalization(.sentences)
                                 .autocorrectionDisabled()
-                                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                .foregroundColor(LegitimaColors.ink)
                                 .padding(14)
-                                .background(Color.white)
+                                .background(LegitimaColors.field)
                                 .cornerRadius(12)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                        .stroke(LegitimaColors.hairline, lineWidth: 1)
                                 )
                         }
                     )
@@ -72,12 +72,12 @@ struct LeanOnboardingScreen: View {
                                 PlaceholderTextEditor(
                                     placeholder: "Ex : 2019-2022 pilotage de projets techniques, 2022-2024 coordination produit, 2025 période de transition puis repositionnement.",
                                     text: $viewModel.parcoursResume,
-                                    primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
+                                    primaryColor: LegitimaColors.ink,
                                     minHeight: 180
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                        .stroke(LegitimaColors.hairline, lineWidth: 1)
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
@@ -92,11 +92,11 @@ struct LeanOnboardingScreen: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 12)
-                                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
-                                    .background(Color(red: 239 / 255, green: 250 / 255, blue: 249 / 255))
+                                    .foregroundColor(LegitimaColors.accent)
+                                    .background(Color(light: .rgb(239, 250, 249), dark: .rgb(31, 44, 43)))
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.22), lineWidth: 1)
+                                            .stroke(LegitimaColors.accent.opacity(0.22), lineWidth: 1)
                                     )
                                     .cornerRadius(12)
                                 }
@@ -112,17 +112,17 @@ struct LeanOnboardingScreen: View {
                                 "",
                                 text: $viewModel.zoneSensible,
                                 prompt: Text("Ex : chômage en 2025, bench de 6 mois, reconversion ou burn-out")
-                                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255).opacity(0.82))
+                                    .foregroundColor(LegitimaColors.muted.opacity(0.82))
                             )
                                 .textInputAutocapitalization(.sentences)
                                 .autocorrectionDisabled()
-                                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                                .foregroundColor(LegitimaColors.ink)
                                 .padding(14)
-                                .background(Color.white)
+                                .background(LegitimaColors.field)
                                 .cornerRadius(12)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                                        .stroke(LegitimaColors.hairline, lineWidth: 1)
                                 )
                         }
                     )
@@ -134,7 +134,7 @@ struct LeanOnboardingScreen: View {
                             VStack(alignment: .leading, spacing: 12) {
                                 Toggle("J'ai déjà une date d'entretien", isOn: $hasInterviewDate.animation())
                                     .font(.subheadline)
-                                    .tint(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                                    .tint(LegitimaColors.accent)
 
                                 if hasInterviewDate {
                                     DatePicker(
@@ -155,7 +155,7 @@ struct LeanOnboardingScreen: View {
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                            .background(LegitimaColors.accentSurface)
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
@@ -222,19 +222,19 @@ struct LeanOnboardingScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(label)
                 .font(.headline)
-                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                .foregroundColor(LegitimaColors.ink)
 
             if let helper {
                 Text(helper)
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                    .foregroundColor(LegitimaColors.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             field()
         }
         .padding(16)
-        .background(Color.white.opacity(0.92))
+        .background(LegitimaColors.surface)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
@@ -242,12 +242,12 @@ struct LeanOnboardingScreen: View {
     private var quotaCard: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: userStatus.isPremium ? "sparkles" : "timer")
-                .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                .foregroundColor(LegitimaColors.accent)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(userStatus.isPremium ? "Accès premium" : "Mode test")
                     .font(.headline)
-                    .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
+                    .foregroundColor(LegitimaColors.ink)
 
                 Text(
                     userStatus.isPremium
@@ -255,19 +255,19 @@ struct LeanOnboardingScreen: View {
                     : "Le mode test inclut jusqu'à 20 analyses réussies par jour."
                 )
                 .font(.subheadline)
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
+                .foregroundColor(LegitimaColors.muted)
                 .fixedSize(horizontal: false, vertical: true)
 
                 Text(userStatus.freeQuotaLabel)
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .foregroundColor(LegitimaColors.accent)
             }
         }
         .padding(16)
-        .background(Color.white.opacity(0.92))
+        .background(LegitimaColors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
+                .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
@@ -281,7 +281,7 @@ struct LeanOnboardingScreen: View {
             AnalysisLoadingCard(
                 title: "Analyse en cours",
                 subtitle: "Nous relisons votre parcours, votre cible et votre point à expliquer pour faire ressortir une première lecture stratégique.",
-                accent: Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255)
+                accent: LegitimaColors.accent
             )
             .padding(.horizontal, 24)
             .padding(.vertical, 12)

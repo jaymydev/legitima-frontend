@@ -7,10 +7,11 @@ struct ProgressionScreen: View {
     let onBackToResults: () -> Void
     let onRestartAnalysis: () -> Void
 
-    private let primaryText = Color(red: 41 / 255, green: 46 / 255, blue: 46 / 255)
-    private let secondaryText = Color(red: 89 / 255, green: 97 / 255, blue: 97 / 255)
-    private let buttonColor = Color(red: 34 / 255, green: 108 / 255, blue: 112 / 255)
-    private let premiumInk = Color(red: 19 / 255, green: 77 / 255, blue: 82 / 255)
+    private let primaryText = LegitimaColors.ink
+    private let secondaryText = LegitimaColors.muted
+    private let buttonColor = LegitimaColors.accentSurface
+    private let accentText = LegitimaColors.accent
+    private let premiumInk = LegitimaColors.accent
 
     var body: some View {
         ZStack {
@@ -40,9 +41,9 @@ struct ProgressionScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 217 / 255, green: 251 / 255, blue: 247 / 255),
-                    Color(red: 244 / 255, green: 240 / 255, blue: 229 / 255),
-                    Color(red: 234 / 255, green: 241 / 255, blue: 246 / 255)
+                    Color(light: .rgb(217, 251, 247), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(244, 240, 229), dark: LegitimaColors.darkBackgroundMid),
+                    Color(light: .rgb(234, 241, 246), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -50,13 +51,13 @@ struct ProgressionScreen: View {
             .ignoresSafeArea()
 
             Circle()
-                .fill(Color.white.opacity(0.4))
+                .fill(Color(light: UIColor.white.withAlphaComponent(0.4), dark: UIColor.white.withAlphaComponent(0.04)))
                 .frame(width: 280, height: 280)
                 .blur(radius: 16)
                 .offset(x: -120, y: -240)
 
             RoundedRectangle(cornerRadius: 120)
-                .fill(Color(red: 250 / 255, green: 231 / 255, blue: 214 / 255).opacity(0.45))
+                .fill(Color(light: .rgb(250, 231, 214, alpha: 0.45), dark: .rgb(45, 38, 30, alpha: 0.45)))
                 .frame(width: 220, height: 220)
                 .rotationEffect(.degrees(18))
                 .blur(radius: 20)
@@ -72,7 +73,7 @@ struct ProgressionScreen: View {
                     .foregroundColor(premiumInk)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 7)
-                    .background(Color.white.opacity(0.68))
+                    .background(LegitimaColors.surface)
                     .clipShape(Capsule())
 
                 Spacer(minLength: 0)
@@ -108,8 +109,8 @@ struct ProgressionScreen: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color.white.opacity(0.94),
-                    Color(red: 244 / 255, green: 252 / 255, blue: 250 / 255).opacity(0.92)
+                    Color(light: UIColor.white.withAlphaComponent(0.94), dark: .rgb(36, 43, 44)),
+                    Color(light: .rgb(244, 252, 250, alpha: 0.92), dark: .rgb(33, 40, 41))
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -117,7 +118,7 @@ struct ProgressionScreen: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 28)
-                .stroke(Color.white.opacity(0.75), lineWidth: 1.2)
+                .stroke(Color(light: UIColor.white.withAlphaComponent(0.75), dark: UIColor.white.withAlphaComponent(0.08)), lineWidth: 1.2)
         )
         .clipShape(RoundedRectangle(cornerRadius: 28))
         .shadow(color: Color.black.opacity(0.08), radius: 18, x: 0, y: 12)
@@ -127,18 +128,18 @@ struct ProgressionScreen: View {
         HStack(alignment: .top, spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(Color(red: 227 / 255, green: 245 / 255, blue: 236 / 255))
+                    .fill(Color(light: .rgb(227, 245, 236), dark: .rgb(30, 44, 37)))
                     .frame(width: 46, height: 46)
 
                 Image(systemName: userStatus.isPremium ? "sparkles" : "lightbulb.fill")
                     .font(.headline)
-                    .foregroundColor(buttonColor)
+                    .foregroundColor(accentText)
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 Text(userStatus.isPremium ? "Moment clé" : "Lecture clé")
                     .font(.caption.weight(.bold))
-                    .foregroundColor(buttonColor)
+                    .foregroundColor(accentText)
 
                 Text(
                     userStatus.isPremium
@@ -153,10 +154,10 @@ struct ProgressionScreen: View {
             Spacer(minLength: 0)
         }
         .padding(18)
-        .background(Color.white.opacity(0.88))
+        .background(LegitimaColors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 22)
-                .stroke(Color.black.opacity(0.04), lineWidth: 1)
+                .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 22))
     }
@@ -180,7 +181,7 @@ struct ProgressionScreen: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("\(completedCount)")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(buttonColor)
+                        .foregroundColor(accentText)
 
                     Text("étapes actives")
                         .font(.caption)
@@ -195,10 +196,10 @@ struct ProgressionScreen: View {
             }
         }
         .padding(22)
-        .background(Color.white.opacity(0.92))
+        .background(LegitimaColors.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 26)
-                .stroke(Color.white.opacity(0.72), lineWidth: 1)
+                .stroke(Color(light: UIColor.white.withAlphaComponent(0.72), dark: UIColor.white.withAlphaComponent(0.07)), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 26))
         .shadow(color: Color.black.opacity(0.06), radius: 14, x: 0, y: 8)
@@ -234,8 +235,8 @@ struct ProgressionScreen: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color.white.opacity(0.84),
-                    Color(red: 250 / 255, green: 244 / 255, blue: 231 / 255).opacity(0.9)
+                    Color(light: UIColor.white.withAlphaComponent(0.84), dark: .rgb(36, 43, 44)),
+                    Color(light: .rgb(250, 244, 231, alpha: 0.9), dark: .rgb(41, 39, 30))
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -250,7 +251,7 @@ struct ProgressionScreen: View {
             .foregroundColor(premiumInk)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color.white.opacity(0.8))
+            .background(LegitimaColors.surface)
             .clipShape(Capsule())
     }
 
@@ -294,7 +295,7 @@ struct ProgressionScreen: View {
                 LinearGradient(
                     colors: [
                         buttonColor,
-                        Color(red: 26 / 255, green: 88 / 255, blue: 91 / 255)
+                        Color(light: .rgb(26, 88, 91), dark: .rgb(35, 96, 99))
                     ],
                     startPoint: .leading,
                     endPoint: .trailing
@@ -318,7 +319,7 @@ struct ProgressionScreen: View {
                         Text("Relancer une nouvelle analyse")
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(buttonColor)
+                        .foregroundColor(accentText)
                 }
             }
 
@@ -328,7 +329,7 @@ struct ProgressionScreen: View {
                 Text("Revenir à mes résultats")
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(buttonColor)
+                    .foregroundColor(accentText)
             }
         }
     }
@@ -355,8 +356,8 @@ struct ProgressionScreen: View {
                 eyebrow: "RÉPONSES DIFFICILES",
                 title: "Objections",
                 description: "Préparez une réponse plus claire et plus solide à une question sensible.",
-                accent: Color(red: 255 / 255, green: 239 / 255, blue: 221 / 255),
-                tone: Color(red: 138 / 255, green: 86 / 255, blue: 45 / 255),
+                accent: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28)),
+                tone: Color(light: .rgb(138, 86, 45), dark: .rgb(222, 170, 120)),
                 isUnlocked: userStatus.isPremium
             ),
             PremiumModuleCard(
@@ -364,8 +365,8 @@ struct ProgressionScreen: View {
                 eyebrow: "APPUIS CRÉDIBLES",
                 title: "Légitimité",
                 description: "Transformez vos faits forts en appuis simples, crédibles et rassurants.",
-                accent: Color(red: 228 / 255, green: 239 / 255, blue: 253 / 255),
-                tone: Color(red: 52 / 255, green: 89 / 255, blue: 143 / 255),
+                accent: Color(light: .rgb(228, 239, 253), dark: .rgb(30, 38, 49)),
+                tone: Color(light: .rgb(52, 89, 143), dark: .rgb(150, 180, 225)),
                 isUnlocked: userStatus.isPremium
             ),
             PremiumModuleCard(
@@ -373,8 +374,8 @@ struct ProgressionScreen: View {
                 eyebrow: "RÉCIT GLOBAL",
                 title: "Fil conducteur",
                 description: "Assemblez un récit global simple, cohérent et défendable de votre trajectoire.",
-                accent: Color(red: 255 / 255, green: 247 / 255, blue: 225 / 255),
-                tone: Color(red: 132 / 255, green: 104 / 255, blue: 40 / 255),
+                accent: Color(light: .rgb(255, 247, 225), dark: .rgb(45, 41, 29)),
+                tone: Color(light: .rgb(132, 104, 40), dark: .rgb(215, 185, 110)),
                 isUnlocked: userStatus.isPremium
             ),
             PremiumModuleCard(
@@ -382,8 +383,8 @@ struct ProgressionScreen: View {
                 eyebrow: "POSTURE FINALE",
                 title: "Préparation entretien",
                 description: "Arrivez en entretien avec une posture plus claire, plus stable et plus confiante.",
-                accent: Color(red: 242 / 255, green: 233 / 255, blue: 252 / 255),
-                tone: Color(red: 108 / 255, green: 73 / 255, blue: 138 / 255),
+                accent: Color(light: .rgb(242, 233, 252), dark: .rgb(39, 33, 48)),
+                tone: Color(light: .rgb(108, 73, 138), dark: .rgb(190, 160, 220)),
                 isUnlocked: userStatus.isPremium
             )
         ]
@@ -394,7 +395,7 @@ struct ProgressionScreen: View {
             VStack(spacing: 0) {
                 ZStack {
                     Circle()
-                        .fill(step.isCompleted ? buttonColor : Color.white.opacity(0.92))
+                        .fill(step.isCompleted ? buttonColor : LegitimaColors.field)
                         .frame(width: 28, height: 28)
                         .overlay(
                             Circle()
@@ -430,10 +431,10 @@ struct ProgressionScreen: View {
             if step.isCompleted {
                 Text("prêt")
                     .font(.caption2.weight(.bold))
-                    .foregroundColor(buttonColor)
+                    .foregroundColor(accentText)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 5)
-                    .background(Color(red: 233 / 255, green: 247 / 255, blue: 241 / 255))
+                    .background(Color(light: .rgb(233, 247, 241), dark: .rgb(30, 45, 38)))
                     .clipShape(Capsule())
             }
         }
@@ -443,7 +444,7 @@ struct ProgressionScreen: View {
         HStack(alignment: .top, spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 18)
-                    .fill(Color.white.opacity(0.56))
+                    .fill(Color(light: UIColor.white.withAlphaComponent(0.56), dark: UIColor.white.withAlphaComponent(0.08)))
                     .frame(width: 54, height: 54)
 
                 Image(systemName: module.icon)
@@ -468,7 +469,7 @@ struct ProgressionScreen: View {
                             .foregroundColor(module.tone)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.75))
+                            .background(LegitimaColors.surface)
                             .clipShape(Capsule())
                     }
                 }
@@ -485,7 +486,7 @@ struct ProgressionScreen: View {
         .background(module.accent.opacity(module.isUnlocked ? 1 : 0.74))
         .overlay(
             RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.white.opacity(0.65), lineWidth: 1)
+                .stroke(Color(light: UIColor.white.withAlphaComponent(0.65), dark: UIColor.white.withAlphaComponent(0.07)), lineWidth: 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 24))
         .shadow(color: Color.black.opacity(0.045), radius: 10, x: 0, y: 6)
