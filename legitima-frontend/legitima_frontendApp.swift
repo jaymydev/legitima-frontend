@@ -43,6 +43,8 @@ struct legitima_frontendApp: App {
             .environmentObject(interviewPreparationStore)
             .environmentObject(router)
             .environmentObject(purchaseManager)
+            // V1 ships a light-only design; dark mode arrives with the adaptive palette.
+            .preferredColorScheme(.light)
             .task {
                 await purchaseManager.loadProduct()
                 if await purchaseManager.hasPremiumEntitlement() {
