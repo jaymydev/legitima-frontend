@@ -10,6 +10,7 @@ struct InterviewPreparationStateTests {
         testShortAnswersRemainValidButAreFlagged()
         testFreemiumEntryStillUsesLeanOnboarding()
         try testRecruitmentRequestReusesFreemiumContext()
+        testExportContentAssembly()
         print("Interview preparation state tests passed")
     }
 
@@ -132,6 +133,34 @@ struct InterviewPreparationStateTests {
         precondition(context?["career_experiences"] == "Coordination de projets")
         precondition(object?["file"] == nil)
         precondition(object?["cv"] == nil)
+    }
+
+    private static func testExportContentAssembly() {
+        let content = PreparationExportContent(response: sampleResult)
+
+        precondition(content.title == "Préparation mi-année")
+        precondition(content.blocks.count == 4)
+        precondition(content.blocks[0].title == "Votre ligne directrice")
+        precondition(content.blocks[0].paragraphs == ["Bilan factuel."])
+        precondition(content.blocks[1].title == "Avancement")
+        precondition(content.blocks[2].title == "Points à faire passer")
+        precondition(content.blocks[2].numbered)
+        precondition(content.blocks[3].title == "Plan d'action")
+
+        // Empty and whitespace-only material must be dropped, not exported blank.
+        let sparse = InterviewPreparationResponse(
+            useCaseID: "recruitment",
+            title: " Préparation ",
+            summary: "  ",
+            sections: [InterviewPreparationSection(title: "Vide", content: " \n ")],
+            talkingPoints: ["  ", "Un seul point"],
+            actionPlan: []
+        )
+        let sparseContent = PreparationExportContent(response: sparse)
+        precondition(sparseContent.title == "Préparation")
+        precondition(sparseContent.blocks.count == 1)
+        precondition(sparseContent.blocks[0].title == "Points à faire passer")
+        precondition(sparseContent.blocks[0].paragraphs == ["Un seul point"])
     }
 
     private static let sampleUseCase = InterviewUseCase(
