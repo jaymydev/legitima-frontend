@@ -10,9 +10,9 @@ struct InterviewPreparationResultScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 222 / 255, green: 248 / 255, blue: 244 / 255),
-                    Color(red: 245 / 255, green: 239 / 255, blue: 231 / 255),
-                    Color(red: 235 / 255, green: 241 / 255, blue: 247 / 255)
+                    Color(light: .rgb(222, 248, 244), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(245, 239, 231), dark: LegitimaColors.darkBackgroundMid),
+                    Color(light: .rgb(235, 241, 247), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -48,7 +48,7 @@ struct InterviewPreparationResultScreen: View {
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .foregroundColor(.white)
-                                .background(Color(red: 35 / 255, green: 105 / 255, blue: 109 / 255))
+                                .background(LegitimaColors.accentSurface)
                                 .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
                     }
@@ -58,8 +58,8 @@ struct InterviewPreparationResultScreen: View {
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .foregroundColor(Color(red: 35 / 255, green: 105 / 255, blue: 109 / 255))
-                            .background(Color.white.opacity(0.9))
+                            .foregroundColor(LegitimaColors.accent)
+                            .background(LegitimaColors.surface)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                 }
@@ -85,7 +85,7 @@ struct InterviewPreparationResultScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(LegitimaColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
@@ -98,7 +98,7 @@ struct InterviewPreparationResultScreen: View {
                     Text("\(index + 1)")
                         .font(.caption.bold())
                         .frame(width: 24, height: 24)
-                        .background(Color(red: 226 / 255, green: 244 / 255, blue: 240 / 255))
+                        .background(LegitimaColors.chip)
                         .clipShape(Circle())
                     Text(item)
                         .foregroundColor(.secondary)
@@ -107,7 +107,7 @@ struct InterviewPreparationResultScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
-        .background(Color.white.opacity(0.9))
+        .background(LegitimaColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }

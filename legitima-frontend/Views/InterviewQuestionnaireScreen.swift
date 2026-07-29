@@ -24,8 +24,8 @@ struct InterviewQuestionnaireScreen: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 220 / 255, green: 249 / 255, blue: 246 / 255),
-                    Color(red: 244 / 255, green: 241 / 255, blue: 232 / 255)
+                    Color(light: .rgb(220, 249, 246), dark: LegitimaColors.darkBackgroundTop),
+                    Color(light: .rgb(244, 241, 232), dark: LegitimaColors.darkBackgroundBottom)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -59,7 +59,7 @@ struct InterviewQuestionnaireScreen: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .foregroundColor(.white)
-                            .background(Color(red: 35 / 255, green: 105 / 255, blue: 109 / 255))
+                            .background(LegitimaColors.accentSurface)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     .disabled(viewModel.isLoading || !viewModel.canSubmit || !userStatus.canStartAnalysis)
@@ -81,7 +81,7 @@ struct InterviewQuestionnaireScreen: View {
                 AnalysisLoadingCard(
                     title: "Préparation en cours",
                     subtitle: "Nous structurons vos réponses pour cet entretien.",
-                    accent: Color(red: 35 / 255, green: 105 / 255, blue: 109 / 255)
+                    accent: LegitimaColors.accent
                 )
                 .padding(24)
             }
@@ -115,12 +115,12 @@ struct InterviewQuestionnaireScreen: View {
             PlaceholderTextEditor(
                 placeholder: "Votre réponse",
                 text: binding(for: question.id),
-                primaryColor: Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255),
+                primaryColor: LegitimaColors.ink,
                 minHeight: 120
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                    .stroke(LegitimaColors.hairline, lineWidth: 1)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
@@ -130,7 +130,7 @@ struct InterviewQuestionnaireScreen: View {
             )
         }
         .padding(16)
-        .background(Color.white.opacity(0.92))
+        .background(LegitimaColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 

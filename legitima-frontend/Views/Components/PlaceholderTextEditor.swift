@@ -25,7 +25,7 @@ struct PlaceholderTextEditor: View {
                     .allowsHitTesting(false)
             }
         }
-        .background(Color.white)
+        .background(LegitimaColors.field)
         .cornerRadius(12)
     }
 }
