@@ -5,6 +5,7 @@ struct LeanResultScreen: View {
     @EnvironmentObject private var purchaseManager: PremiumPurchaseManager
     let response: AnalysisResponse
     let onContinue: () -> Void
+    let onRestartAnalysis: () -> Void
     private let lockedPreviewText = """
     Disponible dans la préparation complète.
     Débloquez la suite pour transformer cette lecture en réponses plus claires et plus défendables.
@@ -95,6 +96,8 @@ struct LeanResultScreen: View {
                             purchaseManager: purchaseManager,
                             onUnlocked: userStatus.activatePremium
                         )
+
+                        freeRetrySection
                     }
 
                     if userStatus.isPremium {
@@ -119,6 +122,31 @@ struct LeanResultScreen: View {
         .task {
             await purchaseManager.loadProduct()
         }
+    }
+
+    private var freeRetrySection: some View {
+        VStack(spacing: 10) {
+            Button(action: onRestartAnalysis) {
+                Label("Refaire une analyse gratuite", systemImage: "arrow.counterclockwise")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
+                    .background(Color.white.opacity(0.9))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.4), lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .disabled(!userStatus.canStartAnalysis)
+            .opacity(userStatus.canStartAnalysis ? 1 : 0.5)
+
+            Text(userStatus.freeQuotaLabel)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.top, 4)
     }
 
     private var unlockedSummary: String {
@@ -315,7 +343,8 @@ struct LeanResultScreen_Previews: PreviewProvider {
                     final_alignment_statement: "Alignement final"
                 )
             ),
-            onContinue: {}
+            onContinue: {},
+            onRestartAnalysis: {}
         )
         .environmentObject(UserStatus())
         .environmentObject(PremiumPurchaseManager())

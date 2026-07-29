@@ -80,6 +80,10 @@ struct legitima_frontendApp: App {
                 response: response,
                 onContinue: {
                     router.showPremiumInterviewEntry()
+                },
+                onRestartAnalysis: {
+                    preparationStore.beginNewAnalysis()
+                    router.restartAnalysis()
                 }
             )
 
