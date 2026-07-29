@@ -1,0 +1,4 @@
+- [User role](user_profile.md) — Lead iOS + backend dev, values clarity and understanding before action
+- [Workflow rules](feedback_workflow.md) — Strict rules: 1 PR = 1 commit, new branch per task, screenshot UI changes, no project.pbxproj version staging
+- [Project state](project_state.md) — Backend /cv/parse working, frontend premium with editable target role, freemium → premium flow
+- [Tech patterns](reference_tech.md) — API endpoints, screens, gotchas (/analyze restricted, project.pbxproj local version, screenshot with simctl)
