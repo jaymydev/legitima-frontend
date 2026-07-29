@@ -1,4 +1,5 @@
 import Combine
+import Foundation
 import StoreKit
 
 @MainActor
@@ -9,24 +10,44 @@ final class PremiumPurchaseManager: ObservableObject {
     @Published private(set) var isProcessing = false
     @Published var message: String?
 
+    private let simulatedUnlockStore: SimulatedPremiumUnlockStore
+    private var didAttemptLoad = false
+
+    init(simulatedUnlockStore: SimulatedPremiumUnlockStore = SimulatedPremiumUnlockStore()) {
+        self.simulatedUnlockStore = simulatedUnlockStore
+    }
+
     var displayPrice: String {
         product?.displayPrice ?? "4,99 €"
+    }
+
+    /// True when the StoreKit product is unavailable (e.g. TestFlight without
+    /// App Store Connect product) and the purchase runs as a local simulation.
+    var usesSimulatedFallback: Bool {
+        didAttemptLoad && product == nil
+    }
+
+    var canPurchase: Bool {
+        !isProcessing && (product != nil || usesSimulatedFallback)
     }
 
     func loadProduct() async {
         guard product == nil else { return }
         do {
             product = try await Product.products(for: [Self.productID]).first
-            if product == nil {
-                message = "Le produit Premium de test est indisponible. Vérifiez la configuration StoreKit du scheme."
-            }
         } catch {
-            message = "Impossible de charger l’achat Premium de test."
+            product = nil
         }
+        didAttemptLoad = true
     }
 
     func purchase() async -> Bool {
-        guard let product, !isProcessing else { return false }
+        guard !isProcessing else { return false }
+
+        guard let product else {
+            return simulatePurchase()
+        }
+
         isProcessing = true
         message = nil
         defer { isProcessing = false }
@@ -39,6 +60,7 @@ final class PremiumPurchaseManager: ObservableObject {
                     return false
                 }
                 await transaction.finish()
+                simulatedUnlockStore.unlock()
                 return true
             case .pending:
                 message = "L’achat test est en attente de validation."
@@ -60,22 +82,33 @@ final class PremiumPurchaseManager: ObservableObject {
         message = nil
         defer { isProcessing = false }
 
-        do {
-            try await AppStore.sync()
+        if product != nil {
+            do {
+                try await AppStore.sync()
+            } catch {
+                // Sync can fail in test environments; entitlements below stay authoritative.
+            }
             for await entitlement in Transaction.currentEntitlements {
                 if case .verified(let transaction) = entitlement,
                    transaction.productID == Self.productID {
+                    simulatedUnlockStore.unlock()
                     return true
                 }
             }
-            message = "Aucun achat Premium test à restaurer."
-        } catch {
-            message = "La restauration StoreKit n’a pas abouti."
         }
+
+        if simulatedUnlockStore.isUnlocked {
+            return true
+        }
+
+        message = "Aucun achat Premium test à restaurer."
         return false
     }
 
     func hasPremiumEntitlement() async -> Bool {
+        if simulatedUnlockStore.isUnlocked {
+            return true
+        }
         for await entitlement in Transaction.currentEntitlements {
             if case .verified(let transaction) = entitlement,
                transaction.productID == Self.productID {
@@ -83,5 +116,15 @@ final class PremiumPurchaseManager: ObservableObject {
             }
         }
         return false
+    }
+
+    private func simulatePurchase() -> Bool {
+        guard usesSimulatedFallback else {
+            message = "Le produit Premium de test est indisponible. Vérifiez la configuration StoreKit du scheme."
+            return false
+        }
+        simulatedUnlockStore.unlock()
+        message = nil
+        return true
     }
 }
