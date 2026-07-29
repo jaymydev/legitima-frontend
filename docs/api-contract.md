@@ -39,7 +39,7 @@ No other V1 integration route should be consumed by the frontend unless it is ex
 
 ## Interview preparation V2
 
-The premium preparation entry displays a backend-owned, versioned catalog for six use cases:
+The premium preparation entry opens directly on the recruitment preparation as a continuation of the free analysis. The backend-owned, versioned catalog of six use cases remains available as a secondary path ("Préparer un autre entretien"):
 
 - recruitment;
 - internal mobility;
@@ -250,12 +250,13 @@ More specifically, the frontend should expect:
 
 The current service layer is now aligned in principle with the documented transitional contract for `POST /analyze`.
 
-The current premium unlock flow does not require a second backend endpoint:
+The premium flow follows docs/product-decision-v2.md: a purchase must trigger real new computation, never reveal already-downloaded content.
 
-- the free result screen is populated by `POST /analyze`;
-- premium unlock immediately reveals additional sections from the same aggregated `AnalysisResponse`, directly from the result experience;
-- the premium guided flow currently continues from that same payload;
-- the current premium synthesis screen also reuses the same aggregated `AnalysisResponse` and must not trigger a second undocumented AI route.
+- the free result screen is populated by `POST /analyze` and shows only the free diagnosis sections (strategic reading, career logic, sensitive reframing);
+- the remaining `AnalysisResponse` fields (`interview_preparation`, `legitimacy_anchor`, `narrative.positioning_statement`) are no longer displayed directly; the locked cards on the result screen are teasers describing the premium preparation to be generated;
+- a successful purchase routes the user directly into the guided recruitment preparation as a continuation of the free analysis (context preserved, no use-case re-selection);
+- the premium preparation result comes from `POST /v2/interview-preparation/analyze`; the undisplayed `AnalysisResponse` fields are passed to the backend inside the free-text `context.freemium_analysis` string, which requires no contract change;
+- use-case selection remains available as a secondary path ("Préparer un autre entretien") from the premium result screen.
 
 Remaining caution:
 

@@ -1,74 +1,181 @@
 import SwiftUI
 
 struct PremiumInterviewEntryScreen: View {
+    private static let recruitmentUseCaseID = "recruitment"
+
+    private enum Phase {
+        case loading
+        case loadingFailed
+        case recruitment(InterviewUseCase)
+        case questionnaire(InterviewUseCase)
+        case result(InterviewPreparationResponse)
+        case chooseUseCase
+    }
+
     @EnvironmentObject private var interviewPreparationStore: InterviewPreparationStore
     @EnvironmentObject private var preparationStore: LocalPreparationStore
 
-    @State private var selectedUseCase: InterviewUseCase?
-    @State private var preparationResult: InterviewPreparationResponse?
-    @State private var showRecruitmentFlow = false
-    @State private var showQuestionnaire = false
-    @State private var showResult = false
+    @StateObject private var useCasesViewModel = InterviewUseCasesViewModel()
+    @State private var phase: Phase = .loading
 
     var body: some View {
-        InterviewUseCaseSelectionScreen(
-            savedPreparation: interviewPreparationStore.saved,
-            onSelect: select,
-            onResume: resume
-        )
-        .navigationDestination(isPresented: $showRecruitmentFlow) {
-            recruitmentDestination
-        }
-        .navigationDestination(isPresented: $showQuestionnaire) {
-            questionnaireDestination
-        }
-        .navigationDestination(isPresented: $showResult) {
-            resultDestination
-        }
-    }
-
-    private func select(_ useCase: InterviewUseCase) {
-        selectedUseCase = useCase
-        if useCase.id == "recruitment" {
-            interviewPreparationStore.start(useCase: useCase)
-            showRecruitmentFlow = true
-            return
-        }
-
-        interviewPreparationStore.start(useCase: useCase)
-        showQuestionnaire = true
-    }
-
-    private func resume(_ saved: SavedInterviewPreparation) {
-        guard let useCase = saved.useCase else { return }
-        selectedUseCase = useCase
-
-        if let result = saved.result {
-            preparationResult = result
-            showResult = true
-        } else if useCase.id == "recruitment" {
-            showRecruitmentFlow = true
-        } else {
-            showQuestionnaire = true
-        }
+        content
+            .task {
+                await resolveInitialPhase()
+            }
     }
 
     @ViewBuilder
-    private var recruitmentDestination: some View {
-        if let selectedUseCase {
+    private var content: some View {
+        switch phase {
+        case .loading:
+            loadingView
+
+        case .loadingFailed:
+            loadingFailedView
+
+        case .recruitment(let useCase):
             RecruitmentPremiumFlowScreen(
-                useCase: selectedUseCase,
+                useCase: useCase,
                 store: interviewPreparationStore,
                 context: recruitmentContext,
                 onTargetRoleChange: { targetRole in
                     preparationStore.updateTargetRole(targetRole)
                 },
                 onComplete: { response in
-                    preparationResult = response
-                    showRecruitmentFlow = false
-                    showResult = true
+                    phase = .result(response)
                 }
             )
+
+        case .questionnaire(let useCase):
+            InterviewQuestionnaireScreen(
+                useCase: useCase,
+                store: interviewPreparationStore,
+                onComplete: { response in
+                    phase = .result(response)
+                },
+                onBack: {
+                    phase = .chooseUseCase
+                }
+            )
+
+        case .result(let response):
+            InterviewPreparationResultScreen(
+                response: response,
+                onChooseAnother: {
+                    phase = .chooseUseCase
+                }
+            )
+
+        case .chooseUseCase:
+            InterviewUseCaseSelectionScreen(
+                savedPreparation: interviewPreparationStore.saved,
+                onSelect: select,
+                onResume: resume
+            )
+        }
+    }
+
+    private var loadingView: some View {
+        ZStack {
+            entryBackground
+            ProgressView("Préparation de votre parcours…")
+        }
+    }
+
+    private var loadingFailedView: some View {
+        ZStack {
+            entryBackground
+            VStack(spacing: 14) {
+                Text("Impossible de charger votre préparation. Vérifiez votre connexion puis réessayez.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Button("Réessayer") {
+                    Task { await startRecruitmentContinuation() }
+                }
+                .fontWeight(.semibold)
+            }
+            .padding(24)
+        }
+    }
+
+    private var entryBackground: some View {
+        LinearGradient(
+            colors: [
+                Color(red: 218 / 255, green: 249 / 255, blue: 246 / 255),
+                Color(red: 247 / 255, green: 242 / 255, blue: 232 / 255)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+
+    private func resolveInitialPhase() async {
+        guard case .loading = phase else { return }
+
+        let saved = interviewPreparationStore.saved
+        if let result = saved.result {
+            phase = .result(result)
+            return
+        }
+
+        if let useCase = saved.useCase,
+           useCase.id != Self.recruitmentUseCaseID,
+           !saved.answers.isEmpty {
+            phase = .questionnaire(useCase)
+            return
+        }
+
+        await startRecruitmentContinuation()
+    }
+
+    private func startRecruitmentContinuation() async {
+        phase = .loading
+
+        if let recruitment = recruitmentUseCase {
+            begin(recruitment)
+            return
+        }
+
+        await useCasesViewModel.load()
+
+        if let recruitment = recruitmentUseCase {
+            begin(recruitment)
+        } else {
+            phase = .loadingFailed
+        }
+    }
+
+    private var recruitmentUseCase: InterviewUseCase? {
+        useCasesViewModel.useCases.first { $0.id == Self.recruitmentUseCaseID }
+    }
+
+    private func begin(_ useCase: InterviewUseCase) {
+        interviewPreparationStore.start(useCase: useCase)
+        phase = .recruitment(useCase)
+    }
+
+    private func select(_ useCase: InterviewUseCase) {
+        interviewPreparationStore.start(useCase: useCase)
+        if useCase.id == Self.recruitmentUseCaseID {
+            phase = .recruitment(useCase)
+        } else {
+            phase = .questionnaire(useCase)
+        }
+    }
+
+    private func resume(_ saved: SavedInterviewPreparation) {
+        guard let useCase = saved.useCase else { return }
+
+        if let result = saved.result {
+            phase = .result(result)
+        } else if useCase.id == Self.recruitmentUseCaseID {
+            phase = .recruitment(useCase)
+        } else {
+            phase = .questionnaire(useCase)
         }
     }
 
@@ -89,37 +196,9 @@ struct PremiumInterviewEntryScreen: View {
             response.analysis.career_logic,
             response.sensitive_reframing.strategic_reinterpretation,
             response.narrative.core_thread,
+            response.interview_preparation.probable_objections,
+            response.interview_preparation.structured_answers,
             response.legitimacy_anchor.objective_strength,
         ].joined(separator: "\n\n")
-    }
-
-    @ViewBuilder
-    private var questionnaireDestination: some View {
-        if let selectedUseCase {
-            InterviewQuestionnaireScreen(
-                useCase: selectedUseCase,
-                store: interviewPreparationStore,
-                onComplete: { response in
-                    preparationResult = response
-                    showQuestionnaire = false
-                    showResult = true
-                },
-                onBack: {
-                    showQuestionnaire = false
-                }
-            )
-        }
-    }
-
-    @ViewBuilder
-    private var resultDestination: some View {
-        if let preparationResult {
-            InterviewPreparationResultScreen(
-                response: preparationResult,
-                onChooseAnother: {
-                    showResult = false
-                }
-            )
-        }
     }
 }
