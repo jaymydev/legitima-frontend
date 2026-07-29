@@ -68,7 +68,7 @@ La rétention ne sert pas le même but selon le tier.
 
 ## 6. Dette à résorber avant TestFlight réel
 
-- **Promesse d'export non tenue** : `PremiumUnlockCard` affiche « Synthèse premium exportable » alors qu'aucun export n'existe dans le code. À corriger (implémenter l'export ou retirer la promesse) avant tout test utilisateur réel.
+- **Promesse d'export non tenue** : ~~`PremiumUnlockCard` affiche « Synthèse premium exportable » alors qu'aucun export n'existe dans le code.~~ **Réglé** : la synthèse premium s'exporte en PDF (A4, généré localement, partage iOS) depuis l'écran de résultat premium.
 - **Scaffolding de dev visible** : `TestAccessScreen` en écran racine, libellés « Mode test », quota 20/jour.
 
 ## 7. Ordre d'implémentation
@@ -90,4 +90,4 @@ Chaque PR suit les règles de contribution : branche dédiée, un commit, `./scr
 | Design des 30 secondes post-achat | PR moment T |
 | Valeur du quota freemium (2 ou 3/jour) | PR nettoyage freemium |
 | Notifications locales (relances) | Après validation explicite — hors scope actuel |
-| Format de l'export (PDF, texte, partage) | PR export |
+| Format de l'export (PDF, texte, partage) | **Tranché** : PDF A4 via la feuille de partage iOS |
