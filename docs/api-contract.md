@@ -64,6 +64,8 @@ sensitive point, and freemium analysis through the request `context`. It must no
 the user to import the CV again. The premium screens collect only the interview stage,
 strengths and proof, difficult question, desired takeaway, and optional refinements.
 Only the final premium generation action sends a V2 analysis request.
+Free-text questions display backend-provided answer suggestions. Answers shorter than
+four trimmed characters show a non-blocking quality warning; they remain submittable.
 
 The existing recruitment flow continues to use `POST /analyze`. The V2 integration does
 not change the request or response contract of that endpoint.

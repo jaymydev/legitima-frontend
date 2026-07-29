@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LeanResultScreen: View {
     @EnvironmentObject private var userStatus: UserStatus
+    @EnvironmentObject private var purchaseManager: PremiumPurchaseManager
     let response: AnalysisResponse
     let onContinue: () -> Void
     private let lockedPreviewText = """
@@ -35,6 +36,15 @@ struct LeanResultScreen: View {
                         content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
                         backgroundColor: Color(red: 227 / 255, green: 245 / 255, blue: 236 / 255)
                     )
+
+                    if !userStatus.isPremium {
+                        HStack {
+                            Rectangle().frame(height: 1)
+                            Text("POUR ALLER PLUS LOIN").font(.caption.bold())
+                            Rectangle().frame(height: 1)
+                        }
+                        .foregroundColor(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255).opacity(0.35))
+                    }
 
                     sectionCard(
                         icon: "arrow.triangle.branch",
@@ -81,13 +91,15 @@ struct LeanResultScreen: View {
                     )
 
                     if !userStatus.isPremium {
-                        inlinePremiumUnlockCard
+                        PremiumUnlockCard(
+                            purchaseManager: purchaseManager,
+                            onUnlocked: userStatus.activatePremium
+                        )
                     }
 
-                    Button(action: {
-                        onContinue()
-                    }) {
-                        Text(userStatus.isPremium ? "Continuer ma préparation" : "Voir la suite de ma préparation")
+                    if userStatus.isPremium {
+                        Button(action: onContinue) {
+                            Text("Commencer ma préparation Premium")
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -95,13 +107,17 @@ struct LeanResultScreen: View {
                             .foregroundColor(.white)
                             .cornerRadius(14)
                     }
-                    .padding(.top, 8)
+                        .padding(.top, 8)
+                    }
 
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 30)
                 .padding(.bottom, 24)
             }
+        }
+        .task {
+            await purchaseManager.loadProduct()
         }
     }
 
@@ -183,48 +199,6 @@ struct LeanResultScreen: View {
 
         let cutoffIndex = cleaned.index(cleaned.startIndex, offsetBy: 177)
         return String(cleaned[..<cutoffIndex]) + "..."
-    }
-
-    private var inlinePremiumUnlockCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Passez à la préparation complète")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(Color(red: 47 / 255, green: 49 / 255, blue: 49 / 255))
-
-            Text("Débloquez maintenant les contenus déjà prêts sur cet écran, puis entrez dans le parcours premium guidé.")
-                .font(.subheadline)
-                .foregroundColor(Color(red: 91 / 255, green: 95 / 255, blue: 95 / 255))
-
-            Button(action: {
-                userStatus.activatePremium()
-            }) {
-                Text("Débloquer et voir mes contenus")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(red: 43 / 255, green: 111 / 255, blue: 113 / 255))
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-            }
-        }
-        .padding(18)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(0.95),
-                    Color(red: 247 / 255, green: 244 / 255, blue: 232 / 255).opacity(0.95)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.black.opacity(0.05), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 
     private var premiumUnlockBanner: some View {
@@ -344,5 +318,6 @@ struct LeanResultScreen_Previews: PreviewProvider {
             onContinue: {}
         )
         .environmentObject(UserStatus())
+        .environmentObject(PremiumPurchaseManager())
     }
 }

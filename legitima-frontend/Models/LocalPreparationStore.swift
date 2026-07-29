@@ -47,6 +47,11 @@ final class LocalPreparationStore: ObservableObject {
         persist()
     }
 
+    func updateTargetRole(_ targetRole: String) {
+        snapshot.targetRole = targetRole
+        persist()
+    }
+
     func beginNewAnalysis() {
         snapshot.analysis = nil
         persist()

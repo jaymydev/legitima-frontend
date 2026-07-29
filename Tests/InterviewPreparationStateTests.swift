@@ -7,9 +7,20 @@ struct InterviewPreparationStateTests {
         try testBackendCatalogDecoding()
         try testProtectedDraftAndResultRestoration()
         testRequiredQuestionValidation()
+        testShortAnswersRemainValidButAreFlagged()
         testFreemiumEntryStillUsesLeanOnboarding()
         try testRecruitmentRequestReusesFreemiumContext()
         print("Interview preparation state tests passed")
+    }
+
+    private static func testShortAnswersRemainValidButAreFlagged() {
+        let answers = ["role_context": "A"]
+
+        precondition(sampleUseCase.hasAllRequiredAnswers(answers))
+        precondition(InterviewAnswerQuality.isTooShort("A"))
+        precondition(InterviewAnswerQuality.isTooShort(" abc "))
+        precondition(!InterviewAnswerQuality.isTooShort(""))
+        precondition(!InterviewAnswerQuality.isTooShort("abcd"))
     }
 
     private static func testBackendCatalogDecoding() throws {
@@ -89,6 +100,12 @@ struct InterviewPreparationStateTests {
             preconditionFailure("Saved analyses must reopen their result")
         }
         precondition(restored == sampleLeanAnalysis)
+
+        router.showPremiumInterviewEntry()
+        precondition(
+            router.path == [.premiumInterviewEntry],
+            "Premium results must open the guided preparation directly"
+        )
     }
 
     private static func testRecruitmentRequestReusesFreemiumContext() throws {

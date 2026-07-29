@@ -14,6 +14,7 @@ struct legitima_frontendApp: App {
     @StateObject private var premiumDraft = PremiumPreparationDraft()
     @StateObject private var preparationStore = LocalPreparationStore()
     @StateObject private var interviewPreparationStore = InterviewPreparationStore()
+    @StateObject private var purchaseManager = PremiumPurchaseManager()
 
     var body: some Scene {
         WindowGroup {
@@ -31,6 +32,8 @@ struct legitima_frontendApp: App {
                                     router.restartAnalysis()
                                 }
                             )
+                        case .premiumInterviewEntry:
+                            PremiumInterviewEntryScreen()
                         }
                     }
             }
@@ -39,6 +42,13 @@ struct legitima_frontendApp: App {
             .environmentObject(preparationStore)
             .environmentObject(interviewPreparationStore)
             .environmentObject(router)
+            .environmentObject(purchaseManager)
+            .task {
+                await purchaseManager.loadProduct()
+                if await purchaseManager.hasPremiumEntitlement() {
+                    userStatus.activatePremium()
+                }
+            }
         }
     }
 
@@ -69,7 +79,7 @@ struct legitima_frontendApp: App {
             LeanResultScreen(
                 response: response,
                 onContinue: {
-                    router.showProgression()
+                    router.showPremiumInterviewEntry()
                 }
             )
 

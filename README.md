@@ -63,7 +63,7 @@ The current premium behavior is intentionally split in two steps:
 
 - after a successful free analysis, locked premium cards are visible as teasers;
 - when premium is unlocked, those cards are revealed immediately on the result screen without a separate upsell screen;
-- only after that immediate reward does the user continue into the deeper premium preparation flow.
+- after that immediate reward, the user continues directly into the deeper premium preparation flow without an intermediate roadmap screen.
 
 This keeps the premium transition rewarding before it becomes more effortful.
 

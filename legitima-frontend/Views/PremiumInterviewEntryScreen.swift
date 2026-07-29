@@ -60,6 +60,9 @@ struct PremiumInterviewEntryScreen: View {
                 useCase: selectedUseCase,
                 store: interviewPreparationStore,
                 context: recruitmentContext,
+                onTargetRoleChange: { targetRole in
+                    preparationStore.updateTargetRole(targetRole)
+                },
                 onComplete: { response in
                     preparationResult = response
                     showRecruitmentFlow = false

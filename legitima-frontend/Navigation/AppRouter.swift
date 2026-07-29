@@ -11,6 +11,7 @@ final class AppRouter: ObservableObject {
 
     enum Route: Hashable {
         case progression
+        case premiumInterviewEntry
     }
 
     @Published var root: Root = .access
@@ -28,6 +29,10 @@ final class AppRouter: ObservableObject {
 
     func showProgression() {
         path.append(.progression)
+    }
+
+    func showPremiumInterviewEntry() {
+        path.append(.premiumInterviewEntry)
     }
 
     func backToResults() {
