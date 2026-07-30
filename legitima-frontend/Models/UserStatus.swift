@@ -54,9 +54,19 @@ final class UserStatus: ObservableObject {
             : "\(remainingFreeAnalyses) analyses de test restantes aujourd'hui"
     }
 
+    /// A purchase just completed in this session. Arms the congratulation
+    /// banner, which is a moment — not a state.
     func activatePremium() {
         isPremium = true
         hasSeenPremiumUnlock = true
+    }
+
+    /// Access the user already owns, recovered from an entitlement at launch
+    /// or from « Restaurer mes achats ». Deliberately does not arm the banner:
+    /// routing a restore through `activatePremium()` replayed the « vous venez
+    /// de débloquer » card on every single launch.
+    func restorePremium() {
+        isPremium = true
     }
 
     func consumeFreeAnalysisIfNeeded() {
