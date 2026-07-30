@@ -93,7 +93,7 @@ struct PremiumInterviewEntryScreen: View {
             VStack(spacing: 14) {
                 Text("Impossible de charger votre préparation. Vérifiez votre connexion puis réessayez.")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(LegitimaColors.muted)
                     .multilineTextAlignment(.center)
 
                 Button("Réessayer") {

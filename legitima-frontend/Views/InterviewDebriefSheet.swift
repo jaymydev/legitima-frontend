@@ -50,12 +50,7 @@ struct InterviewDebriefSheet: View {
 
                         Button(action: save) {
                             Text("Enregistrer mon débrief")
-                                .fontWeight(.bold)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .foregroundColor(.white)
-                                .background(LegitimaColors.accentSurface)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .legitimaPrimaryLabel()
                         }
                         .disabled(!canSave)
                         .opacity(canSave ? 1 : 0.5)
@@ -99,7 +94,7 @@ struct InterviewDebriefSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(LegitimaColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
     private func save() {

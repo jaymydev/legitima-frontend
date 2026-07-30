@@ -37,10 +37,10 @@ struct AnalysisLoadingCard: View {
         .padding(18)
         .background(LegitimaColors.surfaceStrong)
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .stroke(Color(light: .rgb(225, 232, 232), dark: .rgb(52, 60, 61)), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
         .shadow(color: Color.black.opacity(0.18), radius: 28, x: 0, y: 14)
         .onAppear {
             isAnimating = true

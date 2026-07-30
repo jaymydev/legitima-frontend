@@ -52,7 +52,7 @@ struct InterviewQuestionnaireScreen: View {
                             .font(.system(size: 32, weight: .bold, design: .rounded))
 
                         Text(viewModel.useCase.description)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(LegitimaColors.muted)
                     }
 
                     existingDataCards
@@ -65,12 +65,7 @@ struct InterviewQuestionnaireScreen: View {
                         startAnalysis()
                     } label: {
                         Text("Préparer mon entretien")
-                            .fontWeight(.bold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .foregroundColor(.white)
-                            .background(LegitimaColors.accentSurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .legitimaPrimaryLabel()
                     }
                     .disabled(viewModel.isLoading || !viewModel.canSubmit || !userStatus.canStartAnalysis)
                     .opacity(viewModel.canSubmit && userStatus.canStartAnalysis ? 1 : 0.55)
@@ -137,11 +132,11 @@ struct InterviewQuestionnaireScreen: View {
                 if !question.required {
                     Text("Facultatif")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(LegitimaColors.muted)
                 }
             }
 
-            JustifiedText(question.helper, color: .secondary)
+            JustifiedText(question.helper, color: LegitimaColors.muted)
 
             PlaceholderTextEditor(
                 placeholder: "Votre réponse",
@@ -150,10 +145,10 @@ struct InterviewQuestionnaireScreen: View {
                 minHeight: 120
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: LegitimaRadius.control)
                     .stroke(LegitimaColors.hairline, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
             AnswerGuidanceView(
                 suggestions: question.suggestions,
@@ -162,7 +157,7 @@ struct InterviewQuestionnaireScreen: View {
         }
         .padding(16)
         .background(LegitimaColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
     private func binding(for questionID: String) -> Binding<String> {
