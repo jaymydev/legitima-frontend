@@ -7,14 +7,22 @@ struct InterviewQuestionnaireScreen: View {
     let onComplete: (InterviewPreparationResponse) -> Void
     let onBack: () -> Void
 
+    private let context: InterviewPreparationContext
+
     init(
         useCase: InterviewUseCase,
         store: InterviewPreparationStore,
+        context: InterviewPreparationContext,
         onComplete: @escaping (InterviewPreparationResponse) -> Void,
         onBack: @escaping () -> Void
     ) {
+        self.context = context
         _viewModel = StateObject(
-            wrappedValue: InterviewQuestionnaireViewModel(useCase: useCase, store: store)
+            wrappedValue: InterviewQuestionnaireViewModel(
+                useCase: useCase,
+                store: store,
+                context: context
+            )
         )
         self.onComplete = onComplete
         self.onBack = onBack
@@ -46,6 +54,8 @@ struct InterviewQuestionnaireScreen: View {
                         Text(viewModel.useCase.description)
                             .foregroundColor(.secondary)
                     }
+
+                    existingDataCards
 
                     ForEach(viewModel.useCase.questions) { question in
                         questionCard(question)
@@ -93,6 +103,29 @@ struct InterviewQuestionnaireScreen: View {
             if let result {
                 onComplete(result)
             }
+        }
+    }
+
+    /// Mirrors the recruitment flow: show what the free analysis already
+    /// provides, so the premium never reads as a cold restart.
+    @ViewBuilder
+    private var existingDataCards: some View {
+        if !context.careerExperiences.trimmed.isEmpty {
+            RecruitmentExistingDataCard(
+                title: "Votre parcours, déjà transmis",
+                content: context.careerExperiences,
+                icon: "text.book.closed.fill",
+                accent: LegitimaColors.accent
+            )
+        }
+
+        if !context.sensitivePoint.trimmed.isEmpty {
+            RecruitmentExistingDataCard(
+                title: "La zone sensible identifiée",
+                content: context.sensitivePoint,
+                icon: "exclamationmark.bubble.fill",
+                accent: LegitimaColors.accent
+            )
         }
     }
 

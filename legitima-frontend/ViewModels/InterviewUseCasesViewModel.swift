@@ -55,12 +55,14 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
 
     private let service: InterviewPreparationService
     private let store: InterviewPreparationStore
-    private var context: InterviewPreparationContext?
+    /// Never optional: every premium generation continues the free analysis.
+    /// A defaulted nil here silently degraded three of the four use cases.
+    private var context: InterviewPreparationContext
 
     convenience init(
         useCase: InterviewUseCase,
         store: InterviewPreparationStore,
-        context: InterviewPreparationContext? = nil
+        context: InterviewPreparationContext
     ) {
         self.init(
             useCase: useCase,
@@ -73,7 +75,7 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
     init(
         useCase: InterviewUseCase,
         store: InterviewPreparationStore,
-        context: InterviewPreparationContext? = nil,
+        context: InterviewPreparationContext,
         service: InterviewPreparationService
     ) {
         self.useCase = useCase

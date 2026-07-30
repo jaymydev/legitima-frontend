@@ -38,7 +38,7 @@ struct PremiumInterviewEntryScreen: View {
             RecruitmentPremiumFlowScreen(
                 useCase: useCase,
                 store: interviewPreparationStore,
-                context: recruitmentContext,
+                context: leanContext,
                 onTargetRoleChange: { targetRole in
                     preparationStore.updateTargetRole(targetRole)
                 },
@@ -54,6 +54,7 @@ struct PremiumInterviewEntryScreen: View {
             InterviewQuestionnaireScreen(
                 useCase: useCase,
                 store: interviewPreparationStore,
+                context: leanContext,
                 onComplete: { response in
                     phase = .result(response)
                 },
@@ -186,7 +187,9 @@ struct PremiumInterviewEntryScreen: View {
         }
     }
 
-    private var recruitmentContext: InterviewPreparationContext {
+    /// Every use case starts from the free analysis, not just recruitment:
+    /// the « récit → réponses » mechanism is what the premium is bought for.
+    private var leanContext: InterviewPreparationContext {
         .lean(from: preparationStore.snapshot)
     }
 }
