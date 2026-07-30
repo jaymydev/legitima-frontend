@@ -25,7 +25,7 @@ struct InterviewPreparationResultScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     Text(response.title)
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(.largeTitle, design: .rounded).weight(.bold))
 
                     if let daysSince = interviewDaysSince {
                         debriefCard(daysSince: daysSince)

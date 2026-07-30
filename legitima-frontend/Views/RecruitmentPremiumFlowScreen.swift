@@ -130,7 +130,7 @@ struct RecruitmentPremiumFlowScreen: View {
                 .tint(accent)
 
             Text(stepTitle)
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .font(.system(.largeTitle, design: .rounded).weight(.bold))
 
             Text(stepSubtitle)
                 .foregroundColor(LegitimaColors.muted)

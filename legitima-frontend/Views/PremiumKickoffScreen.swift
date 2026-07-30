@@ -28,6 +28,11 @@ struct PremiumKickoffScreen: View {
     @State private var revealStage = 0
     @State private var isTakingLong = false
 
+    /// Kept at their design size but scaling with the text beside them, so the
+    /// icon does not shrink relative to its label at accessibility sizes.
+    @ScaledMetric(relativeTo: .largeTitle) private var warningIconSize: CGFloat = 44
+    @ScaledMetric(relativeTo: .largeTitle) private var successIconSize: CGFloat = 52
+
     var body: some View {
         ZStack {
             LinearGradient(
@@ -100,7 +105,7 @@ struct PremiumKickoffScreen: View {
     private var failedView: some View {
         VStack(spacing: 18) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 44))
+                .font(.system(size: warningIconSize))
                 .foregroundColor(LegitimaColors.gold)
 
             Text("La génération n’a pas abouti")
@@ -218,7 +223,7 @@ struct PremiumKickoffScreen: View {
     private var bridgeView: some View {
         VStack(spacing: 18) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 52))
+                .font(.system(size: successIconSize))
                 .foregroundColor(LegitimaColors.accent)
                 .transition(.scale(scale: 0.4).combined(with: .opacity))
 

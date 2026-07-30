@@ -25,7 +25,7 @@ struct TestAccessScreen: View {
 
                     VStack(spacing: 12) {
                         Text("Bienvenue sur\nLegitima")
-                            .font(.system(size: 42, weight: .bold, design: .rounded))
+                            .font(.system(.largeTitle, design: .rounded).weight(.bold))
                             .multilineTextAlignment(.center)
                             .foregroundColor(LegitimaColors.ink)
 

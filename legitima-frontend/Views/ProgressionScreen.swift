@@ -89,7 +89,7 @@ struct ProgressionScreen: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text(userStatus.isPremium ? "Premium activé" : "La suite de votre préparation est prête")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
                     .foregroundColor(primaryText)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -177,7 +177,7 @@ struct ProgressionScreen: View {
 
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("\(completedCount)")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(.system(.title, design: .rounded).weight(.bold))
                         .foregroundColor(accentText)
 
                     Text("étapes actives")

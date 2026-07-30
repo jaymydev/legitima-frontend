@@ -49,7 +49,7 @@ struct InterviewQuestionnaireScreen: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text(viewModel.useCase.title)
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .font(.system(.largeTitle, design: .rounded).weight(.bold))
 
                         Text(viewModel.useCase.description)
                             .foregroundColor(LegitimaColors.muted)

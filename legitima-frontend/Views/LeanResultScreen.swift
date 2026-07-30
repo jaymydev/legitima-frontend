@@ -249,7 +249,7 @@ struct LeanResultScreen: View {
                 .clipShape(Capsule())
 
             Text("Votre parcours commence à prendre forme")
-                .font(.system(size: 31, weight: .bold, design: .rounded))
+                .font(.system(.largeTitle, design: .rounded).weight(.bold))
                 .foregroundColor(LegitimaColors.ink)
 
             Text("Vous avez maintenant une première lecture solide. La préparation complète sert à transformer cette matière en récit, en réponses et en posture d’entretien.")
