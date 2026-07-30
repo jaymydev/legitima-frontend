@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Hook post-commit : lance le nettoyage Xcode en arrière-plan sans bloquer le commit.
+# Installé par setup-hooks.sh — la version source vit dans scripts/hooks/post-commit.
+# Pour sauter le nettoyage ponctuellement : SKIP_XCODE_CLEAN=1 git commit ...
+
+[ "${SKIP_XCODE_CLEAN:-0}" = "1" ] && exit 0
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+CLEAN_SCRIPT="$REPO_ROOT/scripts/xcode-clean.sh"
+
+if [ -x "$CLEAN_SCRIPT" ]; then
+  # nohup + disown : le nettoyage continue même si le terminal se ferme,
+  # et le commit rend la main immédiatement.
+  nohup "$CLEAN_SCRIPT" >> "${TMPDIR:-/tmp}/xcode-clean.log" 2>&1 &
+  disown 2>/dev/null || true
+  echo "✅ Xcode cleaned"
+fi
+
+# Ne jamais faire échouer le commit, quoi qu'il arrive
+exit 0
