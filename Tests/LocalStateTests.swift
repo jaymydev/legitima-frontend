@@ -12,6 +12,8 @@ struct LocalStateTests {
         testSimulatedPremiumUnlockPersistence()
         testLoadingProgressNeverOverclaims()
         testRestoringPremiumDoesNotReplayTheUnlockBanner()
+        testInterviewRemindersNeverFireLateOrIntoThePast()
+        testIntentPickerCoversEveryPublishedUseCase()
         print("Local state tests passed")
     }
 
@@ -47,6 +49,71 @@ struct LocalStateTests {
         // Premium access must still suspend the free quota either way.
         precondition(restoring.canStartAnalysis)
         precondition(restoring.freeQuotaLabel == "Analyses premium actives")
+    }
+
+    private static func testInterviewRemindersNeverFireLateOrIntoThePast() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Paris")!
+
+        func day(_ d: Int, hour: Int = 12) -> Date {
+            calendar.date(from: DateComponents(year: 2026, month: 9, day: d, hour: hour))!
+        }
+
+        // Interview on the 20th, seen from the 1st: both reminders scheduled.
+        let full = InterviewReminderPlan.reminders(
+            interviewDate: day(20), now: day(1), calendar: calendar
+        )
+        precondition(full.count == 2)
+        precondition(full.allSatisfy { calendar.component(.hour, from: $0.fireDate) == 9 },
+                     "un rappel à l'heure de saisie réveillerait quelqu'un en pleine nuit")
+        precondition(calendar.component(.day, from: full[0].fireDate) == 17)
+        precondition(calendar.component(.day, from: full[1].fireDate) == 19)
+        precondition(full[1].title.contains("demain"))
+        precondition(full[1].body.contains("synthèse"), "la veille, l'artefact est la synthèse")
+
+        // Two days out: the J-3 window has passed, only the eve remains.
+        let late = InterviewReminderPlan.reminders(
+            interviewDate: day(20), now: day(18), calendar: calendar
+        )
+        precondition(late.count == 1)
+        precondition(late[0].title.contains("demain"))
+
+        // Interview today, or already past: reminding someone about an
+        // interview they have had is worse than saying nothing.
+        precondition(InterviewReminderPlan.reminders(
+            interviewDate: day(20), now: day(20), calendar: calendar).isEmpty)
+        precondition(InterviewReminderPlan.reminders(
+            interviewDate: day(20), now: day(25), calendar: calendar).isEmpty)
+
+        // Date cleared: nothing to schedule.
+        precondition(InterviewReminderPlan.reminders(
+            interviewDate: nil, now: day(1), calendar: calendar).isEmpty)
+
+        // Every identifier the plan can produce must be cancellable, or moving
+        // the interview earlier leaves a reminder pointing at a dead day.
+        let ids = Set(InterviewReminderPlan.allIdentifiers)
+        precondition(full.allSatisfy { ids.contains($0.id) })
+        precondition(ids.count == 2)
+    }
+
+    private static func testIntentPickerCoversEveryPublishedUseCase() {
+        // Mirrors the backend catalog. If the two drift apart again, someone
+        // preparing the missing type has no honest answer in onboarding and
+        // gets routed to recruitment by default.
+        let published = [
+            "recruitment", "internal_mobility", "role_evolution",
+            "mid_year", "annual_review", "performance_review",
+        ]
+        let offered = Set(InterviewIntentOption.all.compactMap(\.useCaseID))
+
+        for id in published {
+            precondition(offered.contains(id), "le sélecteur d'intention n'offre pas \(id)")
+        }
+        precondition(offered.count == published.count, "le sélecteur propose un type inconnu du backend")
+        precondition(
+            InterviewIntentOption.all.contains { $0.useCaseID == nil },
+            "l'option « je ne sais pas encore » doit rester : le choix est optionnel"
+        )
     }
 
     private static func testLoadingProgressNeverOverclaims() {

@@ -8,11 +8,20 @@ struct InterviewIntentOption: Equatable {
     let useCaseID: String?
     let label: String
 
+    /// Must cover every use case the backend publishes.
+    ///
+    /// Two were missing — mid-year and performance review — so someone
+    /// preparing one of those had no honest answer here, picked « Je ne sais
+    /// pas encore », and was routed into the recruitment flow by default.
+    /// They were still offered in the premium selection screen, which reads
+    /// the catalog, so the app contradicted itself between the two screens.
     static let all: [InterviewIntentOption] = [
         InterviewIntentOption(useCaseID: "recruitment", label: "Recrutement"),
         InterviewIntentOption(useCaseID: "internal_mobility", label: "Mobilité interne"),
         InterviewIntentOption(useCaseID: "role_evolution", label: "Évolution de poste"),
         InterviewIntentOption(useCaseID: "annual_review", label: "Entretien annuel"),
+        InterviewIntentOption(useCaseID: "mid_year", label: "Entretien de mi-année"),
+        InterviewIntentOption(useCaseID: "performance_review", label: "Entretien de performance"),
         InterviewIntentOption(useCaseID: nil, label: "Je ne sais pas encore"),
     ]
 }

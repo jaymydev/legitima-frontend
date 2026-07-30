@@ -518,10 +518,16 @@ struct InterviewPreparationStateTests {
             preconditionFailure("Completed preparation should land on its result")
         }
 
-        // The onboarding intent options map to premium use-case IDs.
-        precondition(InterviewIntentOption.all.count == 5)
-        precondition(InterviewIntentOption.all.first?.useCaseID == recruitmentID)
-        precondition(InterviewIntentOption.all.last?.useCaseID == nil)
+        // The onboarding intent options map to premium use-case IDs. The
+        // catalog grows, so assert the ordering rules rather than a count —
+        // coverage of every published use case is checked in LocalStateTests.
+        precondition(InterviewIntentOption.all.first?.useCaseID == recruitmentID,
+                     "le cas le plus fréquent doit rester en tête")
+        precondition(InterviewIntentOption.all.last?.useCaseID == nil,
+                     "« je ne sais pas encore » doit fermer la liste, pas s'y perdre")
+        let ids = InterviewIntentOption.all.compactMap(\.useCaseID)
+        precondition(Set(ids).count == ids.count, "un type ne doit apparaître qu'une fois")
+        precondition(InterviewIntentOption.all.allSatisfy { !$0.label.isEmpty })
     }
 
     private static let sampleUseCase = InterviewUseCase(
