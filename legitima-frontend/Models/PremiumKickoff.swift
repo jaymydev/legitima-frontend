@@ -18,6 +18,37 @@ struct PremiumKickoffResponse: Codable, Equatable {
     }
 }
 
+/// Why a kickoff did not produce an answer. The distinction matters: a missing
+/// endpoint is a planned degrade the user need not know about, whereas a
+/// network or server failure is something they just paid for and lost — they
+/// deserve to be told and to be able to retry.
+enum PremiumKickoffOutcome: Equatable {
+    case ready(PremiumKickoffResponse)
+    /// Endpoint not deployed yet — degrade silently to the continuity bridge.
+    case notDeployed
+    /// Network or server failure — surface it and offer a retry.
+    case failed
+
+    static let backendErrorDomain = "LegitimaInterviewPreparation"
+
+    /// HTTP answers that mean « this route does not exist here », as opposed to
+    /// « the route exists and something went wrong ».
+    private static let missingEndpointCodes: Set<Int> = [404, 405, 501]
+
+    static func classify(_ error: Error) -> PremiumKickoffOutcome {
+        let underlying: Error
+        if case IAService.IAServiceError.requestFailed(let wrapped) = error {
+            underlying = wrapped
+        } else {
+            underlying = error
+        }
+
+        let nsError = underlying as NSError
+        guard nsError.domain == backendErrorDomain else { return .failed }
+        return missingEndpointCodes.contains(nsError.code) ? .notDeployed : .failed
+    }
+}
+
 extension InterviewPreparationContext {
     /// The lean data every premium computation starts from. Shared by the
     /// kickoff call and the guided recruitment flow so the premium entry is
