@@ -25,10 +25,32 @@ struct InterviewPreparationStateTests {
         let answers = ["role_context": "A"]
 
         precondition(sampleUseCase.hasAllRequiredAnswers(answers))
-        precondition(InterviewAnswerQuality.isTooShort("A"))
-        precondition(InterviewAnswerQuality.isTooShort(" abc "))
-        precondition(!InterviewAnswerQuality.isTooShort(""))
-        precondition(!InterviewAnswerQuality.isTooShort("abcd"))
+        // An untouched field says nothing — no nudge before they have typed.
+        precondition(!InterviewAnswerQuality.deservesMoreMaterial(""))
+        precondition(!InterviewAnswerQuality.deservesMoreMaterial("   \n "))
+
+        // The fragments the old 4-character guard let through.
+        precondition(InterviewAnswerQuality.deservesMoreMaterial("oui bof"))
+        precondition(InterviewAnswerQuality.deservesMoreMaterial("Gestion de projet"))
+        precondition(
+            InterviewAnswerQuality.deservesMoreMaterial(
+                "Pilotage de projets et coordination produit"
+            )
+        )
+
+        // A real answer carrying a specific detail must stay quiet, otherwise
+        // the nudge becomes noise and stops being read.
+        precondition(
+            !InterviewAnswerQuality.deservesMoreMaterial(
+                "J'ai piloté la refonte du parcours d'inscription, réduisant l'abandon de 30%"
+            )
+        )
+
+        // Questions offering options expect a couple of words.
+        precondition(
+            !InterviewAnswerQuality.deservesMoreMaterial("Entretien RH", expectsShortAnswer: true)
+        )
+        precondition(InterviewAnswerQuality.deservesMoreMaterial("Entretien RH"))
     }
 
     private static func testBackendCatalogDecoding() throws {
