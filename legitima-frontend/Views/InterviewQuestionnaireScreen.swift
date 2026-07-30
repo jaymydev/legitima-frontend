@@ -84,8 +84,11 @@ struct InterviewQuestionnaireScreen: View {
 
             if viewModel.isLoading {
                 AnalysisLoadingCard(
-                    title: "Préparation en cours",
-                    subtitle: "Nous structurons vos réponses pour cet entretien.",
+                    steps: [
+                        "Relecture de vos réponses",
+                        "Structuration de vos arguments",
+                        "Rédaction de votre synthèse",
+                    ],
                     accent: LegitimaColors.accent
                 )
                 .padding(24)
