@@ -79,9 +79,7 @@ struct InterviewPreparationResultScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.headline)
-            Text(content)
-                .foregroundColor(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            JustifiedText(content, textStyle: .body, color: .secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
@@ -100,8 +98,7 @@ struct InterviewPreparationResultScreen: View {
                         .frame(width: 24, height: 24)
                         .background(LegitimaColors.chip)
                         .clipShape(Circle())
-                    Text(item)
-                        .foregroundColor(.secondary)
+                    JustifiedText(item, textStyle: .body, color: .secondary)
                 }
             }
         }

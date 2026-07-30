@@ -242,10 +242,7 @@ struct LeanOnboardingScreen: View {
                 .foregroundColor(LegitimaColors.ink)
 
             if let helper {
-                Text(helper)
-                    .font(.subheadline)
-                    .foregroundColor(LegitimaColors.muted)
-                    .fixedSize(horizontal: false, vertical: true)
+                JustifiedText(helper, color: LegitimaColors.muted)
             }
 
             field()
@@ -283,14 +280,12 @@ struct LeanOnboardingScreen: View {
                     .font(.headline)
                     .foregroundColor(LegitimaColors.ink)
 
-                Text(
+                JustifiedText(
                     userStatus.isPremium
                     ? "Vos analyses premium sont disponibles sans limite quotidienne."
-                    : "Le mode test inclut jusqu'à 20 analyses réussies par jour."
+                    : "Le mode test inclut jusqu'à 20 analyses réussies par jour.",
+                    color: LegitimaColors.muted
                 )
-                .font(.subheadline)
-                .foregroundColor(LegitimaColors.muted)
-                .fixedSize(horizontal: false, vertical: true)
 
                 Text(userStatus.freeQuotaLabel)
                     .font(.caption.weight(.semibold))

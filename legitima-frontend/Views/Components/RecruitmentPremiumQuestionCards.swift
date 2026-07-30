@@ -8,9 +8,10 @@ struct RecruitmentTargetRoleCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Quel poste visez-vous ?")
                     .font(.headline)
-                Text("Vous pouvez l’actualiser si votre projet a changé depuis la première analyse.")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                JustifiedText(
+                    "Vous pouvez l’actualiser si votre projet a changé depuis la première analyse.",
+                    color: .secondary
+                )
             }
 
             TextField("Ex. Responsable de projet", text: $targetRole)
@@ -102,10 +103,7 @@ struct RecruitmentExistingDataCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
-                Text(content)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(5)
+                JustifiedText(content, color: .secondary, lineLimit: 5)
             }
 
             Spacer(minLength: 0)
@@ -130,9 +128,7 @@ private struct RecruitmentQuestionHeading: View {
                         .foregroundColor(.secondary)
                 }
             }
-            Text(question.helper)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+            JustifiedText(question.helper, color: .secondary)
         }
     }
 }

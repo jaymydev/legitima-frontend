@@ -168,14 +168,12 @@ struct LeanResultScreen: View {
                     .font(.headline)
                     .foregroundColor(LegitimaColors.ink)
 
-                Text(
+                JustifiedText(
                     userStatus.isPremium
                         ? "Gardez votre préparation à portée de main pour la révision finale."
-                        : "Transformez cette lecture en réponses prêtes avant le jour J."
+                        : "Transformez cette lecture en réponses prêtes avant le jour J.",
+                    color: LegitimaColors.muted
                 )
-                .font(.subheadline)
-                .foregroundColor(LegitimaColors.muted)
-                .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(16)
@@ -201,20 +199,16 @@ struct LeanResultScreen: View {
                     .font(.headline)
                     .foregroundColor(LegitimaColors.ink)
 
-                Text(result.summary)
-                    .font(.subheadline)
-                    .foregroundColor(LegitimaColors.muted)
-                    .lineLimit(4)
-                    .fixedSize(horizontal: false, vertical: true)
+                JustifiedText(result.summary, color: LegitimaColors.muted, lineLimit: 4)
             } else {
                 Text("Votre préparation guidée vous attend")
                     .font(.headline)
                     .foregroundColor(LegitimaColors.ink)
 
-                Text("Quelques questions ciblées sur votre entretien, puis nous générons vos réponses aux objections, votre ancrage de légitimité et votre synthèse finale.")
-                    .font(.subheadline)
-                    .foregroundColor(LegitimaColors.muted)
-                    .fixedSize(horizontal: false, vertical: true)
+                JustifiedText(
+                    "Quelques questions ciblées sur votre entretien, puis nous générons vos réponses aux objections, votre ancrage de légitimité et votre synthèse finale.",
+                    color: LegitimaColors.muted
+                )
             }
 
             Button(action: onContinue) {
@@ -288,10 +282,7 @@ struct LeanResultScreen: View {
                     .font(.caption.weight(.bold))
                     .foregroundColor(LegitimaColors.accent)
 
-                Text(heroInsightText)
-                    .font(.subheadline)
-                    .foregroundColor(LegitimaColors.ink)
-                    .fixedSize(horizontal: false, vertical: true)
+                JustifiedText(heroInsightText, color: LegitimaColors.ink)
             }
         }
         .padding(16)
@@ -330,9 +321,10 @@ struct LeanResultScreen: View {
                     .fontWeight(.bold)
                     .foregroundColor(LegitimaColors.ink)
 
-                Text("Votre accès premium est actif. Reprenez votre préparation guidée quand vous êtes prêt.")
-                    .font(.subheadline)
-                    .foregroundColor(LegitimaColors.muted)
+                JustifiedText(
+                    "Votre accès premium est actif. Reprenez votre préparation guidée quand vous êtes prêt.",
+                    color: LegitimaColors.muted
+                )
             }
 
             Spacer(minLength: 0)
@@ -385,10 +377,7 @@ struct LeanResultScreen: View {
                         .foregroundColor(LegitimaColors.ink)
                 }
 
-                Text(content)
-                    .font(.subheadline)
-                    .foregroundColor(LegitimaColors.body)
-                    .fixedSize(horizontal: false, vertical: true)
+                JustifiedText(content, color: LegitimaColors.body)
             }
         }
         .opacity(isLocked ? 0.65 : 1)

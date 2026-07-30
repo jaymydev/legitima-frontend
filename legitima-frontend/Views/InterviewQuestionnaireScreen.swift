@@ -108,9 +108,7 @@ struct InterviewQuestionnaireScreen: View {
                 }
             }
 
-            Text(question.helper)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+            JustifiedText(question.helper, color: .secondary)
 
             PlaceholderTextEditor(
                 placeholder: "Votre réponse",
