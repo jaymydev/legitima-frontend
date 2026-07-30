@@ -21,7 +21,9 @@ struct PremiumKickoffResponse: Codable, Equatable {
 extension InterviewPreparationContext {
     /// The lean data every premium computation starts from. Shared by the
     /// kickoff call and the guided recruitment flow so the premium entry is
-    /// always the continuation of the free analysis, never a re-entry.
+    /// always the continuation of the free analysis, never a re-entry. Once a
+    /// debrief exists, the next preparation also starts from what the room
+    /// actually revealed.
     static func lean(
         from snapshot: PreparationSnapshot,
         now: Date = .now
@@ -30,11 +32,13 @@ extension InterviewPreparationContext {
             targetRole: snapshot.targetRole,
             careerExperiences: snapshot.careerSummary,
             sensitivePoint: snapshot.sensitivePoint,
-            freemiumAnalysis: [
-                interviewDeadline(in: snapshot, now: now),
-                snapshot.analysis.map(freemiumSummary),
-            ]
-            .compactMap { $0 }
+            freemiumAnalysis: (
+                [
+                    interviewDeadline(in: snapshot, now: now),
+                    snapshot.analysis.map(freemiumSummary),
+                ].compactMap { $0 }
+                + (snapshot.debrief?.contextLines ?? [])
+            )
             .joined(separator: "\n\n")
         )
     }

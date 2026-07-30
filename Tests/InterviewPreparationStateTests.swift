@@ -13,6 +13,7 @@ struct InterviewPreparationStateTests {
         testPremiumEntryRespectsSavedUseCase()
         testExportContentAssembly()
         try testKickoffContractRoundTrip()
+        testDebriefFeedsTheNextPreparation()
         print("Interview preparation state tests passed")
     }
 
@@ -209,6 +210,36 @@ struct InterviewPreparationStateTests {
         precondition(json.contains("\"context\""))
         precondition(json.contains("\"target_role\""))
         precondition(json.contains("\"freemium_analysis\""))
+    }
+
+    private static func testDebriefFeedsTheNextPreparation() {
+        let interviewDay = Date(timeIntervalSince1970: 1_780_000_000)
+
+        // The interview day itself stays a countdown day: a single date must
+        // never drive both the countdown and the debrief prompt.
+        precondition(InterviewCountdown.daysSince(interviewDay, from: interviewDay) == nil)
+        precondition(InterviewCountdown.daysUntil(interviewDay, from: interviewDay) == 0)
+
+        let dayAfter = interviewDay.addingTimeInterval(24 * 3600)
+        precondition(InterviewCountdown.daysSince(interviewDay, from: dayAfter) == 1)
+        precondition(InterviewCountdown.pastLabel(daysSince: 1) == "Votre entretien a eu lieu hier")
+        precondition(InterviewCountdown.pastLabel(daysSince: 3).contains("il y a 3 jours"))
+
+        // An empty debrief must not be treated as recorded material.
+        precondition(!InterviewDebrief().hasContent)
+        precondition(!InterviewDebrief(difficultQuestions: "   ").hasContent)
+        precondition(InterviewDebrief(whatWorked: "Le fil conducteur").hasContent)
+
+        var snapshot = PreparationSnapshot(targetRole: "Product Manager")
+        snapshot.debrief = InterviewDebrief(
+            difficultQuestions: "  Pourquoi ce trou de 6 mois ?  ",
+            whatWorked: "Le récit de la transition"
+        )
+
+        let context = InterviewPreparationContext.lean(from: snapshot, now: dayAfter)
+        precondition(context.freemiumAnalysis.contains("Pourquoi ce trou de 6 mois ?"))
+        precondition(!context.freemiumAnalysis.contains("  Pourquoi"))
+        precondition(context.freemiumAnalysis.contains("Le récit de la transition"))
     }
 
     private static func testPremiumEntryRespectsSavedUseCase() {
