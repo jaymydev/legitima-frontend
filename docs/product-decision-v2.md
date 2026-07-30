@@ -64,7 +64,7 @@ La rétention ne sert pas le même but selon le tier.
 ### Premium — servir l'usage et le réachat
 
 1. **La veille de l'entretien** : la synthèse exportable est l'artefact de révision. Moment où l'app doit être indispensable.
-2. **Le lendemain** : debrief post-entretien (« quelles questions vous ont mis en difficulté ? ») — deuxième usage, améliore la préparation suivante.
+2. **Le lendemain** : debrief post-entretien (« quelles questions vous ont mis en difficulté ? ») — deuxième usage, améliore la préparation suivante. **Livré le 30/07/2026** : dès le lendemain de la date d'entretien, l'écran de résultat premium ouvre sur une carte de débrief (questions difficiles, ce qui a fonctionné). Le jour J lui-même reste un jour de compte à rebours, pour qu'une même date ne pilote jamais à la fois l'échéance et le débrief. Les notes sont locales et repartent dans le contexte de la préparation suivante : la boucle usage → matière → réachat se ferme sans nouvel appel backend.
 3. **L'entretien suivant** : un parcours atypique se défend différemment selon l'interlocuteur (RH, opérationnel, fondateur). Les use cases existants deviennent la mécanique de réachat : chaque type d'entretien est une préparation distincte.
 
 **Point ouvert :** les relances (« entretien dans 2 jours ») supposent des notifications locales — feature nouvelle, hors scope V1, à approuver explicitement avant implémentation.
@@ -81,7 +81,7 @@ Petites PR, dans cet ordre :
 1. **Re-séquencement de l'achat (moment T)** : l'achat déclenche la préparation guidée ; sections verrouillées → teasers ; suppression de la re-sélection de use case.
 2. **Date d'entretien** : saisie dès le gratuit, utilisée pour contextualiser les écrans.
 3. **Export de la synthèse** : tenir la promesse d'achat.
-4. **Debrief post-entretien** : deuxième usage premium.
+4. ~~**Debrief post-entretien** : deuxième usage premium.~~ **Fait** (voir § 5).
 5. **Nettoyage freemium** : quota réaliste, retrait du vocabulaire de test.
 
 Chaque PR suit les règles de contribution : branche dédiée, un commit, `./scripts/check-build.sh`, screenshots pour toute UI.

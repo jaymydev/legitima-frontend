@@ -8,6 +8,7 @@ struct PreparationSnapshot: Codable, Equatable {
     var interviewDate: Date?
     var intendedUseCaseID: String?
     var analysis: AnalysisResponse?
+    var debrief: InterviewDebrief?
     var updatedAt: Date = .now
 
     var hasWork: Bool {
@@ -32,6 +33,29 @@ enum InterviewCountdown {
             return nil
         }
         return days
+    }
+
+    /// Whole days since the interview day, from the day after onwards. The
+    /// interview day itself stays a countdown day, so a single date never
+    /// drives both the countdown and the debrief prompt at once.
+    static func daysSince(
+        _ date: Date,
+        from reference: Date = .now,
+        calendar: Calendar = .current
+    ) -> Int? {
+        let start = calendar.startOfDay(for: date)
+        let target = calendar.startOfDay(for: reference)
+        guard let days = calendar.dateComponents([.day], from: start, to: target).day,
+              days >= 1 else {
+            return nil
+        }
+        return days
+    }
+
+    static func pastLabel(daysSince days: Int) -> String {
+        days == 1
+            ? "Votre entretien a eu lieu hier"
+            : "Votre entretien a eu lieu il y a \(days) jours"
     }
 
     static func label(daysUntil days: Int) -> String {
@@ -102,6 +126,11 @@ final class LocalPreparationStore: ObservableObject {
 
     func updateIntendedUseCase(_ useCaseID: String?) {
         snapshot.intendedUseCaseID = useCaseID
+        persist()
+    }
+
+    func saveDebrief(_ debrief: InterviewDebrief) {
+        snapshot.debrief = debrief
         persist()
     }
 
