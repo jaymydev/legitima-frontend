@@ -14,6 +14,7 @@ struct InterviewPreparationStateTests {
         testExportContentAssembly()
         try testKickoffContractRoundTrip()
         testDebriefFeedsTheNextPreparation()
+        testKickoffSurvivesAndLeadsTheExport()
         print("Interview preparation state tests passed")
     }
 
@@ -240,6 +241,34 @@ struct InterviewPreparationStateTests {
         precondition(context.freemiumAnalysis.contains("Pourquoi ce trou de 6 mois ?"))
         precondition(!context.freemiumAnalysis.contains("  Pourquoi"))
         precondition(context.freemiumAnalysis.contains("Le récit de la transition"))
+    }
+
+    private static func testKickoffSurvivesAndLeadsTheExport() {
+        let kickoff = PremiumKickoffResponse(
+            objection: "Pourquoi quitter la gestion de projet ?",
+            defensibleAnswer: "Je ne la quitte pas, j'en élargis le périmètre."
+        )
+
+        // It must round-trip through the snapshot: that is what makes it
+        // survive leaving the kickoff screen and relaunching the app.
+        var snapshot = PreparationSnapshot(targetRole: "Product Manager")
+        snapshot.kickoff = kickoff
+        let encoded = try! JSONEncoder().encode(snapshot)
+        let decoded = try! JSONDecoder().decode(PreparationSnapshot.self, from: encoded)
+        precondition(decoded.kickoff == kickoff)
+
+        // And it leads the exported PDF, ahead of the guided synthesis.
+        let content = PreparationExportContent(response: sampleResult, kickoff: kickoff)
+        precondition(content.blocks.count == 5)
+        precondition(content.blocks[0].title == "Votre première réponse défendable")
+        precondition(content.blocks[0].paragraphs.count == 2)
+        precondition(content.blocks[0].paragraphs[0].hasPrefix("« Pourquoi"))
+        precondition(content.blocks[1].title == "Votre ligne directrice")
+
+        // No kickoff, or a blank one, must not add an empty block.
+        precondition(PreparationExportContent(response: sampleResult).blocks.count == 4)
+        let blank = PremiumKickoffResponse(objection: "Une objection", defensibleAnswer: "   ")
+        precondition(PreparationExportContent(response: sampleResult, kickoff: blank).blocks.count == 4)
     }
 
     private static func testPremiumEntryRespectsSavedUseCase() {

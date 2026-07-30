@@ -31,6 +31,10 @@ struct InterviewPreparationResultScreen: View {
                         debriefCard(daysSince: daysSince)
                     }
 
+                    if let kickoff = preparationStore.snapshot.kickoff {
+                        kickoffCard(kickoff)
+                    }
+
                     resultCard(title: "Votre ligne directrice", content: response.summary)
 
                     ForEach(Array(response.sections.enumerated()), id: \.offset) { _, section in
@@ -77,7 +81,10 @@ struct InterviewPreparationResultScreen: View {
         }
         .task(id: response) {
             exportURL = PreparationPDFExporter.writeTemporaryPDF(
-                for: PreparationExportContent(response: response)
+                for: PreparationExportContent(
+                    response: response,
+                    kickoff: preparationStore.snapshot.kickoff
+                )
             )
         }
         .sheet(isPresented: $isShowingDebrief) {
@@ -86,6 +93,40 @@ struct InterviewPreparationResultScreen: View {
                 onSave: { preparationStore.saveDebrief($0) }
             )
         }
+    }
+
+    /// The answer generated at purchase time. It belongs with the rest of the
+    /// preparation rather than living only on the screen that produced it.
+    private func kickoffCard(_ kickoff: PremiumKickoffResponse) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Votre première réponse défendable", systemImage: "bolt.shield.fill")
+                .font(.headline)
+                .foregroundColor(LegitimaColors.ink)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("L’OBJECTION PROBABLE")
+                    .font(.caption.bold())
+                    .foregroundColor(Color(light: .rgb(153, 60, 29), dark: .rgb(240, 153, 123)))
+                JustifiedText("« \(kickoff.objection) »", color: LegitimaColors.ink)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("VOTRE RÉPONSE")
+                    .font(.caption.bold())
+                    .foregroundColor(LegitimaColors.accent)
+                JustifiedText(kickoff.defensibleAnswer, color: .secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(LegitimaColors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(LegitimaColors.accent.opacity(0.25), lineWidth: 1)
+                )
+        )
     }
 
     private var interviewDaysSince: Int? {
