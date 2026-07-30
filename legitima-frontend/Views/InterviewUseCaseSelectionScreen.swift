@@ -102,11 +102,9 @@ struct InterviewUseCaseSelectionScreen: View {
                     Text(useCase.title)
                         .font(.headline)
                         .foregroundColor(.primary)
+                        .multilineTextAlignment(.leading)
 
-                    Text(useCase.description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    JustifiedText(useCase.description, color: .secondary)
                 }
 
                 Spacer(minLength: 0)
