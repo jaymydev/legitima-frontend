@@ -301,8 +301,11 @@ struct LeanOnboardingScreen: View {
                 .ignoresSafeArea()
 
             AnalysisLoadingCard(
-                title: "Analyse en cours",
-                subtitle: "Nous relisons votre parcours, votre cible et votre point à expliquer pour faire ressortir une première lecture stratégique.",
+                steps: [
+                    "Lecture de votre parcours",
+                    "Mise en tension des zones sensibles",
+                    "Construction du fil conducteur",
+                ],
                 accent: LegitimaColors.accent
             )
             .padding(.horizontal, 24)

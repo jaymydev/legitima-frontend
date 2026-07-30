@@ -10,7 +10,54 @@ struct LocalStateTests {
         testObjectionTeaserExtraction()
         testDailyTestQuota()
         testSimulatedPremiumUnlockPersistence()
+        testLoadingProgressNeverOverclaims()
         print("Local state tests passed")
+    }
+
+    private static func testLoadingProgressNeverOverclaims() {
+        let typical: TimeInterval = 18
+
+        // Starts at zero and only ever moves forward.
+        precondition(LoadingProgressEstimate.progress(elapsed: 0, typicalDuration: typical) == 0)
+        var previous = 0.0
+        for second in stride(from: 0.0, through: 120.0, by: 0.5) {
+            let value = LoadingProgressEstimate.progress(elapsed: second, typicalDuration: typical)
+            precondition(value >= previous, "la progression ne doit jamais reculer")
+            precondition(value <= LoadingProgressEstimate.ceiling)
+            previous = value
+        }
+
+        // The ceiling is the whole point: the backend gives no progress
+        // signal, so the bar must never sit at 100 % while still waiting.
+        precondition(
+            LoadingProgressEstimate.progress(elapsed: 600, typicalDuration: typical)
+                < LoadingProgressEstimate.ceiling + 0.0001
+        )
+        precondition(
+            LoadingProgressEstimate.progress(elapsed: 600, typicalDuration: typical) > 0.9
+        )
+
+        // It should feel like it is moving early on, then visibly decelerate.
+        let atQuarter = LoadingProgressEstimate.progress(elapsed: typical / 4, typicalDuration: typical)
+        let atTypical = LoadingProgressEstimate.progress(elapsed: typical, typicalDuration: typical)
+        precondition(atQuarter > 0.2, "trop lent au démarrage : l'attente paraîtrait figée")
+        precondition(atTypical > 0.7 && atTypical < LoadingProgressEstimate.ceiling)
+
+        // Steps derive from the same value, so words and number agree.
+        precondition(LoadingProgressEstimate.stepIndex(for: 0.1, count: 3) == 0)
+        precondition(LoadingProgressEstimate.stepIndex(for: 0.5, count: 3) == 1)
+        precondition(LoadingProgressEstimate.stepIndex(for: 0.85, count: 3) == 2)
+        // A shorter list must not index out of bounds.
+        precondition(LoadingProgressEstimate.stepIndex(for: 0.85, count: 2) == 1)
+        precondition(LoadingProgressEstimate.stepIndex(for: 0.5, count: 1) == 0)
+
+        // The notice appears once, then escalates once. Never before 12 s.
+        precondition(LoadingProgressEstimate.slowNotice(elapsed: 5) == nil)
+        precondition(LoadingProgressEstimate.slowNotice(elapsed: 11.9) == nil)
+        let first = LoadingProgressEstimate.slowNotice(elapsed: 20)
+        let second = LoadingProgressEstimate.slowNotice(elapsed: 45)
+        precondition(first != nil && second != nil && first != second)
+        precondition(second?.contains("conservées") == true)
     }
 
     @MainActor

@@ -91,9 +91,13 @@ struct RecruitmentPremiumFlowScreen: View {
 
             if viewModel.isLoading {
                 AnalysisLoadingCard(
-                    title: "Préparation premium en cours",
-                    subtitle: "Nous transformons vos réponses en pitch, arguments et réponses prêtes pour l’entretien.",
-                    accent: accent
+                    steps: [
+                        "Relecture de vos réponses",
+                        "Construction de vos réponses aux objections",
+                        "Rédaction de votre plan d’action",
+                    ],
+                    accent: accent,
+                    typicalDuration: 25
                 )
                 .padding(24)
                 .transition(.opacity)
