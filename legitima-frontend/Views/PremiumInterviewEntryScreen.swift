@@ -44,6 +44,9 @@ struct PremiumInterviewEntryScreen: View {
                 },
                 onComplete: { response in
                     phase = .result(response)
+                },
+                onChangeUseCase: {
+                    phase = .chooseUseCase
                 }
             )
 

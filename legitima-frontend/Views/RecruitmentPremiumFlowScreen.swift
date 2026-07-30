@@ -8,6 +8,7 @@ struct RecruitmentPremiumFlowScreen: View {
     let context: InterviewPreparationContext
     let onTargetRoleChange: (String) -> Void
     let onComplete: (InterviewPreparationResponse) -> Void
+    let onChangeUseCase: (() -> Void)?
 
     private let accent = LegitimaColors.accent
 
@@ -16,7 +17,8 @@ struct RecruitmentPremiumFlowScreen: View {
         store: InterviewPreparationStore,
         context: InterviewPreparationContext,
         onTargetRoleChange: @escaping (String) -> Void,
-        onComplete: @escaping (InterviewPreparationResponse) -> Void
+        onComplete: @escaping (InterviewPreparationResponse) -> Void,
+        onChangeUseCase: (() -> Void)? = nil
     ) {
         _viewModel = StateObject(
             wrappedValue: InterviewQuestionnaireViewModel(
@@ -29,6 +31,7 @@ struct RecruitmentPremiumFlowScreen: View {
         self.context = context
         self.onTargetRoleChange = onTargetRoleChange
         self.onComplete = onComplete
+        self.onChangeUseCase = onChangeUseCase
     }
 
     var body: some View {
@@ -45,6 +48,13 @@ struct RecruitmentPremiumFlowScreen: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
+                    if let onChangeUseCase {
+                        Button(action: onChangeUseCase) {
+                            Label("Changer de type d’entretien", systemImage: "chevron.left")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                    }
+
                     progressHeader
 
                     Group {
