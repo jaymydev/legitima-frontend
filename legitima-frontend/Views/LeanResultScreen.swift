@@ -103,6 +103,12 @@ struct LeanResultScreen: View {
                             onUnlocked: {
                                 userStatus.activatePremium()
                                 onPurchaseCompleted()
+                            },
+                            onRestored: {
+                                // Already owned: resume the preparation rather
+                                // than replay the just-purchased moment.
+                                userStatus.restorePremium()
+                                onContinue()
                             }
                         )
 

@@ -2,7 +2,10 @@ import SwiftUI
 
 struct PremiumUnlockCard: View {
     @ObservedObject var purchaseManager: PremiumPurchaseManager
+    /// A purchase completed now — celebrate and hand over the first answer.
     let onUnlocked: () -> Void
+    /// Access the user already owned — resume, do not celebrate.
+    let onRestored: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
@@ -71,7 +74,7 @@ struct PremiumUnlockCard: View {
             Button("Restaurer mes achats") {
                 Task {
                     if await purchaseManager.restore() {
-                        onUnlocked()
+                        onRestored()
                     }
                 }
             }

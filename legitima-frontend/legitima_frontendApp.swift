@@ -52,7 +52,7 @@ struct legitima_frontendApp: App {
             .task {
                 await purchaseManager.loadProduct()
                 if await purchaseManager.hasPremiumEntitlement() {
-                    userStatus.activatePremium()
+                    userStatus.restorePremium()
                 }
             }
         }
