@@ -1,10 +1,12 @@
 name: iOS Build
 
+# Pull requests only. Every change lands on main through a squash-merge of an
+# already-green pull request, so a push trigger rebuilt the exact same tree a
+# second time — doubling the bill for no extra signal. macOS runners are billed
+# at ten times the Linux rate, which made that duplicate the single largest
+# consumer of the Actions budget.
 on:
   pull_request:
-  push:
-    branches:
-      - main
 
 jobs:
   build:
