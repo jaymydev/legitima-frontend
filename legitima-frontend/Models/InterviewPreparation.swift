@@ -1,9 +1,26 @@
 import Foundation
 
 enum InterviewAnswerQuality {
-    static let recommendedMinimumCharacterCount = 4
+    /// Roughly one complete sentence carrying a specific detail. Below this an
+    /// answer is a fragment the generation cannot build a paragraph from.
+    ///
+    /// The previous value was 4 characters, which let « oui bof » through — a
+    /// guard that never fired on the answers it existed to catch. Deliberately
+    /// not set higher: a real answer such as « J'ai piloté la refonte du
+    /// parcours d'inscription, réduisant l'abandon de 30% » must stay quiet,
+    /// otherwise the nudge becomes noise and gets ignored.
+    static let recommendedMinimumCharacterCount = 60
 
-    static func isTooShort(_ answer: String) -> Bool {
+    /// Whether to invite the user to say more.
+    ///
+    /// - Parameter expectsShortAnswer: true for questions offering options,
+    ///   where a couple of words is the intended answer and a nudge would be
+    ///   wrong.
+    static func deservesMoreMaterial(
+        _ answer: String,
+        expectsShortAnswer: Bool = false
+    ) -> Bool {
+        guard !expectsShortAnswer else { return false }
         let trimmed = answer.trimmingCharacters(in: .whitespacesAndNewlines)
         return !trimmed.isEmpty && trimmed.count < recommendedMinimumCharacterCount
     }
