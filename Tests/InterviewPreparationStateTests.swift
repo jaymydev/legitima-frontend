@@ -175,31 +175,47 @@ struct InterviewPreparationStateTests {
             questions: []
         )
 
-        // Nothing saved: first purchase defaults to the recruitment flow.
-        guard case .startRecruitment = PremiumEntryRouting.destination(
+        // Nothing saved, no intent: first purchase defaults to recruitment.
+        guard case .startUseCase(let defaultID) = PremiumEntryRouting.destination(
             for: SavedInterviewPreparation(),
+            intendedUseCaseID: nil,
             recruitmentUseCaseID: recruitmentID
-        ) else { preconditionFailure("Empty state should start recruitment") }
+        ), defaultID == recruitmentID else {
+            preconditionFailure("Empty state should start recruitment")
+        }
 
-        // A saved non-recruitment choice is respected even with no answer yet.
+        // Nothing saved but an intent declared in onboarding: honor it.
+        guard case .startUseCase(let intendedID) = PremiumEntryRouting.destination(
+            for: SavedInterviewPreparation(),
+            intendedUseCaseID: "annual_review",
+            recruitmentUseCaseID: recruitmentID
+        ), intendedID == "annual_review" else {
+            preconditionFailure("Declared intent should steer the first entry")
+        }
+
+        // A saved non-recruitment choice is respected even with no answer yet,
+        // and wins over a diverging intent.
         var midYearSelected = SavedInterviewPreparation(useCase: sampleUseCase)
         guard case .questionnaire(let useCase) = PremiumEntryRouting.destination(
             for: midYearSelected,
+            intendedUseCaseID: "recruitment",
             recruitmentUseCaseID: recruitmentID
         ), useCase.id == "mid_year" else {
-            preconditionFailure("Saved use case must not be overridden by recruitment")
+            preconditionFailure("Saved use case must not be overridden")
         }
 
         // Same with answers in progress.
         midYearSelected.answers = ["role_context": "Responsable produit"]
         guard case .questionnaire = PremiumEntryRouting.destination(
             for: midYearSelected,
+            intendedUseCaseID: nil,
             recruitmentUseCaseID: recruitmentID
         ) else { preconditionFailure("In-progress questionnaire should resume") }
 
         // A saved recruitment choice resumes the recruitment flow.
         guard case .recruitment(let resumed) = PremiumEntryRouting.destination(
             for: SavedInterviewPreparation(useCase: recruitmentUseCase),
+            intendedUseCaseID: "annual_review",
             recruitmentUseCaseID: recruitmentID
         ), resumed.id == recruitmentID else {
             preconditionFailure("Saved recruitment choice should resume recruitment")
@@ -210,10 +226,16 @@ struct InterviewPreparationStateTests {
         completed.result = sampleResult
         guard case .result(let result) = PremiumEntryRouting.destination(
             for: completed,
+            intendedUseCaseID: "annual_review",
             recruitmentUseCaseID: recruitmentID
         ), result.useCaseID == "mid_year" else {
             preconditionFailure("Completed preparation should land on its result")
         }
+
+        // The onboarding intent options map to premium use-case IDs.
+        precondition(InterviewIntentOption.all.count == 5)
+        precondition(InterviewIntentOption.all.first?.useCaseID == recruitmentID)
+        precondition(InterviewIntentOption.all.last?.useCaseID == nil)
     }
 
     private static let sampleUseCase = InterviewUseCase(

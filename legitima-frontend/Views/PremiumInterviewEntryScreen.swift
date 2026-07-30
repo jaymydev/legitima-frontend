@@ -96,7 +96,7 @@ struct PremiumInterviewEntryScreen: View {
                     .multilineTextAlignment(.center)
 
                 Button("Réessayer") {
-                    Task { await startRecruitmentContinuation() }
+                    Task { await startContinuation(useCaseID: initialUseCaseID) }
                 }
                 .fontWeight(.semibold)
             }
@@ -121,6 +121,7 @@ struct PremiumInterviewEntryScreen: View {
 
         switch PremiumEntryRouting.destination(
             for: interviewPreparationStore.saved,
+            intendedUseCaseID: preparationStore.snapshot.intendedUseCaseID,
             recruitmentUseCaseID: Self.recruitmentUseCaseID
         ) {
         case .result(let result):
@@ -129,44 +130,48 @@ struct PremiumInterviewEntryScreen: View {
             phase = .recruitment(useCase)
         case .questionnaire(let useCase):
             phase = .questionnaire(useCase)
-        case .startRecruitment:
-            await startRecruitmentContinuation()
+        case .startUseCase(let id):
+            await startContinuation(useCaseID: id)
         }
     }
 
-    private func startRecruitmentContinuation() async {
+    private var initialUseCaseID: String {
+        preparationStore.snapshot.intendedUseCaseID ?? Self.recruitmentUseCaseID
+    }
+
+    private func startContinuation(useCaseID: String) async {
         phase = .loading
 
-        if let recruitment = recruitmentUseCase {
-            begin(recruitment)
+        if let useCase = useCase(withID: useCaseID) {
+            begin(useCase)
             return
         }
 
         await useCasesViewModel.load()
 
-        if let recruitment = recruitmentUseCase {
+        if let useCase = useCase(withID: useCaseID) {
+            begin(useCase)
+        } else if let recruitment = useCase(withID: Self.recruitmentUseCaseID) {
+            // Unknown intent ID (e.g. removed from the catalog): fall back.
             begin(recruitment)
         } else {
             phase = .loadingFailed
         }
     }
 
-    private var recruitmentUseCase: InterviewUseCase? {
-        useCasesViewModel.useCases.first { $0.id == Self.recruitmentUseCaseID }
+    private func useCase(withID id: String) -> InterviewUseCase? {
+        useCasesViewModel.useCases.first { $0.id == id }
     }
 
     private func begin(_ useCase: InterviewUseCase) {
         interviewPreparationStore.start(useCase: useCase)
-        phase = .recruitment(useCase)
+        phase = useCase.id == Self.recruitmentUseCaseID
+            ? .recruitment(useCase)
+            : .questionnaire(useCase)
     }
 
     private func select(_ useCase: InterviewUseCase) {
-        interviewPreparationStore.start(useCase: useCase)
-        if useCase.id == Self.recruitmentUseCaseID {
-            phase = .recruitment(useCase)
-        } else {
-            phase = .questionnaire(useCase)
-        }
+        begin(useCase)
     }
 
     private func resume(_ saved: SavedInterviewPreparation) {
