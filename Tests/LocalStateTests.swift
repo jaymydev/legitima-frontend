@@ -7,6 +7,7 @@ struct LocalStateTests {
         try testDraftAndAnalysisRestoration()
         try testInterviewDatePersistence()
         testInterviewCountdown()
+        testObjectionTeaserExtraction()
         testDailyTestQuota()
         testSimulatedPremiumUnlockPersistence()
         print("Local state tests passed")
@@ -100,6 +101,50 @@ struct LocalStateTests {
         precondition(InterviewCountdown.label(daysUntil: 0) == "Votre entretien a lieu aujourd'hui")
         precondition(InterviewCountdown.label(daysUntil: 1) == "Votre entretien a lieu demain")
         precondition(InterviewCountdown.label(daysUntil: 5) == "Votre entretien a lieu dans 5 jours")
+    }
+
+    private static func testObjectionTeaserExtraction() {
+        // Empty or whitespace-only input yields nothing.
+        precondition(ObjectionTeaser.firstObjection(from: "") == nil)
+        precondition(ObjectionTeaser.firstObjection(from: "  \n\n  ") == nil)
+
+        // A plain question is returned as-is, punctuation included.
+        precondition(
+            ObjectionTeaser.firstObjection(from: "Pourquoi une transition en 2025 ?")
+                == "Pourquoi une transition en 2025 ?"
+        )
+
+        // Only the first sentence of a paragraph is kept.
+        precondition(
+            ObjectionTeaser.firstObjection(
+                from: "Votre parcours manque de continuité. Il faudra aussi expliquer le changement de secteur."
+            ) == "Votre parcours manque de continuité."
+        )
+
+        // List markers are stripped and only the first item is used.
+        precondition(
+            ObjectionTeaser.firstObjection(
+                from: "- Pourquoi avoir quitté votre poste ?\n- Que faisiez-vous en 2025 ?"
+            ) == "Pourquoi avoir quitté votre poste ?"
+        )
+        precondition(
+            ObjectionTeaser.firstObjection(
+                from: "1. Première objection notable ?\n2. Seconde objection ?"
+            ) == "Première objection notable ?"
+        )
+
+        // Blank leading lines are skipped.
+        precondition(
+            ObjectionTeaser.firstObjection(from: "\n\n• Objection après lignes vides ?")
+                == "Objection après lignes vides ?"
+        )
+
+        // Long sentences are truncated with an ellipsis under the cap.
+        let long = String(repeating: "a", count: 300)
+        let truncated = ObjectionTeaser.firstObjection(from: long)
+        precondition(truncated != nil)
+        precondition(truncated!.count <= 180)
+        precondition(truncated!.hasSuffix("..."))
     }
 
     @MainActor
