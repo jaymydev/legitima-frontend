@@ -369,10 +369,3 @@ struct PremiumKickoffScreen: View {
     }
 }
 
-private extension View {
-    /// Staggered card entrance: fade in while sliding up.
-    func revealed(_ isRevealed: Bool) -> some View {
-        opacity(isRevealed ? 1 : 0)
-            .offset(y: isRevealed ? 0 : 14)
-    }
-}

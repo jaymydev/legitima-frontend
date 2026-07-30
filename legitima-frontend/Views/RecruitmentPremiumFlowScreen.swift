@@ -69,7 +69,11 @@ struct RecruitmentPremiumFlowScreen: View {
                             objectiveStep
                         }
                     }
-                    .transition(.opacity.combined(with: .move(edge: .trailing)))
+                    .id(step)
+                    .transition(.asymmetric(
+                        insertion: .opacity.combined(with: .move(edge: .trailing)),
+                        removal: .opacity
+                    ))
 
                     navigationButtons
 
@@ -92,8 +96,10 @@ struct RecruitmentPremiumFlowScreen: View {
                     accent: accent
                 )
                 .padding(24)
+                .transition(.opacity)
             }
         }
+        .animation(LegitimaMotion.reveal, value: viewModel.isLoading)
         .onChange(of: viewModel.answers) { _, _ in
             viewModel.saveDraft()
         }
@@ -128,6 +134,7 @@ struct RecruitmentPremiumFlowScreen: View {
 
             ProgressView(value: Double(step + 1), total: 4)
                 .tint(accent)
+                .animation(LegitimaMotion.control, value: step)
 
             Text(stepTitle)
                 .font(.system(.largeTitle, design: .rounded).weight(.bold))
@@ -191,7 +198,7 @@ struct RecruitmentPremiumFlowScreen: View {
         HStack(spacing: 12) {
             if step > 0 {
                 Button("Retour") {
-                    withAnimation { step -= 1 }
+                    withAnimation(LegitimaMotion.control) { step -= 1 }
                 }
                 .fontWeight(.semibold)
                 .padding(.horizontal, 18)
@@ -203,7 +210,7 @@ struct RecruitmentPremiumFlowScreen: View {
 
             Button {
                 if step < 3 {
-                    withAnimation { step += 1 }
+                    withAnimation(LegitimaMotion.control) { step += 1 }
                 } else {
                     Task { await viewModel.analyze() }
                 }
