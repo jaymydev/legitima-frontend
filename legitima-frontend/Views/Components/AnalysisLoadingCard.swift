@@ -1,8 +1,12 @@
 import SwiftUI
 
 /// The wait during a generation. One breathing orb, one line that actually
-/// advances, a percentage, and two skeleton bands — nothing else. The previous
-/// version said « wait » three times over (orb, three bouncing dots, bands).
+/// advances, a percentage, and a single bar — nothing else.
+///
+/// The bar carries both messages at once: how far along we are, and that work
+/// is still happening. Previously a shimmer band swept left to right while the
+/// percentage said something entirely different — two elements claiming to
+/// report the same thing without agreeing.
 struct AnalysisLoadingCard: View {
     let steps: [String]
     let accent: Color
@@ -16,7 +20,7 @@ struct AnalysisLoadingCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
-                orb
+                BreathingOrb(accent: accent)
 
                 Text(currentStep)
                     .font(.subheadline.weight(.semibold))
@@ -33,10 +37,7 @@ struct AnalysisLoadingCard: View {
                     .foregroundColor(accent)
             }
 
-            VStack(spacing: 10) {
-                SkeletonBand(accent: accent)
-                SkeletonBand(width: 220, accent: accent, delay: 0.2)
-            }
+            ProgressLine(progress: progress, accent: accent)
 
             if let notice = slowNotice {
                 Text(notice)
@@ -78,59 +79,82 @@ struct AnalysisLoadingCard: View {
             }
         }
     }
+}
 
-    private var orb: some View {
+/// Breathes on its own clock. Deriving the scale from the elapsed time, as the
+/// first version did, sampled it four times a second — about ten steps per
+/// cycle, which reads as a stuttering pulse rather than a breath.
+private struct BreathingOrb: View {
+    let accent: Color
+
+    @State private var inhaled = false
+
+    var body: some View {
         ZStack {
             Circle()
                 .fill(accent.opacity(0.16))
                 .frame(width: 42, height: 42)
-                .scaleEffect(1 + 0.08 * sin(elapsed * 2.6))
+                .scaleEffect(inhaled ? 1.08 : 0.92)
 
             Image(systemName: "sparkles")
                 .font(.subheadline)
                 .foregroundColor(accent)
         }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                inhaled = true
+            }
+        }
     }
 }
 
-/// A grey band with a highlight sweeping across it. The old version animated
-/// the gradient end-points, which shimmered in place instead of travelling.
-private struct SkeletonBand: View {
-    var width: CGFloat = .infinity
+/// Fills to the current progress, with a highlight travelling across the
+/// filled part only.
+private struct ProgressLine: View {
+    let progress: Double
     let accent: Color
-    var delay: Double = 0
 
-    @State private var sweeping = false
+    /// Normalised 0→1 sweep. Driving the highlight's offset directly from
+    /// `progress` moved the animation's target every 250 ms, which made the
+    /// sweep stutter while the bar grew. A phase of its own keeps it smooth
+    /// however fast the bar fills.
+    @State private var phase: CGFloat = 0
+
+    private let height: CGFloat = 12
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 999)
-            .fill(Color(light: .rgb(228, 234, 234), dark: .rgb(52, 60, 61)))
-            .frame(maxWidth: width, minHeight: 12, maxHeight: 12, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .overlay(alignment: .leading) {
-                GeometryReader { geo in
-                    RoundedRectangle(cornerRadius: 999)
-                        .fill(
-                            LinearGradient(
-                                colors: [.clear, Color.white.opacity(0.7), .clear],
-                                startPoint: .leading,
-                                endPoint: .trailing
+        GeometryReader { geo in
+            let filled = max(height, geo.size.width * progress)
+            let highlight = geo.size.width * 0.3
+
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color(light: .rgb(228, 234, 234), dark: .rgb(52, 60, 61)))
+
+                Capsule()
+                    .fill(accent)
+                    .frame(width: filled)
+                    .overlay(alignment: .leading) {
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.clear, .white.opacity(0.45), .clear],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        )
-                        .frame(width: geo.size.width * 0.45)
-                        .offset(x: sweeping ? geo.size.width : -geo.size.width * 0.5)
-                }
-                .frame(maxWidth: width)
-                .mask(RoundedRectangle(cornerRadius: 999))
+                            .frame(width: highlight)
+                            .offset(x: phase * (filled + highlight) - highlight)
+                    }
+                    .clipShape(Capsule())
             }
-            .clipShape(RoundedRectangle(cornerRadius: 999))
-            .onAppear {
-                withAnimation(
-                    .linear(duration: 1.4).repeatForever(autoreverses: false).delay(delay)
-                ) {
-                    sweeping = true
-                }
+        }
+        .frame(height: height)
+        .onAppear {
+            withAnimation(.linear(duration: 1.6).repeatForever(autoreverses: false)) {
+                phase = 1
             }
+        }
     }
 }
 
