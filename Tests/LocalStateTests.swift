@@ -71,12 +71,23 @@ struct LocalStateTests {
         restored.updateInterviewDate(nil)
         precondition(LocalPreparationStore(storage: storage).snapshot.interviewDate == nil)
 
-        // Snapshots saved before the interviewDate field existed must still decode.
+        // The declared interview intent persists and can be cleared.
+        precondition(store.snapshot.intendedUseCaseID == nil)
+        store.updateIntendedUseCase("annual_review")
+        precondition(
+            LocalPreparationStore(storage: storage).snapshot.intendedUseCaseID == "annual_review"
+        )
+        store.updateIntendedUseCase(nil)
+        precondition(LocalPreparationStore(storage: storage).snapshot.intendedUseCaseID == nil)
+
+        // Snapshots saved before the interviewDate and intendedUseCaseID
+        // fields existed must still decode.
         let legacyJSON = """
         {"targetRole":"Rôle","careerSummary":"Résumé","sensitivePoint":"","updatedAt":0}
         """.data(using: .utf8)!
         let legacy = try JSONDecoder().decode(PreparationSnapshot.self, from: legacyJSON)
         precondition(legacy.interviewDate == nil)
+        precondition(legacy.intendedUseCaseID == nil)
         precondition(legacy.targetRole == "Rôle")
 
         try? FileManager.default.removeItem(at: directory)

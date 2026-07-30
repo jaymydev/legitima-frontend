@@ -8,6 +8,7 @@ struct LeanOnboardingScreen: View {
     @State private var isShowingCVImportFlow = false
     @State private var hasInterviewDate = false
     @State private var interviewDate = Date()
+    @State private var intendedUseCaseID: String?
     let onAnalysisComplete: (AnalysisResponse) -> Void
 
     init(onAnalysisComplete: @escaping (AnalysisResponse) -> Void) {
@@ -40,6 +41,18 @@ struct LeanOnboardingScreen: View {
                     }
 
                     quotaCard
+
+                    inputCard(
+                        label: "Quel échange préparez-vous ? (optionnel)",
+                        helper: "L'analyse vaut pour toutes ces conversations. Votre choix oriente la préparation guidée ensuite.",
+                        field: {
+                            RecruitmentFlowLayout(spacing: 8) {
+                                ForEach(InterviewIntentOption.all, id: \.label) { option in
+                                    intentChip(option)
+                                }
+                            }
+                        }
+                    )
 
                     inputCard(
                         label: "Poste visé",
@@ -201,12 +214,16 @@ struct LeanOnboardingScreen: View {
                 hasInterviewDate = true
                 interviewDate = savedDate
             }
+            intendedUseCaseID = saved.intendedUseCaseID
         }
         .onChange(of: viewModel.posteVise) { _, _ in saveDraft() }
         .onChange(of: viewModel.parcoursResume) { _, _ in saveDraft() }
         .onChange(of: viewModel.zoneSensible) { _, _ in saveDraft() }
         .onChange(of: hasInterviewDate) { _, _ in saveInterviewDate() }
         .onChange(of: interviewDate) { _, _ in saveInterviewDate() }
+        .onChange(of: intendedUseCaseID) { _, newValue in
+            preparationStore.updateIntendedUseCase(newValue)
+        }
         .sheet(isPresented: $isShowingCVImportFlow) {
             CVImportFlowSheet { importedSummary in
                 viewModel.parcoursResume = importedSummary
@@ -237,6 +254,23 @@ struct LeanOnboardingScreen: View {
         .background(LegitimaColors.surface)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+    }
+
+    private func intentChip(_ option: InterviewIntentOption) -> some View {
+        let isSelected = option.useCaseID == intendedUseCaseID
+        return Button(option.label) {
+            intendedUseCaseID = option.useCaseID
+        }
+        .font(.subheadline.weight(.semibold))
+        .foregroundColor(isSelected ? .white : LegitimaColors.accent)
+        .padding(.horizontal, 13)
+        .padding(.vertical, 10)
+        .background(
+            isSelected
+                ? LegitimaColors.accentSurface
+                : Color(light: .rgb(232, 247, 243), dark: .rgb(33, 47, 44))
+        )
+        .clipShape(Capsule())
     }
 
     private var quotaCard: some View {
