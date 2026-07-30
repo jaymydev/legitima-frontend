@@ -18,6 +18,7 @@ struct InterviewPreparationStateTests {
         testKickoffDistinguishesMissingEndpointFromFailure()
         try testSameUseCaseCanBePreparedAgain()
         try testQuestionnaireStepIsRestoredWhereTheWorkIs()
+        testStaleDraftsAreDetectedButNeverLostToAnOutage()
         print("Interview preparation state tests passed")
     }
 
@@ -414,6 +415,39 @@ struct InterviewPreparationStateTests {
         // Starting fresh resets the position along with the answers.
         store.startNew(useCase: sampleUseCase)
         precondition(store.saved.step == 0)
+    }
+
+    private static func testStaleDraftsAreDetectedButNeverLostToAnOutage() {
+        func useCase(version: String) -> InterviewUseCase {
+            InterviewUseCase(
+                id: "annual_review",
+                title: "Entretien annuel",
+                shortTitle: "Annuel",
+                description: "Structurer le bilan de l'année.",
+                questionnaireVersion: version,
+                questions: sampleUseCase.questions
+            )
+        }
+
+        var saved = SavedInterviewPreparation(useCase: useCase(version: "1.2"))
+        saved.answers = ["role_scope": "Une réponse déjà écrite"]
+
+        // The catalog gained a required question: these answers no longer
+        // match the form and the backend would reject them at submission.
+        precondition(saved.isStale(comparedTo: useCase(version: "1.3")))
+
+        // Same version: resume normally.
+        precondition(!saved.isStale(comparedTo: useCase(version: "1.2")))
+
+        // Catalog unreachable — losing real work to an outage would be worse
+        // than a late rejection, so the draft is kept.
+        precondition(!saved.isStale(comparedTo: nil))
+
+        // A different use case says nothing about this draft.
+        precondition(!saved.isStale(comparedTo: sampleUseCase))
+
+        // Nothing saved yet: nothing to invalidate.
+        precondition(!SavedInterviewPreparation().isStale(comparedTo: useCase(version: "9.9")))
     }
 
     private static func testPremiumEntryRespectsSavedUseCase() {
