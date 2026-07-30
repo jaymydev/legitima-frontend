@@ -187,6 +187,7 @@ struct LeanOnboardingScreen: View {
                     .transition(.opacity)
             }
         }
+        .animation(LegitimaMotion.reveal, value: viewModel.isLoading)
         .onChange(of: viewModel.analysisResponse) { _, response in
             if let response {
                 userStatus.consumeFreeAnalysisIfNeeded()
@@ -251,18 +252,15 @@ struct LeanOnboardingScreen: View {
     private func intentChip(_ option: InterviewIntentOption) -> some View {
         let isSelected = option.useCaseID == intendedUseCaseID
         return Button(option.label) {
-            intendedUseCaseID = option.useCaseID
+            withAnimation(LegitimaMotion.control) { intendedUseCaseID = option.useCaseID }
         }
         .font(.subheadline.weight(.semibold))
         .foregroundColor(isSelected ? .white : LegitimaColors.accent)
         .padding(.horizontal, 13)
         .padding(.vertical, 10)
-        .background(
-            isSelected
-                ? LegitimaColors.accentSurface
-                : Color(light: .rgb(232, 247, 243), dark: .rgb(33, 47, 44))
-        )
+        .background(isSelected ? LegitimaColors.accentSurface : LegitimaColors.chip)
         .clipShape(Capsule())
+        .sensoryFeedback(.selection, trigger: isSelected)
     }
 
     private var quotaCard: some View {
