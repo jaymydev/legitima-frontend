@@ -69,7 +69,7 @@ struct LeanResultScreen: View {
                         sectionCard(
                             icon: "shield.fill",
                             title: "Anticipation des objections",
-                            content: "La préparation complète génère les objections probables de votre interlocuteur et des réponses défendables, construites à partir de votre fil conducteur.",
+                            content: objectionTeaserContent,
                             backgroundColor: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28)),
                             isLocked: true
                         )
@@ -139,6 +139,22 @@ struct LeanResultScreen: View {
     private var interviewCountdownDays: Int? {
         guard let date = preparationStore.snapshot.interviewDate else { return nil }
         return InterviewCountdown.daysUntil(date)
+    }
+
+    /// Locked-card copy: quotes the user's own probable objection when the free
+    /// analysis surfaced one, and adds urgency when an interview date is set.
+    private var objectionTeaserContent: String {
+        guard let objection = ObjectionTeaser.firstObjection(
+            from: response.interview_preparation.probable_objections
+        ) else {
+            return "La préparation complète génère les objections probables de votre interlocuteur et des réponses défendables, construites à partir de votre fil conducteur."
+        }
+
+        if let days = interviewCountdownDays {
+            return "\(InterviewCountdown.label(daysUntil: days)). Cette objection probable n'a pas encore de réponse préparée : « \(objection) »\n\nLa préparation complète construit vos réponses défendables avant le jour J."
+        }
+
+        return "Une objection probable pour votre profil : « \(objection) »\n\nLa préparation complète construit la réponse défendable, et couvre les autres objections identifiées."
     }
 
     private func interviewCountdownCard(days: Int) -> some View {
