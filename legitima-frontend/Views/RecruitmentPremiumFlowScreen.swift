@@ -123,7 +123,7 @@ struct RecruitmentPremiumFlowScreen: View {
                 Spacer()
                 Text("\(step + 1)/4")
                     .font(.caption.bold())
-                    .foregroundColor(.secondary)
+                    .foregroundColor(LegitimaColors.muted)
             }
 
             ProgressView(value: Double(step + 1), total: 4)
@@ -133,7 +133,7 @@ struct RecruitmentPremiumFlowScreen: View {
                 .font(.system(size: 32, weight: .bold, design: .rounded))
 
             Text(stepSubtitle)
-                .foregroundColor(.secondary)
+                .foregroundColor(LegitimaColors.muted)
         }
     }
 
@@ -198,7 +198,7 @@ struct RecruitmentPremiumFlowScreen: View {
                 .padding(.vertical, 15)
                 .foregroundColor(accent)
                 .background(LegitimaColors.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
             }
 
             Button {
@@ -209,12 +209,7 @@ struct RecruitmentPremiumFlowScreen: View {
                 }
             } label: {
                 Text(step < 3 ? "Continuer" : "Générer ma préparation premium")
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .foregroundColor(.white)
-                    .background(LegitimaColors.accentSurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                    .legitimaPrimaryLabel()
             }
             .disabled(!isCurrentStepComplete || viewModel.isLoading)
             .opacity(isCurrentStepComplete ? 1 : 0.5)

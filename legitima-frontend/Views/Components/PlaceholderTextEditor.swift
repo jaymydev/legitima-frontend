@@ -26,6 +26,6 @@ struct PlaceholderTextEditor: View {
             }
         }
         .background(LegitimaColors.field)
-        .cornerRadius(12)
+        .cornerRadius(LegitimaRadius.control)
     }
 }

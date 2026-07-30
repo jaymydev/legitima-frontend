@@ -197,7 +197,7 @@ struct CVImportFlowSheet: View {
         .frame(maxWidth: .infinity)
         .padding(28)
         .background(LegitimaColors.surface)
-        .cornerRadius(24)
+        .cornerRadius(LegitimaRadius.hero)
         .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
         .padding(.top, 80)
     }
@@ -231,15 +231,15 @@ struct CVImportFlowSheet: View {
                     .padding(14)
                     .background(LegitimaColors.field)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: LegitimaRadius.control)
                             .stroke(LegitimaColors.hairline, lineWidth: 1)
                     )
-                    .cornerRadius(14)
+                    .cornerRadius(LegitimaRadius.control)
                 }
             }
             .padding(16)
             .background(LegitimaColors.surface)
-            .cornerRadius(20)
+            .cornerRadius(LegitimaRadius.card)
             .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
 
             Text(reviewFootnote)
@@ -248,12 +248,7 @@ struct CVImportFlowSheet: View {
 
             Button(action: useImportedSummary) {
                 Text(applyButtonTitle)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(LegitimaColors.accentSurface)
-                    .foregroundColor(.white)
-                    .cornerRadius(14)
+                    .legitimaPrimaryLabel()
             }
 
             Button("Choisir un autre document") {
@@ -275,7 +270,7 @@ struct CVImportFlowSheet: View {
                     .fill(Color(light: .rgb(231, 246, 244), dark: .rgb(30, 42, 41)))
                     .frame(width: 180, height: 180)
 
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: LegitimaRadius.card)
                     .fill(LegitimaColors.surfaceStrong)
                     .frame(width: 102, height: 138)
                     .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
@@ -297,7 +292,7 @@ struct CVImportFlowSheet: View {
         .padding(18)
         .frame(maxWidth: .infinity)
         .background(LegitimaColors.surface)
-        .cornerRadius(24)
+        .cornerRadius(LegitimaRadius.hero)
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
 
@@ -326,7 +321,7 @@ struct CVImportFlowSheet: View {
         }
         .padding(18)
         .background(LegitimaColors.surface)
-        .cornerRadius(18)
+        .cornerRadius(LegitimaRadius.card)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 

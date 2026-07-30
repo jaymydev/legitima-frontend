@@ -115,10 +115,10 @@ struct ProgressionScreen: View {
             )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 28)
+            RoundedRectangle(cornerRadius: LegitimaRadius.hero)
                 .stroke(Color(light: UIColor.white.withAlphaComponent(0.75), dark: UIColor.white.withAlphaComponent(0.08)), lineWidth: 1.2)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 28))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.hero))
         .shadow(color: Color.black.opacity(0.08), radius: 18, x: 0, y: 12)
     }
 
@@ -152,10 +152,10 @@ struct ProgressionScreen: View {
         .padding(18)
         .background(LegitimaColors.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: LegitimaRadius.hero)
                 .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.hero))
     }
 
     private var progressStudioCard: some View {
@@ -195,10 +195,10 @@ struct ProgressionScreen: View {
         .padding(22)
         .background(LegitimaColors.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: 26)
+            RoundedRectangle(cornerRadius: LegitimaRadius.hero)
                 .stroke(Color(light: UIColor.white.withAlphaComponent(0.72), dark: UIColor.white.withAlphaComponent(0.07)), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 26))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.hero))
         .shadow(color: Color.black.opacity(0.06), radius: 14, x: 0, y: 8)
     }
 
@@ -237,7 +237,7 @@ struct ProgressionScreen: View {
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.hero))
     }
 
     private func momentumBubble(text: String) -> some View {
@@ -297,7 +297,7 @@ struct ProgressionScreen: View {
                 )
             )
             .foregroundColor(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
             .shadow(color: buttonColor.opacity(0.28), radius: 12, x: 0, y: 8)
         }
         .navigationDestination(isPresented: $navigateToPremiumFlow) {
@@ -438,7 +438,7 @@ struct ProgressionScreen: View {
     private func moduleCard(_ module: PremiumModuleCard) -> some View {
         HStack(alignment: .top, spacing: 14) {
             ZStack {
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: LegitimaRadius.card)
                     .fill(Color(light: UIColor.white.withAlphaComponent(0.56), dark: UIColor.white.withAlphaComponent(0.08)))
                     .frame(width: 54, height: 54)
 
@@ -480,10 +480,10 @@ struct ProgressionScreen: View {
         .padding(18)
         .background(module.accent.opacity(module.isUnlocked ? 1 : 0.74))
         .overlay(
-            RoundedRectangle(cornerRadius: 24)
+            RoundedRectangle(cornerRadius: LegitimaRadius.hero)
                 .stroke(Color(light: UIColor.white.withAlphaComponent(0.65), dark: UIColor.white.withAlphaComponent(0.07)), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.hero))
         .shadow(color: Color.black.opacity(0.045), radius: 10, x: 0, y: 6)
         .opacity(module.isUnlocked ? 1 : 0.96)
     }

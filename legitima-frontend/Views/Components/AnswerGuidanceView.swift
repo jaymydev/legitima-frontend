@@ -9,12 +9,12 @@ struct AnswerGuidanceView: View {
             if !suggestions.isEmpty {
                 Label("Idées pour répondre", systemImage: "lightbulb")
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(LegitimaColors.muted)
 
                 ForEach(suggestions, id: \.self) { suggestion in
                     Text("• \(suggestion)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(LegitimaColors.muted)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -25,7 +25,7 @@ struct AnswerGuidanceView: View {
                     systemImage: "exclamationmark.triangle.fill"
                 )
                 .font(.caption)
-                .foregroundColor(.orange)
+                .foregroundColor(LegitimaColors.gold)
                 .accessibilityIdentifier("short-answer-warning")
             }
         }
