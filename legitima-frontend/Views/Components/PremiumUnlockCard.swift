@@ -113,7 +113,7 @@ struct PremiumUnlockCard: View {
                 .frame(width: 36, height: 36)
                 .overlay(
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.body.weight(.semibold))
                         .foregroundColor(iconColor)
                 )
 

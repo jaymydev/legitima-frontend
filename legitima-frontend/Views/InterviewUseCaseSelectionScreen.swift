@@ -24,7 +24,7 @@ struct InterviewUseCaseSelectionScreen: View {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Quel entretien préparez-vous ?")
-                            .font(.system(size: 34, weight: .bold, design: .rounded))
+                            .font(.system(.largeTitle, design: .rounded).weight(.bold))
 
                         Text("Les questions et la synthèse seront adaptées à votre situation.")
                             .foregroundColor(LegitimaColors.muted)
