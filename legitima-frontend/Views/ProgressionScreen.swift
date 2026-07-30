@@ -93,14 +93,12 @@ struct ProgressionScreen: View {
                     .foregroundColor(primaryText)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(
+                JustifiedText(
                     userStatus.isPremium
                     ? "Vos modules sont prêts. Vous pouvez maintenant entrer dans la préparation guidée."
-                    : "Vous avez déjà une lecture stratégique. Le premium sert maintenant à la transformer en réponses, en récit et en posture d’entretien."
+                    : "Vous avez déjà une lecture stratégique. Le premium sert maintenant à la transformer en réponses, en récit et en posture d’entretien.",
+                    color: secondaryText
                 )
-                .font(.subheadline)
-                .foregroundColor(secondaryText)
-                .fixedSize(horizontal: false, vertical: true)
             }
 
             heroInsightCard
@@ -141,14 +139,12 @@ struct ProgressionScreen: View {
                     .font(.caption.weight(.bold))
                     .foregroundColor(accentText)
 
-                Text(
+                JustifiedText(
                     userStatus.isPremium
                     ? "Le plus utile maintenant est de transformer votre analyse en réponses claires, en récit cohérent et en posture d’entretien."
-                    : "Le premium ne vous fait pas repartir de zéro. Il s’appuie sur votre analyse déjà obtenue pour vous faire avancer plus vite."
+                    : "Le premium ne vous fait pas repartir de zéro. Il s’appuie sur votre analyse déjà obtenue pour vous faire avancer plus vite.",
+                    color: primaryText
                 )
-                .font(.subheadline)
-                .foregroundColor(primaryText)
-                .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer(minLength: 0)
@@ -171,9 +167,10 @@ struct ProgressionScreen: View {
                         .fontWeight(.semibold)
                         .foregroundColor(primaryText)
 
-                    Text(userStatus.isPremium ? "Voici les étapes que vous allez travailler maintenant." : "Voici ce qui est déjà acquis et ce que la suite va vous aider à construire.")
-                        .font(.subheadline)
-                        .foregroundColor(secondaryText)
+                    JustifiedText(
+                        userStatus.isPremium ? "Voici les étapes que vous allez travailler maintenant." : "Voici ce qui est déjà acquis et ce que la suite va vous aider à construire.",
+                        color: secondaryText
+                    )
                 }
 
                 Spacer(minLength: 0)
@@ -213,14 +210,12 @@ struct ProgressionScreen: View {
                     .fontWeight(.semibold)
                     .foregroundColor(primaryText)
 
-                Text(
+                JustifiedText(
                     userStatus.isPremium
                     ? "Réponses difficiles, zones sensibles, fil conducteur, posture finale : tout sert maintenant à rendre votre parcours plus simple à raconter et à défendre."
-                    : "Le premium ajoute une vraie mise en forme. Vous ne collectez plus seulement des idées : vous les transformez en préparation utile."
+                    : "Le premium ajoute une vraie mise en forme. Vous ne collectez plus seulement des idées : vous les transformez en préparation utile.",
+                    color: primaryText
                 )
-                .font(.subheadline)
-                .foregroundColor(primaryText)
-                .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer(minLength: 0)
@@ -474,10 +469,10 @@ struct ProgressionScreen: View {
                     }
                 }
 
-                Text(module.description)
-                    .font(.subheadline)
-                    .foregroundColor(primaryText.opacity(module.isUnlocked ? 1 : 0.84))
-                    .fixedSize(horizontal: false, vertical: true)
+                JustifiedText(
+                    module.description,
+                    color: primaryText.opacity(module.isUnlocked ? 1 : 0.84)
+                )
             }
 
             Spacer(minLength: 0)
