@@ -187,25 +187,6 @@ struct PremiumInterviewEntryScreen: View {
     }
 
     private var recruitmentContext: InterviewPreparationContext {
-        let snapshot = preparationStore.snapshot
-        return InterviewPreparationContext(
-            targetRole: snapshot.targetRole,
-            careerExperiences: snapshot.careerSummary,
-            sensitivePoint: snapshot.sensitivePoint,
-            freemiumAnalysis: snapshot.analysis.map(freemiumSummary) ?? ""
-        )
-    }
-
-    private func freemiumSummary(_ response: AnalysisResponse) -> String {
-        [
-            response.analysis.strategic_reading,
-            response.analysis.dominant_competencies,
-            response.analysis.career_logic,
-            response.sensitive_reframing.strategic_reinterpretation,
-            response.narrative.core_thread,
-            response.interview_preparation.probable_objections,
-            response.interview_preparation.structured_answers,
-            response.legitimacy_anchor.objective_strength,
-        ].joined(separator: "\n\n")
+        .lean(from: preparationStore.snapshot)
     }
 }
