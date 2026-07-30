@@ -57,7 +57,7 @@ La rétention ne sert pas le même but selon le tier.
 
 ### Freemium — servir la conversion, pas l'engagement
 
-- **Date d'entretien demandée dès le gratuit.** Donnée clé : elle justifie le retour (« votre entretien approche ») et déclenche la conversion. Meilleur levier identifié.
+- **Date d'entretien demandée dès le gratuit.** Donnée clé : elle justifie le retour (« votre entretien approche ») et déclenche la conversion. Meilleur levier identifié. **Depuis le 30/07/2026**, l'échéance part aussi au backend avec le contexte premium (kickoff et préparation guidée), en tête de `freemium_analysis`, pour que la priorisation et le plan d'action du jour J tiennent compte du délai réel. Les schémas backend refusant les clés inconnues (`extra="forbid"`), un champ structuré dédié suppose une release backend préalable — **TODO backend** : accepter un `days_until_interview` optionnel, puis migrer le frontend.
 - **Brouillon persistant** (existant via `LocalPreparationStore`) : conservé.
 - **Quota réaliste** : le quota de 20 analyses/jour est un garde-fou de dev, pas une offre. Cible : 2-3 analyses/jour, sans vocabulaire « Mode test » visible par l'utilisateur.
 
