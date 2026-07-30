@@ -83,7 +83,15 @@ Petites PR, dans cet ordre :
 
 Chaque PR suit les règles de contribution : branche dédiée, un commit, `./scripts/check-build.sh`, screenshots pour toute UI.
 
-## 8. Points ouverts récapitulés
+## 8. Présentation visuelle du freemium et du tier gratuit
+
+**Justification des textes multi-lignes.** Tous les corps de carte (bénéfices, descriptions, sous-titres) doivent être justifiés (bords alignés). Raison : le français syllabé bénéficie de la césure multi-ligne pour rester lisible et éviter les lignes creuses. Implémentation : composant `JustifiedText` (UITextView backing) appliqué à tous les corps de 13px+, dans tous les écrans de résultat et de progression. Confirmé en TestFlight sans dégradation de perf.
+
+**Hiérarchie des bénéfices premium.** La carte d'achat doit surclasser le texte brut. Décision : chaque bénéfice reçoit une pastille d'icône colorée qui reprend la couleur exacte de la bulle teaser verrouillée au-dessus (« Anticipation des objections » → orange ; « Ancrage de légitimité » → bleu ; « Synthèse stratégique finale » → violet). Chaque titre s'accompagne d'une sous-ligne descriptive (ex. « Objections couvertes, mots choisis »). L'effet : le lien visuel immédiat entre le teaser et le déverrouillage, valorisation du prix unique sans abonnement.
+
+**Mode clair et sombre.** Les teintes des pastilles s'adaptent à chaque mode via des stop de ramp spécifiques (les mêmes que les teasers). Aucune couleur raw hex — tout utilise `Color(light: .rgb(...), dark: .rgb(...))`.
+
+## 9. Points ouverts récapitulés
 
 | Point | À trancher quand |
 |---|---|
