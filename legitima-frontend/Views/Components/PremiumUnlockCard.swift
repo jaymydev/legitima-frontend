@@ -88,6 +88,6 @@ struct PremiumUnlockCard: View {
     private func benefit(_ title: String, icon: String) -> some View {
         Label(title, systemImage: icon)
             .font(.subheadline.weight(.semibold))
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity)
     }
 }
