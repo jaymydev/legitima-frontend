@@ -22,13 +22,36 @@ extension InterviewPreparationContext {
     /// The lean data every premium computation starts from. Shared by the
     /// kickoff call and the guided recruitment flow so the premium entry is
     /// always the continuation of the free analysis, never a re-entry.
-    static func lean(from snapshot: PreparationSnapshot) -> InterviewPreparationContext {
+    static func lean(
+        from snapshot: PreparationSnapshot,
+        now: Date = .now
+    ) -> InterviewPreparationContext {
         InterviewPreparationContext(
             targetRole: snapshot.targetRole,
             careerExperiences: snapshot.careerSummary,
             sensitivePoint: snapshot.sensitivePoint,
-            freemiumAnalysis: snapshot.analysis.map(freemiumSummary) ?? ""
+            freemiumAnalysis: [
+                interviewDeadline(in: snapshot, now: now),
+                snapshot.analysis.map(freemiumSummary),
+            ]
+            .compactMap { $0 }
+            .joined(separator: "\n\n")
         )
+    }
+
+    /// The deadline leads the context so the generation can prioritise: a day-J
+    /// action plan reads differently at 2 days than at 3 weeks. Sent as prose
+    /// inside the existing free-text field — the backend schemas forbid unknown
+    /// keys, so a structured field needs a coordinated backend release first.
+    private static func interviewDeadline(
+        in snapshot: PreparationSnapshot,
+        now: Date
+    ) -> String? {
+        guard let date = snapshot.interviewDate,
+              let days = InterviewCountdown.daysUntil(date, from: now) else {
+            return nil
+        }
+        return InterviewCountdown.promptLine(daysUntil: days)
     }
 
     static func freemiumSummary(_ response: AnalysisResponse) -> String {
