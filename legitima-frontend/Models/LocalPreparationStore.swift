@@ -44,6 +44,19 @@ enum InterviewCountdown {
             return "Votre entretien a lieu dans \(days) jours"
         }
     }
+
+    /// Third-person framing for the generation context, so the deadline can
+    /// steer priorities and the day-J action plan.
+    static func promptLine(daysUntil days: Int) -> String {
+        switch days {
+        case 0:
+            return "Échéance : l'entretien a lieu aujourd'hui."
+        case 1:
+            return "Échéance : l'entretien a lieu demain."
+        default:
+            return "Échéance : l'entretien a lieu dans \(days) jours."
+        }
+    }
 }
 
 @MainActor

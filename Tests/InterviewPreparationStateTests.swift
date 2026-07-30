@@ -189,6 +189,21 @@ struct InterviewPreparationStateTests {
         precondition(context.targetRole == "Product Manager")
         precondition(context.freemiumAnalysis.isEmpty)
 
+        // The interview deadline travels to the backend inside the context
+        // blob, and leads it so the generation can prioritise.
+        let reference = Date(timeIntervalSince1970: 1_780_000_000)
+        var dated = snapshot
+        dated.interviewDate = reference.addingTimeInterval(6 * 24 * 3600)
+        let datedContext = InterviewPreparationContext.lean(from: dated, now: reference)
+        precondition(datedContext.freemiumAnalysis == "Échéance : l'entretien a lieu dans 6 jours.")
+
+        dated.interviewDate = reference.addingTimeInterval(-3 * 24 * 3600)
+        let pastContext = InterviewPreparationContext.lean(from: dated, now: reference)
+        precondition(pastContext.freemiumAnalysis.isEmpty)
+
+        precondition(InterviewCountdown.promptLine(daysUntil: 0).contains("aujourd'hui"))
+        precondition(InterviewCountdown.promptLine(daysUntil: 1).contains("demain"))
+
         let body = try JSONEncoder().encode(PremiumKickoffRequest(context: context))
         let json = String(decoding: body, as: UTF8.self)
         precondition(json.contains("\"context\""))
