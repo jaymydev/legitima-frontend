@@ -7,6 +7,16 @@ name: iOS Build
 # consumer of the Actions budget.
 on:
   pull_request:
+    # A Markdown edit does not need a full iOS build.
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+# Pushing again to a branch makes the run in flight worthless: cancel it
+# rather than pay for a result nobody will read.
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
