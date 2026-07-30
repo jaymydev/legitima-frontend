@@ -116,20 +116,19 @@ struct PremiumInterviewEntryScreen: View {
     private func resolveInitialPhase() async {
         guard case .loading = phase else { return }
 
-        let saved = interviewPreparationStore.saved
-        if let result = saved.result {
+        switch PremiumEntryRouting.destination(
+            for: interviewPreparationStore.saved,
+            recruitmentUseCaseID: Self.recruitmentUseCaseID
+        ) {
+        case .result(let result):
             phase = .result(result)
-            return
-        }
-
-        if let useCase = saved.useCase,
-           useCase.id != Self.recruitmentUseCaseID,
-           !saved.answers.isEmpty {
+        case .recruitment(let useCase):
+            phase = .recruitment(useCase)
+        case .questionnaire(let useCase):
             phase = .questionnaire(useCase)
-            return
+        case .startRecruitment:
+            await startRecruitmentContinuation()
         }
-
-        await startRecruitmentContinuation()
     }
 
     private func startRecruitmentContinuation() async {
