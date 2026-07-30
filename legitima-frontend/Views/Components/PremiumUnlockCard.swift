@@ -14,9 +14,29 @@ struct PremiumUnlockCard: View {
                 .font(.title2.bold())
                 .multilineTextAlignment(.center)
 
-            benefit("Réponses prêtes pour l’entretien", icon: "bubble.left.and.bubble.right.fill")
-            benefit("Parcours d’entretien guidé", icon: "point.topleft.down.to.point.bottomright.curvepath")
-            benefit("Synthèse premium exportable", icon: "doc.text.fill")
+            VStack(spacing: 10) {
+                benefit(
+                    "Réponses prêtes pour l’entretien",
+                    subtitle: "Objections couvertes, mots choisis",
+                    icon: "shield.fill",
+                    iconColor: Color(light: .rgb(153, 60, 29), dark: .rgb(240, 153, 123)),
+                    chipColor: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28))
+                )
+                benefit(
+                    "Parcours d’entretien guidé",
+                    subtitle: "Du récit à la posture, étape par étape",
+                    icon: "point.topleft.down.to.point.bottomright.curvepath",
+                    iconColor: Color(light: .rgb(24, 95, 165), dark: .rgb(133, 183, 235)),
+                    chipColor: Color(light: .rgb(228, 239, 253), dark: .rgb(30, 38, 49))
+                )
+                benefit(
+                    "Synthèse premium exportable",
+                    subtitle: "Votre plan d’action pour le jour J",
+                    icon: "sparkles",
+                    iconColor: Color(light: .rgb(83, 74, 183), dark: .rgb(175, 169, 236)),
+                    chipColor: Color(light: .rgb(242, 233, 252), dark: .rgb(39, 33, 48))
+                )
+            }
 
             Text("Achat test simulé • \(purchaseManager.displayPrice)")
                 .font(.subheadline.weight(.semibold))
@@ -85,9 +105,35 @@ struct PremiumUnlockCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
-    private func benefit(_ title: String, icon: String) -> some View {
-        Label(title, systemImage: icon)
-            .font(.subheadline.weight(.semibold))
-            .frame(maxWidth: .infinity)
+    private func benefit(
+        _ title: String,
+        subtitle: String,
+        icon: String,
+        iconColor: Color,
+        chipColor: Color
+    ) -> some View {
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(chipColor)
+                .frame(width: 36, height: 36)
+                .overlay(
+                    Image(systemName: icon)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(iconColor)
+                )
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .multilineTextAlignment(.leading)
+
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+            }
+
+            Spacer(minLength: 0)
+        }
     }
 }
