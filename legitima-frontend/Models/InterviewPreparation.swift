@@ -176,6 +176,27 @@ struct SavedInterviewPreparation: Codable, Equatable {
     }
 }
 
+extension SavedInterviewPreparation {
+    /// Whether these answers were collected against a questionnaire that no
+    /// longer exists.
+    ///
+    /// The catalog is versioned as a whole; when a question is added or
+    /// removed the backend rejects answers submitted against the old form.
+    /// Resuming such a draft means filling in a questionnaire that will be
+    /// refused at the end, so it has to be restarted instead.
+    ///
+    /// - Parameter current: the same use case as published by the catalog
+    ///   right now, or nil when the catalog could not be reached — in which
+    ///   case the draft is kept, since losing real work to a network failure
+    ///   would be worse than a late rejection.
+    func isStale(comparedTo current: InterviewUseCase?) -> Bool {
+        guard let saved = useCase, let current, saved.id == current.id else {
+            return false
+        }
+        return saved.questionnaireVersion != current.questionnaireVersion
+    }
+}
+
 enum QuestionnaireStepRestore {
     /// Where to reopen a saved multi-step flow.
     ///

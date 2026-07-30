@@ -130,9 +130,9 @@ struct PremiumInterviewEntryScreen: View {
         case .result(let result):
             phase = .result(result)
         case .recruitment(let useCase):
-            phase = .recruitment(useCase)
+            await resumeOrRestart(useCase)
         case .questionnaire(let useCase):
-            phase = .questionnaire(useCase)
+            await resumeOrRestart(useCase)
         case .startUseCase(let id):
             await startContinuation(useCaseID: id)
         }
@@ -168,9 +168,7 @@ struct PremiumInterviewEntryScreen: View {
 
     private func begin(_ useCase: InterviewUseCase) {
         interviewPreparationStore.startNew(useCase: useCase)
-        phase = useCase.id == Self.recruitmentUseCaseID
-            ? .recruitment(useCase)
-            : .questionnaire(useCase)
+        show(useCase)
     }
 
     private func select(_ useCase: InterviewUseCase) {
@@ -182,11 +180,35 @@ struct PremiumInterviewEntryScreen: View {
 
         if let result = saved.result {
             phase = .result(result)
-        } else if useCase.id == Self.recruitmentUseCaseID {
-            phase = .recruitment(useCase)
         } else {
-            phase = .questionnaire(useCase)
+            Task { await resumeOrRestart(useCase) }
         }
+    }
+
+    /// Open a saved draft, or start over when the questionnaire it was filled
+    /// against has since changed. Letting the user complete a form the backend
+    /// will refuse is worse than asking them to begin again.
+    private func resumeOrRestart(_ savedUseCase: InterviewUseCase) async {
+        phase = .loading
+        await useCasesViewModel.load()
+
+        guard let current = useCase(withID: savedUseCase.id) else {
+            // Catalog unreachable, or the use case was withdrawn: keep the work.
+            show(savedUseCase)
+            return
+        }
+
+        if interviewPreparationStore.saved.isStale(comparedTo: current) {
+            begin(current)
+        } else {
+            show(current)
+        }
+    }
+
+    private func show(_ useCase: InterviewUseCase) {
+        phase = useCase.id == Self.recruitmentUseCaseID
+            ? .recruitment(useCase)
+            : .questionnaire(useCase)
     }
 
     /// Every use case starts from the free analysis, not just recruitment:
