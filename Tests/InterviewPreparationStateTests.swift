@@ -10,6 +10,7 @@ struct InterviewPreparationStateTests {
         testShortAnswersRemainValidButAreFlagged()
         testFreemiumEntryStillUsesLeanOnboarding()
         try testRecruitmentRequestReusesFreemiumContext()
+        testPremiumEntryRespectsSavedUseCase()
         testExportContentAssembly()
         print("Interview preparation state tests passed")
     }
@@ -161,6 +162,58 @@ struct InterviewPreparationStateTests {
         precondition(sparseContent.blocks.count == 1)
         precondition(sparseContent.blocks[0].title == "Points à faire passer")
         precondition(sparseContent.blocks[0].paragraphs == ["Un seul point"])
+    }
+
+    private static func testPremiumEntryRespectsSavedUseCase() {
+        let recruitmentID = "recruitment"
+        let recruitmentUseCase = InterviewUseCase(
+            id: recruitmentID,
+            title: "Entretien de recrutement",
+            shortTitle: "Recrutement",
+            description: "Préparer un récit clair.",
+            questionnaireVersion: "1.0",
+            questions: []
+        )
+
+        // Nothing saved: first purchase defaults to the recruitment flow.
+        guard case .startRecruitment = PremiumEntryRouting.destination(
+            for: SavedInterviewPreparation(),
+            recruitmentUseCaseID: recruitmentID
+        ) else { preconditionFailure("Empty state should start recruitment") }
+
+        // A saved non-recruitment choice is respected even with no answer yet.
+        var midYearSelected = SavedInterviewPreparation(useCase: sampleUseCase)
+        guard case .questionnaire(let useCase) = PremiumEntryRouting.destination(
+            for: midYearSelected,
+            recruitmentUseCaseID: recruitmentID
+        ), useCase.id == "mid_year" else {
+            preconditionFailure("Saved use case must not be overridden by recruitment")
+        }
+
+        // Same with answers in progress.
+        midYearSelected.answers = ["role_context": "Responsable produit"]
+        guard case .questionnaire = PremiumEntryRouting.destination(
+            for: midYearSelected,
+            recruitmentUseCaseID: recruitmentID
+        ) else { preconditionFailure("In-progress questionnaire should resume") }
+
+        // A saved recruitment choice resumes the recruitment flow.
+        guard case .recruitment(let resumed) = PremiumEntryRouting.destination(
+            for: SavedInterviewPreparation(useCase: recruitmentUseCase),
+            recruitmentUseCaseID: recruitmentID
+        ), resumed.id == recruitmentID else {
+            preconditionFailure("Saved recruitment choice should resume recruitment")
+        }
+
+        // A completed preparation always lands on its result.
+        var completed = SavedInterviewPreparation(useCase: sampleUseCase)
+        completed.result = sampleResult
+        guard case .result(let result) = PremiumEntryRouting.destination(
+            for: completed,
+            recruitmentUseCaseID: recruitmentID
+        ), result.useCaseID == "mid_year" else {
+            preconditionFailure("Completed preparation should land on its result")
+        }
     }
 
     private static let sampleUseCase = InterviewUseCase(
