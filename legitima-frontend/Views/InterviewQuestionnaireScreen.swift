@@ -157,7 +157,8 @@ struct InterviewQuestionnaireScreen: View {
 
             AnswerGuidanceView(
                 suggestions: question.suggestions,
-                answer: viewModel.answers[question.id] ?? ""
+                answer: viewModel.answers[question.id] ?? "",
+                expectsShortAnswer: !question.options.isEmpty
             )
         }
         .padding(16)
