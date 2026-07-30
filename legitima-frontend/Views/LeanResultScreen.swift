@@ -7,6 +7,7 @@ struct LeanResultScreen: View {
     @EnvironmentObject private var preparationStore: LocalPreparationStore
     let response: AnalysisResponse
     let onContinue: () -> Void
+    let onPurchaseCompleted: () -> Void
     let onRestartAnalysis: () -> Void
 
     var body: some View {
@@ -94,7 +95,7 @@ struct LeanResultScreen: View {
                             purchaseManager: purchaseManager,
                             onUnlocked: {
                                 userStatus.activatePremium()
-                                onContinue()
+                                onPurchaseCompleted()
                             }
                         )
 
@@ -422,6 +423,7 @@ struct LeanResultScreen_Previews: PreviewProvider {
                 )
             ),
             onContinue: {},
+            onPurchaseCompleted: {},
             onRestartAnalysis: {}
         )
         .environmentObject(UserStatus())

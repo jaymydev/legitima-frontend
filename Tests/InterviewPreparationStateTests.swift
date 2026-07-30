@@ -12,6 +12,7 @@ struct InterviewPreparationStateTests {
         try testRecruitmentRequestReusesFreemiumContext()
         testPremiumEntryRespectsSavedUseCase()
         testExportContentAssembly()
+        try testKickoffContractRoundTrip()
         print("Interview preparation state tests passed")
     }
 
@@ -162,6 +163,37 @@ struct InterviewPreparationStateTests {
         precondition(sparseContent.blocks.count == 1)
         precondition(sparseContent.blocks[0].title == "Points à faire passer")
         precondition(sparseContent.blocks[0].paragraphs == ["Un seul point"])
+    }
+
+    private static func testKickoffContractRoundTrip() throws {
+        let response = try JSONDecoder().decode(
+            PremiumKickoffResponse.self,
+            from: Data("""
+            {
+              "objection": "Pourquoi quitter la gestion de projet après 8 ans ?",
+              "defensible_answer": "Je ne quitte pas la gestion de projet, j'en élargis le périmètre."
+            }
+            """.utf8)
+        )
+        precondition(response.objection.hasPrefix("Pourquoi"))
+        precondition(response.defensibleAnswer.hasPrefix("Je ne quitte pas"))
+
+        // The kickoff reuses the lean context; without a saved analysis the
+        // freemium summary must stay empty rather than crash or invent data.
+        let snapshot = PreparationSnapshot(
+            targetRole: "Product Manager",
+            careerSummary: "8 ans de gestion de projet IT",
+            sensitivePoint: "Reconversion tardive"
+        )
+        let context = InterviewPreparationContext.lean(from: snapshot)
+        precondition(context.targetRole == "Product Manager")
+        precondition(context.freemiumAnalysis.isEmpty)
+
+        let body = try JSONEncoder().encode(PremiumKickoffRequest(context: context))
+        let json = String(decoding: body, as: UTF8.self)
+        precondition(json.contains("\"context\""))
+        precondition(json.contains("\"target_role\""))
+        precondition(json.contains("\"freemium_analysis\""))
     }
 
     private static func testPremiumEntryRespectsSavedUseCase() {

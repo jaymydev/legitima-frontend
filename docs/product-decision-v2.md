@@ -38,7 +38,10 @@ Le moat n'est pas une section mais le mécanisme « récit → réponses ». La 
 - Les sections aujourd'hui verrouillées sur l'écran de résultat (objections, ancrage de légitimité, synthèse finale) deviennent des **teasers du résultat premium à générer**, pas du contenu pré-calculé masqué.
 - La re-sélection de use case à froid après l'achat est supprimée : le parcours premium est la continuation directe de l'analyse gratuite (contexte conservé : poste, parcours, zone sensible).
 
-**Point ouvert :** le design précis des 30 premières secondes post-achat (que voit l'utilisateur pendant la génération, comment la valeur est immédiatement perceptible). À trancher lors de la conception de l'écran.
+**Tranché (2026-07-30) — « première valeur immédiate » :** l'achat déclenche immédiatement un appel réel `POST /v2/interview-preparation/kickoff` qui génère la réponse à l'objection principale à partir du seul contexte lean (poste, parcours, zone sensible, analyse freemium). L'utilisateur voit un écran de génération honnête (étapes réelles, ~10 s) puis sa première réponse défendable — celle-là même que le teaser citait sans y répondre — avant d'entrer dans le parcours guidé.
+
+- **Contrat backend à implémenter** : entrée `{ "context": { "target_role", "career_experiences", "sensitive_point", "freemium_analysis" } }` ; sortie `{ "objection", "defensible_answer" }`.
+- **Repli tant que l'endpoint n'existe pas** : l'écran kickoff dégrade en « pont de continuité » (Premium activé, rien à re-saisir, données conservées listées) avant le parcours guidé. Le frontend est prêt ; la valeur immédiate s'allume au déploiement du backend.
 
 ## 4. Stratégie d'input
 
@@ -95,7 +98,7 @@ Chaque PR suit les règles de contribution : branche dédiée, un commit, `./scr
 
 | Point | À trancher quand |
 |---|---|
-| Design des 30 secondes post-achat | PR moment T |
+| Design des 30 secondes post-achat | **Tranché** : première valeur immédiate via `/v2/interview-preparation/kickoff` (voir section 3) — endpoint backend à déployer |
 | Valeur du quota freemium (2 ou 3/jour) | PR nettoyage freemium |
 | Notifications locales (relances) | Après validation explicite — hors scope actuel |
 | Format de l'export (PDF, texte, partage) | **Tranché** : PDF A4 via la feuille de partage iOS |

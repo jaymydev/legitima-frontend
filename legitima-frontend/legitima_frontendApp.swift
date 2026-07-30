@@ -32,6 +32,12 @@ struct legitima_frontendApp: App {
                                     router.restartAnalysis()
                                 }
                             )
+                        case .premiumKickoff:
+                            PremiumKickoffScreen(
+                                onContinue: {
+                                    router.continueFromKickoff()
+                                }
+                            )
                         case .premiumInterviewEntry:
                             PremiumInterviewEntryScreen()
                         }
@@ -80,6 +86,9 @@ struct legitima_frontendApp: App {
                 response: response,
                 onContinue: {
                     router.showPremiumInterviewEntry()
+                },
+                onPurchaseCompleted: {
+                    router.showPremiumKickoff()
                 },
                 onRestartAnalysis: {
                     preparationStore.beginNewAnalysis()

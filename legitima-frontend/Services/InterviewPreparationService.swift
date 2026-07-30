@@ -13,6 +13,14 @@ final class InterviewPreparationService {
         )
     }
 
+    func kickoff(_ payload: PremiumKickoffRequest) async throws -> PremiumKickoffResponse {
+        try await request(
+            path: "/v2/interview-preparation/kickoff",
+            method: "POST",
+            body: try JSONEncoder().encode(payload)
+        )
+    }
+
     private func request<Response: Decodable>(
         path: String,
         method: String,
