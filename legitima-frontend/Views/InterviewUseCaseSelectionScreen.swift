@@ -26,8 +26,12 @@ struct InterviewUseCaseSelectionScreen: View {
                         Text("Quel entretien préparez-vous ?")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
 
-                        Text("Les questions et la synthèse seront adaptées à votre situation.")
-                            .foregroundColor(LegitimaColors.muted)
+                        Text(
+                            savedPreparation.hasWork
+                                ? "Choisir un type démarre une nouvelle préparation. Votre préparation en cours reste accessible ci-dessous."
+                                : "Les questions et la synthèse seront adaptées à votre situation."
+                        )
+                        .foregroundColor(LegitimaColors.muted)
                     }
 
                     if savedPreparation.hasWork {

@@ -16,6 +16,7 @@ struct InterviewPreparationStateTests {
         testDebriefFeedsTheNextPreparation()
         testKickoffSurvivesAndLeadsTheExport()
         testKickoffDistinguishesMissingEndpointFromFailure()
+        try testSameUseCaseCanBePreparedAgain()
         print("Interview preparation state tests passed")
     }
 
@@ -69,7 +70,7 @@ struct InterviewPreparationStateTests {
         let useCase = sampleUseCase
         let store = InterviewPreparationStore(storage: storage)
 
-        store.start(useCase: useCase)
+        store.startNew(useCase: useCase)
         store.saveDraft(useCase: useCase, answers: ["role_context": "Responsable produit"])
         store.saveResult(sampleResult)
 
@@ -304,6 +305,49 @@ struct InterviewPreparationStateTests {
                 NSError(domain: NSURLErrorDomain, code: 404)
             ) == .failed
         )
+    }
+
+    @MainActor
+    private static func testSameUseCaseCanBePreparedAgain() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storage = ProtectedJSONStore<SavedInterviewPreparation>(
+            fileURL: directory.appendingPathComponent("interview.json")
+        )
+        let useCase = sampleUseCase
+        let store = InterviewPreparationStore(storage: storage)
+
+        // A first preparation, carried through to a result.
+        store.startNew(useCase: useCase)
+        store.saveDraft(useCase: useCase, answers: ["role_context": "Premier entretien"])
+        store.saveResult(sampleResult)
+        precondition(store.saved.result != nil)
+
+        // The second interview of the same kind, at another company, is the
+        // most likely next preparation — and used to be the one impossible to
+        // run, because resetting only happened on a *different* use case.
+        store.startNew(useCase: useCase)
+        precondition(store.saved.useCase == useCase)
+        precondition(store.saved.answers.isEmpty, "les réponses précédentes doivent être effacées")
+        precondition(store.saved.result == nil, "l'ancien résultat ne doit plus court-circuiter le routage")
+        precondition(!store.saved.hasWork)
+
+        // The reset must survive a relaunch, otherwise the old result comes
+        // back and the routing lands on it again.
+        precondition(!InterviewPreparationStore(storage: storage).saved.hasWork)
+
+        // And with the result cleared, the routing sends the user to the
+        // questionnaire rather than back to the previous preparation.
+        let destination = PremiumEntryRouting.destination(
+            for: store.saved,
+            intendedUseCaseID: nil,
+            recruitmentUseCaseID: "recruitment"
+        )
+        guard case .questionnaire(let routed) = destination else {
+            preconditionFailure("attendu : le questionnaire, pas l'ancien résultat")
+        }
+        precondition(routed == useCase)
     }
 
     private static func testPremiumEntryRespectsSavedUseCase() {
