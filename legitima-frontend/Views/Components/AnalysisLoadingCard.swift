@@ -18,10 +18,7 @@ struct AnalysisLoadingCard: View {
                         .fontWeight(.semibold)
                         .foregroundColor(LegitimaColors.ink)
 
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundColor(LegitimaColors.muted)
-                        .fixedSize(horizontal: false, vertical: true)
+                    JustifiedText(subtitle, color: LegitimaColors.muted)
                 }
             }
 
