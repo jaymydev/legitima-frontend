@@ -137,7 +137,7 @@ private struct RecruitmentQuestionHeading: View {
     }
 }
 
-private struct RecruitmentFlowLayout: Layout {
+struct RecruitmentFlowLayout: Layout {
     let spacing: CGFloat
 
     func sizeThatFits(

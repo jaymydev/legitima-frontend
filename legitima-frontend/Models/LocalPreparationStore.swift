@@ -6,6 +6,7 @@ struct PreparationSnapshot: Codable, Equatable {
     var careerSummary: String = ""
     var sensitivePoint: String = ""
     var interviewDate: Date?
+    var intendedUseCaseID: String?
     var analysis: AnalysisResponse?
     var updatedAt: Date = .now
 
@@ -83,6 +84,11 @@ final class LocalPreparationStore: ObservableObject {
 
     func updateInterviewDate(_ interviewDate: Date?) {
         snapshot.interviewDate = interviewDate
+        persist()
+    }
+
+    func updateIntendedUseCase(_ useCaseID: String?) {
+        snapshot.intendedUseCaseID = useCaseID
         persist()
     }
 
