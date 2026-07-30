@@ -235,11 +235,17 @@ final class InterviewPreparationStore: ObservableObject {
         storage.save(saved)
     }
 
-    func start(useCase: InterviewUseCase) {
-        if saved.useCase?.id != useCase.id {
-            saved = SavedInterviewPreparation(useCase: useCase)
-            storage.save(saved)
-        }
+    /// Begin a fresh preparation, discarding any previous answers and result.
+    ///
+    /// Always resets, including for the use case already saved. Only resetting
+    /// on a *different* use case made the most likely second preparation — the
+    /// same kind of interview at another company — impossible to run: the user
+    /// got their previous answers back, and after a relaunch the routing sent
+    /// them straight to the old result. Resuming is a separate, explicit
+    /// action offered next to this one, so nothing is discarded by surprise.
+    func startNew(useCase: InterviewUseCase) {
+        saved = SavedInterviewPreparation(useCase: useCase)
+        storage.save(saved)
     }
 
     func clear() {
