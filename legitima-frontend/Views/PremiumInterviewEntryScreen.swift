@@ -167,7 +167,7 @@ struct PremiumInterviewEntryScreen: View {
     }
 
     private func begin(_ useCase: InterviewUseCase) {
-        interviewPreparationStore.start(useCase: useCase)
+        interviewPreparationStore.startNew(useCase: useCase)
         phase = useCase.id == Self.recruitmentUseCaseID
             ? .recruitment(useCase)
             : .questionnaire(useCase)
