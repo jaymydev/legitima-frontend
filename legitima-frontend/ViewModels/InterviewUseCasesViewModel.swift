@@ -93,6 +93,10 @@ final class InterviewQuestionnaireViewModel: ObservableObject {
         store.saveDraft(useCase: useCase, answers: answers)
     }
 
+    func saveStep(_ step: Int) {
+        store.saveStep(step)
+    }
+
     func updateContext(_ context: InterviewPreparationContext) {
         self.context = context
     }

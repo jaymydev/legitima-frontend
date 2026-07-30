@@ -229,6 +229,13 @@ final class InterviewPreparationStore: ObservableObject {
         storage.save(saved)
     }
 
+    func saveStep(_ step: Int) {
+        guard saved.step != step else { return }
+        saved.step = step
+        saved.updatedAt = .now
+        storage.save(saved)
+    }
+
     func saveResult(_ result: InterviewPreparationResponse) {
         saved.result = result
         saved.updatedAt = .now
