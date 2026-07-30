@@ -40,7 +40,7 @@ struct RecruitmentChoiceCard: View {
             RecruitmentFlowLayout(spacing: 8) {
                 ForEach(question.options, id: \.self) { option in
                     Button(option) {
-                        selection = option
+                        withAnimation(LegitimaMotion.control) { selection = option }
                     }
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(selection == option ? .white : accent)
@@ -49,9 +49,10 @@ struct RecruitmentChoiceCard: View {
                     .background(
                         selection == option
                             ? LegitimaColors.accentSurface
-                            : Color(light: .rgb(232, 247, 243), dark: .rgb(33, 47, 44))
+                            : LegitimaColors.chip
                     )
                     .clipShape(Capsule())
+                    .sensoryFeedback(.selection, trigger: selection == option)
                 }
             }
         }

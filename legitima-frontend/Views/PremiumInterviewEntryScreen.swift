@@ -3,7 +3,7 @@ import SwiftUI
 struct PremiumInterviewEntryScreen: View {
     private static let recruitmentUseCaseID = "recruitment"
 
-    private enum Phase {
+    private enum Phase: Equatable {
         case loading
         case loadingFailed
         case recruitment(InterviewUseCase)
@@ -20,6 +20,8 @@ struct PremiumInterviewEntryScreen: View {
 
     var body: some View {
         content
+            .transition(.opacity)
+            .animation(LegitimaMotion.reveal, value: phase)
             .task {
                 await resolveInitialPhase()
             }

@@ -10,6 +10,10 @@ struct LeanResultScreen: View {
     let onPurchaseCompleted: () -> Void
     let onRestartAnalysis: () -> Void
 
+    /// Only the first three cards stagger in. Beyond the fold the movement
+    /// would be unseen, and this screen is read, not performed.
+    @State private var revealStage = 0
+
     var body: some View {
         ZStack {
             LinearGradient(
@@ -25,9 +29,11 @@ struct LeanResultScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     resultHeroSection
+                        .revealed(revealStage >= 1)
 
                     if let days = interviewCountdownDays {
                         interviewCountdownCard(days: days)
+                            .revealed(revealStage >= 2)
                     }
 
                     if userStatus.hasSeenPremiumUnlock {
@@ -40,6 +46,7 @@ struct LeanResultScreen: View {
                         content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
                         backgroundColor: Color(light: .rgb(227, 245, 236), dark: .rgb(30, 44, 37))
                     )
+                    .revealed(revealStage >= 3)
 
                     if !userStatus.isPremium {
                         HStack {
@@ -109,6 +116,13 @@ struct LeanResultScreen: View {
         }
         .task {
             await purchaseManager.loadProduct()
+        }
+        .onAppear {
+            for stage in 1...3 {
+                withAnimation(LegitimaMotion.reveal.delay(LegitimaMotion.revealDelay(stage - 1))) {
+                    revealStage = stage
+                }
+            }
         }
     }
 

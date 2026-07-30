@@ -89,8 +89,10 @@ struct InterviewQuestionnaireScreen: View {
                     accent: LegitimaColors.accent
                 )
                 .padding(24)
+                .transition(.opacity)
             }
         }
+        .animation(LegitimaMotion.reveal, value: viewModel.isLoading)
         .onChange(of: viewModel.answers) { _, _ in
             viewModel.saveDraft()
         }
