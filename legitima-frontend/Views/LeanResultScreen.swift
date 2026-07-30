@@ -122,17 +122,17 @@ struct LeanResultScreen: View {
                     .foregroundColor(LegitimaColors.accent)
                     .background(LegitimaColors.surface)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: LegitimaRadius.control)
                             .stroke(LegitimaColors.accent.opacity(0.4), lineWidth: 1)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
             }
             .disabled(!userStatus.canStartAnalysis)
             .opacity(userStatus.canStartAnalysis ? 1 : 0.5)
 
             Text(userStatus.freeQuotaLabel)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(LegitimaColors.muted)
         }
         .padding(.top, 4)
     }
@@ -180,11 +180,11 @@ struct LeanResultScreen: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .fill(LegitimaColors.surface)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .stroke(LegitimaColors.accent.opacity(0.2), lineWidth: 1)
         )
     }
@@ -214,21 +214,16 @@ struct LeanResultScreen: View {
 
             Button(action: onContinue) {
                 Text(premiumPreparationButtonTitle)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(LegitimaColors.accentSurface)
-                    .foregroundColor(.white)
-                    .cornerRadius(14)
+                    .legitimaPrimaryLabel()
             }
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .fill(LegitimaColors.surface)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .stroke(LegitimaColors.gold.opacity(0.25), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
@@ -289,10 +284,10 @@ struct LeanResultScreen: View {
         .padding(16)
         .background(LegitimaColors.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
     private var heroInsightText: String {
@@ -344,11 +339,11 @@ struct LeanResultScreen: View {
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .fill(Color(light: .rgb(226, 247, 239), dark: .rgb(28, 44, 38)))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .stroke(LegitimaColors.accent.opacity(0.18), lineWidth: 1)
         )
     }
@@ -369,7 +364,7 @@ struct LeanResultScreen: View {
                 HStack(spacing: 6) {
                     if isLocked {
                         Image(systemName: "lock.fill")
-                            .foregroundColor(.gray)
+                            .foregroundColor(LegitimaColors.muted)
                     }
 
                     Text(title)
@@ -384,11 +379,11 @@ struct LeanResultScreen: View {
         .opacity(isLocked ? 0.65 : 1)
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .fill(backgroundColor)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)

@@ -55,12 +55,7 @@ struct PremiumUnlockCard: View {
                         Text("Débloquer Premium • \(purchaseManager.displayPrice)")
                     }
                 }
-                .fontWeight(.bold)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .foregroundColor(.white)
-                .background(LegitimaColors.accentSurface)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .legitimaPrimaryLabel()
             }
             .disabled(!purchaseManager.canPurchase)
 
@@ -71,7 +66,7 @@ struct PremiumUnlockCard: View {
                 systemImage: "checkmark.shield"
             )
             .font(.caption)
-            .foregroundColor(.secondary)
+            .foregroundColor(LegitimaColors.muted)
 
             Button("Restaurer mes achats") {
                 Task {
@@ -86,7 +81,7 @@ struct PremiumUnlockCard: View {
             if let message = purchaseManager.message {
                 Text(message)
                     .font(.caption)
-                    .foregroundColor(.orange)
+                    .foregroundColor(LegitimaColors.gold)
                     .multilineTextAlignment(.center)
             }
         }
@@ -101,8 +96,8 @@ struct PremiumUnlockCard: View {
                 endPoint: .bottomTrailing
             )
         )
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.orange.opacity(0.25)))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: LegitimaRadius.card).stroke(LegitimaColors.gold.opacity(0.3)))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
     private func benefit(
@@ -129,7 +124,7 @@ struct PremiumUnlockCard: View {
 
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(LegitimaColors.muted)
                     .multilineTextAlignment(.leading)
             }
 

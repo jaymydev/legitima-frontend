@@ -27,7 +27,7 @@ struct InterviewUseCaseSelectionScreen: View {
                             .font(.system(size: 34, weight: .bold, design: .rounded))
 
                         Text("Les questions et la synthèse seront adaptées à votre situation.")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(LegitimaColors.muted)
                     }
 
                     if savedPreparation.hasWork {
@@ -45,7 +45,7 @@ struct InterviewUseCaseSelectionScreen: View {
                             .padding(16)
                             .foregroundColor(LegitimaColors.accent)
                             .background(LegitimaColors.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
                         }
                     }
 
@@ -96,7 +96,7 @@ struct InterviewUseCaseSelectionScreen: View {
                     .frame(width: 48, height: 48)
                     .foregroundColor(LegitimaColors.accent)
                     .background(LegitimaColors.chip)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
                 VStack(alignment: .leading, spacing: 7) {
                     Text(useCase.title)
@@ -104,16 +104,16 @@ struct InterviewUseCaseSelectionScreen: View {
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.leading)
 
-                    JustifiedText(useCase.description, color: .secondary)
+                    JustifiedText(useCase.description, color: LegitimaColors.muted)
                 }
 
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(LegitimaColors.muted)
             }
             .padding(18)
             .background(LegitimaColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
             .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 6)
         }
     }

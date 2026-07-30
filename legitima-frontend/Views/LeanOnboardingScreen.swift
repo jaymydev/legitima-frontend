@@ -69,9 +69,9 @@ struct LeanOnboardingScreen: View {
                                 .foregroundColor(LegitimaColors.ink)
                                 .padding(14)
                                 .background(LegitimaColors.field)
-                                .cornerRadius(12)
+                                .cornerRadius(LegitimaRadius.control)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
+                                    RoundedRectangle(cornerRadius: LegitimaRadius.control)
                                         .stroke(LegitimaColors.hairline, lineWidth: 1)
                                 )
                         }
@@ -89,10 +89,10 @@ struct LeanOnboardingScreen: View {
                                     minHeight: 180
                                 )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
+                                    RoundedRectangle(cornerRadius: LegitimaRadius.control)
                                         .stroke(LegitimaColors.hairline, lineWidth: 1)
                                 )
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
                                 Button(action: {
                                     dismissKeyboard()
@@ -108,10 +108,10 @@ struct LeanOnboardingScreen: View {
                                     .foregroundColor(LegitimaColors.accent)
                                     .background(Color(light: .rgb(239, 250, 249), dark: .rgb(31, 44, 43)))
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
+                                        RoundedRectangle(cornerRadius: LegitimaRadius.control)
                                             .stroke(LegitimaColors.accent.opacity(0.22), lineWidth: 1)
                                     )
-                                    .cornerRadius(12)
+                                    .cornerRadius(LegitimaRadius.control)
                                 }
                             }
                         }
@@ -132,9 +132,9 @@ struct LeanOnboardingScreen: View {
                                 .foregroundColor(LegitimaColors.ink)
                                 .padding(14)
                                 .background(LegitimaColors.field)
-                                .cornerRadius(12)
+                                .cornerRadius(LegitimaRadius.control)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
+                                    RoundedRectangle(cornerRadius: LegitimaRadius.control)
                                         .stroke(LegitimaColors.hairline, lineWidth: 1)
                                 )
                         }
@@ -165,12 +165,7 @@ struct LeanOnboardingScreen: View {
 
                     Button(action: startAnalysis) {
                         Text("Analyser mon parcours")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(LegitimaColors.accentSurface)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .legitimaPrimaryLabel()
                     }
                     .disabled(viewModel.isLoading)
 
@@ -249,7 +244,7 @@ struct LeanOnboardingScreen: View {
         }
         .padding(16)
         .background(LegitimaColors.surface)
-        .cornerRadius(16)
+        .cornerRadius(LegitimaRadius.control)
         .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
 
@@ -295,10 +290,10 @@ struct LeanOnboardingScreen: View {
         .padding(16)
         .background(LegitimaColors.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: LegitimaRadius.control)
                 .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 

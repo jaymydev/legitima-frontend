@@ -10,7 +10,7 @@ struct RecruitmentTargetRoleCard: View {
                     .font(.headline)
                 JustifiedText(
                     "Vous pouvez l’actualiser si votre projet a changé depuis la première analyse.",
-                    color: .secondary
+                    color: LegitimaColors.muted
                 )
             }
 
@@ -19,10 +19,10 @@ struct RecruitmentTargetRoleCard: View {
                 .padding(14)
                 .background(LegitimaColors.field)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: LegitimaRadius.control)
                         .stroke(LegitimaColors.hairline, lineWidth: 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
         }
         .recruitmentCardStyle()
     }
@@ -75,10 +75,10 @@ struct RecruitmentTextCard: View {
                 minHeight: minHeight
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: LegitimaRadius.control)
                     .stroke(LegitimaColors.hairline, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
             AnswerGuidanceView(
                 suggestions: question.suggestions,
@@ -103,14 +103,14 @@ struct RecruitmentExistingDataCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
-                JustifiedText(content, color: .secondary, lineLimit: 5)
+                JustifiedText(content, color: LegitimaColors.muted, lineLimit: 5)
             }
 
             Spacer(minLength: 0)
         }
         .padding(16)
         .background(LegitimaColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
     }
 }
 
@@ -125,10 +125,10 @@ private struct RecruitmentQuestionHeading: View {
                 if !question.required {
                     Text("Facultatif")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(LegitimaColors.muted)
                 }
             }
-            JustifiedText(question.helper, color: .secondary)
+            JustifiedText(question.helper, color: LegitimaColors.muted)
         }
     }
 }
@@ -189,6 +189,6 @@ private extension View {
         padding(17)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(LegitimaColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 }

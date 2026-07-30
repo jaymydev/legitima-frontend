@@ -50,7 +50,7 @@ struct TestAccessScreen: View {
                             .padding(.vertical, 16)
                             .foregroundColor(.white)
                             .background(LegitimaColors.accentSurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
                         }
 
                         accountButton(title: "Se connecter", action: .signIn)
@@ -58,7 +58,7 @@ struct TestAccessScreen: View {
                     }
                     .padding(20)
                     .background(LegitimaColors.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 26))
+                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.hero))
                     .shadow(color: .black.opacity(0.07), radius: 18, x: 0, y: 10)
 
                     Text("Le mode test conserve votre préparation sur cet appareil. La synchronisation entre appareils arrivera avec les comptes.")
@@ -101,10 +101,10 @@ struct TestAccessScreen: View {
             .foregroundColor(LegitimaColors.ink)
             .background(LegitimaColors.field)
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: LegitimaRadius.control)
                     .stroke(LegitimaColors.hairline, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
         }
     }
 }

@@ -117,22 +117,12 @@ struct PremiumKickoffScreen: View {
                 retry()
             } label: {
                 Text("Réessayer")
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .foregroundColor(.white)
-                    .background(LegitimaColors.accentSurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .legitimaPrimaryLabel()
             }
 
             Button(action: onContinue) {
                 Text("Passer à ma préparation")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .foregroundColor(LegitimaColors.accent)
-                    .background(LegitimaColors.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .legitimaSecondaryLabel()
             }
         }
         .padding(.horizontal, 28)
@@ -180,7 +170,7 @@ struct PremiumKickoffScreen: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: LegitimaRadius.control)
                         .fill(Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28)))
                 )
                 .revealed(revealStage >= 1)
@@ -194,10 +184,10 @@ struct PremiumKickoffScreen: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: LegitimaRadius.control)
                         .fill(LegitimaColors.surface)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 14)
+                            RoundedRectangle(cornerRadius: LegitimaRadius.control)
                                 .stroke(LegitimaColors.accent.opacity(0.25), lineWidth: 1)
                         )
                 )
@@ -206,12 +196,7 @@ struct PremiumKickoffScreen: View {
                 VStack(spacing: 10) {
                     Button(action: onContinue) {
                         Text("Préparer les autres réponses")
-                            .fontWeight(.bold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .foregroundColor(.white)
-                            .background(LegitimaColors.accentSurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .legitimaPrimaryLabel()
                     }
 
                     Text("La préparation guidée couvre les autres objections, votre ancrage et votre synthèse finale.")
@@ -256,10 +241,10 @@ struct PremiumKickoffScreen: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: LegitimaRadius.control)
                     .fill(LegitimaColors.surface)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: LegitimaRadius.control)
                             .stroke(LegitimaColors.accent.opacity(0.2), lineWidth: 1)
                     )
             )
@@ -267,12 +252,7 @@ struct PremiumKickoffScreen: View {
 
             Button(action: onContinue) {
                 Text("Commencer ma préparation")
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .foregroundColor(.white)
-                    .background(LegitimaColors.accentSurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .legitimaPrimaryLabel()
             }
             .revealed(revealStage >= 2)
         }

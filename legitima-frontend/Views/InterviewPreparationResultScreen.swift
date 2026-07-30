@@ -55,23 +55,13 @@ struct InterviewPreparationResultScreen: View {
                     if let exportURL {
                         ShareLink(item: exportURL) {
                             Label("Exporter ma synthèse (PDF)", systemImage: "square.and.arrow.up")
-                                .fontWeight(.bold)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .foregroundColor(.white)
-                                .background(LegitimaColors.accentSurface)
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .legitimaPrimaryLabel()
                         }
                     }
 
                     Button(action: onChooseAnother) {
                         Text("Préparer un autre entretien")
-                            .fontWeight(.semibold)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .foregroundColor(LegitimaColors.accent)
-                            .background(LegitimaColors.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .legitimaSecondaryLabel()
                     }
                 }
                 .frame(maxWidth: 720)
@@ -114,16 +104,16 @@ struct InterviewPreparationResultScreen: View {
                 Text("VOTRE RÉPONSE")
                     .font(.caption.bold())
                     .foregroundColor(LegitimaColors.accent)
-                JustifiedText(kickoff.defensibleAnswer, color: .secondary)
+                JustifiedText(kickoff.defensibleAnswer, color: LegitimaColors.muted)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .fill(LegitimaColors.surface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: LegitimaRadius.card)
                         .stroke(LegitimaColors.accent.opacity(0.25), lineWidth: 1)
                 )
         )
@@ -152,7 +142,7 @@ struct InterviewPreparationResultScreen: View {
                 isRecorded
                     ? "Vos notes serviront de matière à votre prochaine préparation : les questions qui vous ont mis en difficulté seront travaillées en priorité."
                     : "Quelles questions vous ont mis en difficulté ? Ce que vous notez maintenant rendra votre prochaine préparation plus précise.",
-                color: .secondary
+                color: LegitimaColors.muted
             )
 
             Button {
@@ -164,13 +154,13 @@ struct InterviewPreparationResultScreen: View {
                     .padding(.vertical, 12)
                     .foregroundColor(isRecorded ? LegitimaColors.accent : .white)
                     .background(isRecorded ? LegitimaColors.surface : LegitimaColors.accentSurface)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: LegitimaRadius.card)
                 .fill(Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28)))
         )
     }
@@ -179,12 +169,12 @@ struct InterviewPreparationResultScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.headline)
-            JustifiedText(content, textStyle: .body, color: .secondary)
+            JustifiedText(content, textStyle: .body, color: LegitimaColors.muted)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(LegitimaColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
     private func listCard(title: String, icon: String, items: [String]) -> some View {
@@ -198,13 +188,13 @@ struct InterviewPreparationResultScreen: View {
                         .frame(width: 24, height: 24)
                         .background(LegitimaColors.chip)
                         .clipShape(Circle())
-                    JustifiedText(item, textStyle: .body, color: .secondary)
+                    JustifiedText(item, textStyle: .body, color: LegitimaColors.muted)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(LegitimaColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 }
