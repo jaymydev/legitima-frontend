@@ -13,18 +13,23 @@ final class InterviewPreparationService {
         )
     }
 
+    /// Bounded: this one runs while the user waits on a blocking screen right
+    /// after paying, so it must fail in seconds rather than hang on the default
+    /// 60 s timeout.
     func kickoff(_ payload: PremiumKickoffRequest) async throws -> PremiumKickoffResponse {
         try await request(
             path: "/v2/interview-preparation/kickoff",
             method: "POST",
-            body: try JSONEncoder().encode(payload)
+            body: try JSONEncoder().encode(payload),
+            timeout: 30
         )
     }
 
     private func request<Response: Decodable>(
         path: String,
         method: String,
-        body: Data? = nil
+        body: Data? = nil,
+        timeout: TimeInterval? = nil
     ) async throws -> Response {
         guard let url = BackendConfiguration.analyzeURL(path: path) else {
             throw IAService.IAServiceError.invalidURL
@@ -32,6 +37,9 @@ final class InterviewPreparationService {
 
         var request = URLRequest(url: url)
         request.httpMethod = method
+        if let timeout {
+            request.timeoutInterval = timeout
+        }
         if let body {
             request.httpBody = body
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")

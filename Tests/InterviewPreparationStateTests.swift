@@ -15,6 +15,7 @@ struct InterviewPreparationStateTests {
         try testKickoffContractRoundTrip()
         testDebriefFeedsTheNextPreparation()
         testKickoffSurvivesAndLeadsTheExport()
+        testKickoffDistinguishesMissingEndpointFromFailure()
         print("Interview preparation state tests passed")
     }
 
@@ -269,6 +270,40 @@ struct InterviewPreparationStateTests {
         precondition(PreparationExportContent(response: sampleResult).blocks.count == 4)
         let blank = PremiumKickoffResponse(objection: "Une objection", defensibleAnswer: "   ")
         precondition(PreparationExportContent(response: sampleResult, kickoff: blank).blocks.count == 4)
+    }
+
+    private static func testKickoffDistinguishesMissingEndpointFromFailure() {
+        func backendError(_ code: Int) -> Error {
+            IAService.IAServiceError.requestFailed(
+                NSError(domain: PremiumKickoffOutcome.backendErrorDomain, code: code)
+            )
+        }
+
+        // Route absent: the planned degrade, the user need not be told.
+        for code in [404, 405, 501] {
+            precondition(PremiumKickoffOutcome.classify(backendError(code)) == .notDeployed)
+        }
+
+        // Route exists, something broke: they just paid, so say so.
+        for code in [500, 502, 503, 422] {
+            precondition(PremiumKickoffOutcome.classify(backendError(code)) == .failed)
+        }
+
+        // Network failures and timeouts are never a missing endpoint — a 404
+        // from some other domain must not be mistaken for our backend's.
+        precondition(
+            PremiumKickoffOutcome.classify(
+                IAService.IAServiceError.requestFailed(URLError(.timedOut))
+            ) == .failed
+        )
+        precondition(
+            PremiumKickoffOutcome.classify(URLError(.notConnectedToInternet)) == .failed
+        )
+        precondition(
+            PremiumKickoffOutcome.classify(
+                NSError(domain: NSURLErrorDomain, code: 404)
+            ) == .failed
+        )
     }
 
     private static func testPremiumEntryRespectsSavedUseCase() {
