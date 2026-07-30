@@ -14,10 +14,29 @@ struct PreparationExportContent: Equatable {
     let title: String
     let blocks: [Block]
 
-    init(response: InterviewPreparationResponse) {
+    init(
+        response: InterviewPreparationResponse,
+        kickoff: PremiumKickoffResponse? = nil
+    ) {
         title = response.title.trimmingCharacters(in: .whitespacesAndNewlines)
 
         var blocks: [Block] = []
+
+        // The answer generated at purchase leads the document: it is the one
+        // the user already knows works, and the PDF is read the night before.
+        if let kickoff {
+            let objection = kickoff.objection.trimmingCharacters(in: .whitespacesAndNewlines)
+            let answer = kickoff.defensibleAnswer.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !answer.isEmpty {
+                blocks.append(
+                    Block(
+                        title: "Votre première réponse défendable",
+                        paragraphs: objection.isEmpty ? [answer] : ["« \(objection) »", answer],
+                        numbered: false
+                    )
+                )
+            }
+        }
 
         let summary = response.summary.trimmingCharacters(in: .whitespacesAndNewlines)
         if !summary.isEmpty {
