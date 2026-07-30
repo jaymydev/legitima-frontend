@@ -11,6 +11,7 @@ final class AppRouter: ObservableObject {
 
     enum Route: Hashable {
         case progression
+        case premiumKickoff
         case premiumInterviewEntry
     }
 
@@ -33,6 +34,16 @@ final class AppRouter: ObservableObject {
 
     func showPremiumInterviewEntry() {
         path.append(.premiumInterviewEntry)
+    }
+
+    func showPremiumKickoff() {
+        path.append(.premiumKickoff)
+    }
+
+    /// Leaving the kickoff replaces it in the stack so back never returns to
+    /// a stale purchase transition.
+    func continueFromKickoff() {
+        path = [.premiumInterviewEntry]
     }
 
     func backToResults() {
