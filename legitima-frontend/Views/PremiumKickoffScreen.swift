@@ -251,6 +251,13 @@ struct PremiumKickoffScreen: View {
     private func run() async {
         guard case .generating = phase else { return }
 
+        // Already computed once: show it straight away rather than spend
+        // another call and another wait on the same answer.
+        if let saved = preparationStore.snapshot.kickoff {
+            phase = .ready(saved)
+            return
+        }
+
         let stepBeats = Task {
             try await Task.sleep(nanoseconds: 700_000_000)
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { completedSteps = 1 }
@@ -271,6 +278,10 @@ struct PremiumKickoffScreen: View {
 
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { completedSteps = 3 }
         try? await Task.sleep(nanoseconds: 400_000_000)
+
+        if let kickoff {
+            preparationStore.saveKickoff(kickoff)
+        }
 
         withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
             phase = kickoff.map(Phase.ready) ?? .bridge

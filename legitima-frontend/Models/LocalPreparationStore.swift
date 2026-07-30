@@ -9,6 +9,7 @@ struct PreparationSnapshot: Codable, Equatable {
     var intendedUseCaseID: String?
     var analysis: AnalysisResponse?
     var debrief: InterviewDebrief?
+    var kickoff: PremiumKickoffResponse?
     var updatedAt: Date = .now
 
     var hasWork: Bool {
@@ -131,6 +132,13 @@ final class LocalPreparationStore: ObservableObject {
 
     func saveDebrief(_ debrief: InterviewDebrief) {
         snapshot.debrief = debrief
+        persist()
+    }
+
+    /// The first paid deliverable. Kept so it survives leaving the kickoff and
+    /// relaunching the app — it is the proof of what the purchase bought.
+    func saveKickoff(_ kickoff: PremiumKickoffResponse) {
+        snapshot.kickoff = kickoff
         persist()
     }
 
