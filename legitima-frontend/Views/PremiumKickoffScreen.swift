@@ -14,6 +14,7 @@ struct PremiumKickoffScreen: View {
         case generating
         case ready(PremiumKickoffResponse)
         case bridge
+        case failed
     }
 
     private static let steps = [
@@ -25,6 +26,7 @@ struct PremiumKickoffScreen: View {
     @State private var phase: Phase = .generating
     @State private var completedSteps = 0
     @State private var revealStage = 0
+    @State private var isTakingLong = false
 
     var body: some View {
         ZStack {
@@ -45,6 +47,8 @@ struct PremiumKickoffScreen: View {
                 readyView(kickoff)
             case .bridge:
                 bridgeView
+            case .failed:
+                failedView
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -78,8 +82,60 @@ struct PremiumKickoffScreen: View {
                     }
                 }
             }
+
+            if isTakingLong {
+                Text("C’est un peu plus long que d’habitude. On continue.")
+                    .font(.footnote)
+                    .foregroundColor(LegitimaColors.muted)
+                    .multilineTextAlignment(.center)
+                    .transition(.opacity)
+            }
         }
         .padding(.horizontal, 32)
+        .transition(.opacity)
+    }
+
+    // MARK: - Failed (network or server, not a missing endpoint)
+
+    private var failedView: some View {
+        VStack(spacing: 18) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 44))
+                .foregroundColor(LegitimaColors.gold)
+
+            Text("La génération n’a pas abouti")
+                .font(.title3.bold())
+                .foregroundColor(LegitimaColors.ink)
+                .multilineTextAlignment(.center)
+
+            Text("Votre accès premium est bien actif et vos données sont conservées. Vous pouvez réessayer, ou passer directement à votre préparation guidée.")
+                .font(.subheadline)
+                .foregroundColor(LegitimaColors.muted)
+                .multilineTextAlignment(.center)
+
+            Button {
+                retry()
+            } label: {
+                Text("Réessayer")
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(LegitimaColors.accentSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+
+            Button(action: onContinue) {
+                Text("Passer à ma préparation")
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .foregroundColor(LegitimaColors.accent)
+                    .background(LegitimaColors.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+        }
+        .padding(.horizontal, 28)
         .transition(.opacity)
     }
 
@@ -265,9 +321,22 @@ struct PremiumKickoffScreen: View {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { completedSteps = 2 }
         }
 
+        // The wait is blocking and just-paid-for: say something before it feels
+        // broken, rather than leaving a spinner alone for half a minute.
+        let longWaitNotice = Task {
+            try await Task.sleep(nanoseconds: 12_000_000_000)
+            withAnimation(.easeInOut(duration: 0.3)) { isTakingLong = true }
+        }
+
         let startedAt = Date.now
         let request = PremiumKickoffRequest(context: .lean(from: preparationStore.snapshot))
-        let kickoff = try? await service.kickoff(request)
+
+        let outcome: PremiumKickoffOutcome
+        do {
+            outcome = .ready(try await service.kickoff(request))
+        } catch {
+            outcome = PremiumKickoffOutcome.classify(error)
+        }
 
         // Keep the generation beat readable even when the backend answers fast.
         let elapsed = Date.now.timeIntervalSince(startedAt)
@@ -275,17 +344,31 @@ struct PremiumKickoffScreen: View {
             try? await Task.sleep(nanoseconds: UInt64((2.4 - elapsed) * 1_000_000_000))
         }
         stepBeats.cancel()
+        longWaitNotice.cancel()
 
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { completedSteps = 3 }
         try? await Task.sleep(nanoseconds: 400_000_000)
 
-        if let kickoff {
+        if case .ready(let kickoff) = outcome {
             preparationStore.saveKickoff(kickoff)
         }
 
         withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
-            phase = kickoff.map(Phase.ready) ?? .bridge
+            switch outcome {
+            case .ready(let kickoff): phase = .ready(kickoff)
+            case .notDeployed: phase = .bridge
+            case .failed: phase = .failed
+            }
         }
+    }
+
+    private func retry() {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            phase = .generating
+            completedSteps = 0
+            isTakingLong = false
+        }
+        Task { await run() }
     }
 
     private func startReveal() {
