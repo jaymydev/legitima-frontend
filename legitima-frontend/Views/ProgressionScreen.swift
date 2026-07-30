@@ -270,7 +270,9 @@ struct ProgressionScreen: View {
             if userStatus.isPremium {
                 navigateToPremiumFlow = true
             } else {
-                userStatus.activatePremium()
+                // Send the user to the purchase card instead of granting
+                // access here: this branch used to hand out premium for free,
+                // skipping both the payment and the post-purchase kickoff.
                 onBackToResults()
             }
         }) {

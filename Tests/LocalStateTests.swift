@@ -11,7 +11,42 @@ struct LocalStateTests {
         testDailyTestQuota()
         testSimulatedPremiumUnlockPersistence()
         testLoadingProgressNeverOverclaims()
+        testRestoringPremiumDoesNotReplayTheUnlockBanner()
         print("Local state tests passed")
+    }
+
+    @MainActor
+    private static func testRestoringPremiumDoesNotReplayTheUnlockBanner() {
+        let suiteName = "premium-restore-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        // A purchase made now is a moment: it arms the banner.
+        let buying = UserStatus(defaults: defaults)
+        precondition(!buying.isPremium)
+        precondition(!buying.hasSeenPremiumUnlock)
+        buying.activatePremium()
+        precondition(buying.isPremium)
+        precondition(buying.hasSeenPremiumUnlock)
+
+        // Recovering access the user already owns is not a moment. This is the
+        // launch path: routing it through activatePremium() replayed the
+        // congratulation card on every single launch.
+        let restoring = UserStatus(defaults: defaults)
+        restoring.restorePremium()
+        precondition(restoring.isPremium)
+        precondition(!restoring.hasSeenPremiumUnlock, "une restauration ne doit pas rejouer la bannière")
+
+        // Dismissing then restoring again must stay dismissed.
+        buying.dismissPremiumUnlock()
+        precondition(!buying.hasSeenPremiumUnlock)
+        buying.restorePremium()
+        precondition(buying.isPremium)
+        precondition(!buying.hasSeenPremiumUnlock)
+
+        // Premium access must still suspend the free quota either way.
+        precondition(restoring.canStartAnalysis)
+        precondition(restoring.freeQuotaLabel == "Analyses premium actives")
     }
 
     private static func testLoadingProgressNeverOverclaims() {
