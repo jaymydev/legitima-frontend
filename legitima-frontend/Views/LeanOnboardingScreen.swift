@@ -9,6 +9,7 @@ struct LeanOnboardingScreen: View {
     @State private var hasInterviewDate = false
     @State private var interviewDate = Date()
     @State private var intendedUseCaseID: String?
+    private let reminderScheduler = InterviewReminderScheduler()
     let onAnalysisComplete: (AnalysisResponse) -> Void
 
     init(onAnalysisComplete: @escaping (AnalysisResponse) -> Void) {
@@ -334,7 +335,12 @@ struct LeanOnboardingScreen: View {
     }
 
     private func saveInterviewDate() {
-        preparationStore.updateInterviewDate(hasInterviewDate ? interviewDate : nil)
+        let date = hasInterviewDate ? interviewDate : nil
+        preparationStore.updateInterviewDate(date)
+
+        // The moment the user hands over a date is the only moment asking for
+        // notification permission reads as the app doing what it was told.
+        Task { await reminderScheduler.sync(interviewDate: date) }
     }
 
     private func dismissKeyboard() {
