@@ -28,6 +28,24 @@ struct RecruitmentPremiumFlowScreen: View {
             )
         )
         _targetRole = State(initialValue: context.targetRole)
+
+        // Reopen where the work actually is, never past the first step still
+        // missing a required answer.
+        let saved = store.saved.useCase?.id == useCase.id ? store.saved : SavedInterviewPreparation()
+        _step = State(
+            initialValue: QuestionnaireStepRestore.step(
+                saved: saved.step,
+                stepCount: Self.stepCount,
+                isComplete: { index in
+                    Self.requiredQuestionIDs(forStep: index).allSatisfy {
+                        !(saved.answers[$0] ?? "")
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .isEmpty
+                    }
+                }
+            )
+        )
+
         self.context = context
         self.onTargetRoleChange = onTargetRoleChange
         self.onComplete = onComplete
@@ -106,6 +124,9 @@ struct RecruitmentPremiumFlowScreen: View {
         .animation(LegitimaMotion.reveal, value: viewModel.isLoading)
         .onChange(of: viewModel.answers) { _, _ in
             viewModel.saveDraft()
+        }
+        .onChange(of: step) { _, newStep in
+            viewModel.saveStep(newStep)
         }
         .onChange(of: targetRole) { _, newValue in
             let updatedContext = InterviewPreparationContext(
@@ -272,7 +293,7 @@ struct RecruitmentPremiumFlowScreen: View {
     }
 
     private var isCurrentStepComplete: Bool {
-        let requiredAnswersAreComplete = requiredQuestionIDsForCurrentStep.allSatisfy {
+        let requiredAnswersAreComplete = Self.requiredQuestionIDs(forStep: step).allSatisfy {
             !(viewModel.answers[$0] ?? "")
                 .trimmingCharacters(in: .whitespacesAndNewlines)
                 .isEmpty
@@ -282,7 +303,9 @@ struct RecruitmentPremiumFlowScreen: View {
         return requiredAnswersAreComplete && targetRoleIsComplete
     }
 
-    private var requiredQuestionIDsForCurrentStep: [String] {
+    static let stepCount = 4
+
+    static func requiredQuestionIDs(forStep step: Int) -> [String] {
         switch step {
         case 0: return ["interview_stage"]
         case 1: return ["key_strengths", "proof_example"]
@@ -291,8 +314,14 @@ struct RecruitmentPremiumFlowScreen: View {
         }
     }
 
+    /// Clamped: `step` now comes from disk, and these arrays have four
+    /// entries. An out-of-range value would crash the screen on open.
+    private var safeStep: Int {
+        min(max(step, 0), Self.stepCount - 1)
+    }
+
     private var stepTitle: String {
-        ["Votre prochain entretien", "Ce que vous voulez démontrer", "La question difficile", "Votre objectif"][step]
+        ["Votre prochain entretien", "Ce que vous voulez démontrer", "La question difficile", "Votre objectif"][safeStep]
     }
 
     private var stepSubtitle: String {
@@ -301,6 +330,6 @@ struct RecruitmentPremiumFlowScreen: View {
             "Nous réutilisons vos expériences : aucun CV à importer de nouveau.",
             "Préparons le point qui vous demande le plus d’attention.",
             "Définissez l’impression à laisser avant la génération finale.",
-        ][step]
+        ][safeStep]
     }
 }

@@ -147,10 +147,34 @@ struct InterviewPreparationSection: Codable, Equatable {
 struct SavedInterviewPreparation: Codable, Equatable {
     var useCase: InterviewUseCase?
     var answers: [String: String] = [:]
+    /// Position in a multi-step flow. Kept with the answers so closing the app
+    /// mid-questionnaire does not drop the user back to the first step with
+    /// everything already filled in — which reads as lost work.
+    var step: Int = 0
     var result: InterviewPreparationResponse?
     var updatedAt: Date = .now
 
     var hasWork: Bool {
         useCase != nil && (!answers.isEmpty || result != nil)
+    }
+}
+
+enum QuestionnaireStepRestore {
+    /// Where to reopen a saved multi-step flow.
+    ///
+    /// Never past the first step still missing a required answer. A saved
+    /// index alone can point beyond the real work — a partial file, or a
+    /// questionnaire whose questions changed — and the user would then reach
+    /// the end only to find generation blocked, with nothing telling them
+    /// which step is incomplete.
+    static func step(
+        saved: Int,
+        stepCount: Int,
+        isComplete: (Int) -> Bool
+    ) -> Int {
+        guard stepCount > 0 else { return 0 }
+        let lastIndex = stepCount - 1
+        let firstIncomplete = (0...lastIndex).first { !isComplete($0) } ?? lastIndex
+        return min(max(saved, 0), min(firstIncomplete, lastIndex))
     }
 }

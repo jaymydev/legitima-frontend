@@ -17,6 +17,7 @@ struct InterviewPreparationStateTests {
         testKickoffSurvivesAndLeadsTheExport()
         testKickoffDistinguishesMissingEndpointFromFailure()
         try testSameUseCaseCanBePreparedAgain()
+        try testQuestionnaireStepIsRestoredWhereTheWorkIs()
         print("Interview preparation state tests passed")
     }
 
@@ -348,6 +349,49 @@ struct InterviewPreparationStateTests {
             preconditionFailure("attendu : le questionnaire, pas l'ancien résultat")
         }
         precondition(routed == useCase)
+    }
+
+    @MainActor
+    private static func testQuestionnaireStepIsRestoredWhereTheWorkIs() throws {
+        // Everything up to step 2 answered: reopen exactly where they left off.
+        precondition(
+            QuestionnaireStepRestore.step(saved: 2, stepCount: 4, isComplete: { $0 < 2 }) == 2
+        )
+
+        // Saved index points past a gap — a partial file, or questions that
+        // changed. Without clamping the user reaches the end and generation is
+        // silently blocked, with nothing saying which step is incomplete.
+        precondition(
+            QuestionnaireStepRestore.step(saved: 3, stepCount: 4, isComplete: { $0 == 0 }) == 1
+        )
+
+        // Out-of-range values must never reach the title arrays, which have
+        // four entries and would crash the screen on open.
+        precondition(QuestionnaireStepRestore.step(saved: 99, stepCount: 4, isComplete: { _ in true }) == 3)
+        precondition(QuestionnaireStepRestore.step(saved: -5, stepCount: 4, isComplete: { _ in true }) == 0)
+        precondition(QuestionnaireStepRestore.step(saved: 2, stepCount: 0, isComplete: { _ in true }) == 0)
+
+        // A fully answered questionnaire reopens on the last step, not past it.
+        precondition(
+            QuestionnaireStepRestore.step(saved: 3, stepCount: 4, isComplete: { _ in true }) == 3
+        )
+
+        // And the step round-trips through storage alongside the answers.
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storage = ProtectedJSONStore<SavedInterviewPreparation>(
+            fileURL: directory.appendingPathComponent("interview.json")
+        )
+        let store = InterviewPreparationStore(storage: storage)
+        store.startNew(useCase: sampleUseCase)
+        store.saveDraft(useCase: sampleUseCase, answers: ["role_context": "Une réponse"])
+        store.saveStep(2)
+        precondition(InterviewPreparationStore(storage: storage).saved.step == 2)
+
+        // Starting fresh resets the position along with the answers.
+        store.startNew(useCase: sampleUseCase)
+        precondition(store.saved.step == 0)
     }
 
     private static func testPremiumEntryRespectsSavedUseCase() {
