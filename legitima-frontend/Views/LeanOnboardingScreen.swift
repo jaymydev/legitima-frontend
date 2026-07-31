@@ -2,7 +2,6 @@ import SwiftUI
 import UIKit
 
 struct LeanOnboardingScreen: View {
-    @EnvironmentObject private var userStatus: UserStatus
     @EnvironmentObject private var preparationStore: LocalPreparationStore
     @StateObject private var viewModel = LeanOnboardingViewModel()
     @State private var isShowingCVImportFlow = false
@@ -40,8 +39,6 @@ struct LeanOnboardingScreen: View {
                             .font(.subheadline)
                             .foregroundColor(LegitimaColors.muted)
                     }
-
-                    quotaCard
 
                     inputCard(
                         label: "Quel échange préparez-vous ? (optionnel)",
@@ -118,14 +115,17 @@ struct LeanOnboardingScreen: View {
                         }
                     )
 
+                    // The example deliberately stays on employment facts. It
+                    // used to suggest « burn-out », which invited health data
+                    // — a GDPR special category — into a free-text field.
                     inputCard(
                         label: "Point à expliquer en entretien (optionnel)",
-                        helper: "Ex : chômage, transition, bench ou burn-out.",
+                        helper: "Le seul endroit pour une difficulté que votre chronologie ne montre pas.",
                         field: {
                             TextField(
                                 "",
                                 text: $viewModel.zoneSensible,
-                                prompt: Text("Ex : chômage en 2025, bench de 6 mois, reconversion ou burn-out")
+                                prompt: Text("Ex : période sans emploi en 2025, bench de 6 mois, reconversion, mission interrompue")
                                     .foregroundColor(LegitimaColors.muted.opacity(0.82))
                             )
                                 .textInputAutocapitalization(.sentences)
@@ -191,12 +191,10 @@ struct LeanOnboardingScreen: View {
         .animation(LegitimaMotion.reveal, value: viewModel.isLoading)
         .onChange(of: viewModel.analysisResponse) { _, response in
             if let response {
-                userStatus.consumeFreeAnalysisIfNeeded()
                 onAnalysisComplete(response)
             }
         }
         .onAppear {
-            userStatus.refreshFreeQuotaIfNeeded()
             let saved = preparationStore.snapshot
             if viewModel.posteVise.isEmpty {
                 viewModel.posteVise = saved.targetRole
@@ -264,38 +262,6 @@ struct LeanOnboardingScreen: View {
         .sensoryFeedback(.selection, trigger: isSelected)
     }
 
-    private var quotaCard: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: userStatus.isPremium ? "sparkles" : "timer")
-                .foregroundColor(LegitimaColors.accent)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(userStatus.isPremium ? "Accès premium" : "Mode test")
-                    .font(.headline)
-                    .foregroundColor(LegitimaColors.ink)
-
-                JustifiedText(
-                    userStatus.isPremium
-                    ? "Vos analyses premium sont disponibles sans limite quotidienne."
-                    : "Le mode test inclut jusqu'à 20 analyses réussies par jour.",
-                    color: LegitimaColors.muted
-                )
-
-                Text(userStatus.freeQuotaLabel)
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(LegitimaColors.accent)
-            }
-        }
-        .padding(16)
-        .background(LegitimaColors.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: LegitimaRadius.control)
-                .stroke(LegitimaColors.hairline, lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
-    }
-
     private var loadingModal: some View {
         ZStack {
             Color.black.opacity(0.52)
@@ -315,13 +281,6 @@ struct LeanOnboardingScreen: View {
     }
 
     private func startAnalysis() {
-        userStatus.refreshFreeQuotaIfNeeded()
-
-        guard userStatus.canStartAnalysis else {
-            viewModel.errorMessage = "Vous avez atteint vos 20 analyses de test pour aujourd'hui. Votre travail reste disponible et le quota sera réinitialisé demain."
-            return
-        }
-
         dismissKeyboard()
         viewModel.analyze()
     }

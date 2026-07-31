@@ -1,13 +1,10 @@
 import SwiftUI
 
 struct LeanResultScreen: View {
-    @EnvironmentObject private var userStatus: UserStatus
-    @EnvironmentObject private var purchaseManager: PremiumPurchaseManager
     @EnvironmentObject private var interviewPreparationStore: InterviewPreparationStore
     @EnvironmentObject private var preparationStore: LocalPreparationStore
     let response: AnalysisResponse
     let onContinue: () -> Void
-    let onPurchaseCompleted: () -> Void
     let onRestartAnalysis: () -> Void
 
     /// Only the first three cards stagger in. Beyond the fold the movement
@@ -36,10 +33,6 @@ struct LeanResultScreen: View {
                             .revealed(revealStage >= 2)
                     }
 
-                    if userStatus.hasSeenPremiumUnlock {
-                        premiumUnlockBanner
-                    }
-
                     sectionCard(
                         icon: "lightbulb.fill",
                         title: "Compréhension stratégique",
@@ -47,15 +40,6 @@ struct LeanResultScreen: View {
                         backgroundColor: Color(light: .rgb(227, 245, 236), dark: .rgb(30, 44, 37))
                     )
                     .revealed(revealStage >= 3)
-
-                    if !userStatus.isPremium {
-                        HStack {
-                            Rectangle().frame(height: 1)
-                            Text("POUR ALLER PLUS LOIN").font(.caption.bold())
-                            Rectangle().frame(height: 1)
-                        }
-                        .foregroundColor(LegitimaColors.accent.opacity(0.35))
-                    }
 
                     sectionCard(
                         icon: "arrow.triangle.branch",
@@ -71,57 +55,42 @@ struct LeanResultScreen: View {
                         backgroundColor: Color(light: .rgb(255, 236, 228), dark: .rgb(46, 36, 31))
                     )
 
-                    if userStatus.isPremium {
-                        premiumPreparationCard
-                    } else {
-                        sectionCard(
-                            icon: "shield.fill",
-                            title: "Anticipation des objections",
-                            content: objectionTeaserContent,
-                            backgroundColor: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28)),
-                            isLocked: true
-                        )
+                    sectionCard(
+                        icon: "shield.fill",
+                        title: "Anticipation des objections",
+                        content: response.interview_preparation.probable_objections + "\n\n" + response.interview_preparation.structured_answers,
+                        backgroundColor: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28))
+                    )
 
-                        sectionCard(
-                            icon: "checkmark.seal.fill",
-                            title: "Ancrage de légitimité",
-                            content: "La préparation complète ancre votre légitimité : des arguments objectifs pour assumer votre parcours face à votre interlocuteur.",
-                            backgroundColor: Color(light: .rgb(228, 239, 253), dark: .rgb(30, 38, 49)),
-                            isLocked: true
-                        )
+                    sectionCard(
+                        icon: "checkmark.seal.fill",
+                        title: "Ancrage de légitimité",
+                        content: response.legitimacy_anchor.objective_strength + "\n\n" + response.legitimacy_anchor.final_alignment_statement,
+                        backgroundColor: Color(light: .rgb(228, 239, 253), dark: .rgb(30, 38, 49))
+                    )
 
-                        sectionCard(
-                            icon: "sparkles",
-                            title: "Synthèse stratégique finale",
-                            content: "La préparation complète se termine par une synthèse actionnable : points à faire passer et plan d'action pour le jour J.",
-                            backgroundColor: Color(light: .rgb(242, 233, 252), dark: .rgb(39, 33, 48)),
-                            isLocked: true
-                        )
+                    sectionCard(
+                        icon: "sparkles",
+                        title: "Synthèse stratégique",
+                        content: response.narrative.positioning_statement,
+                        backgroundColor: Color(light: .rgb(242, 233, 252), dark: .rgb(39, 33, 48))
+                    )
 
-                        PremiumUnlockCard(
-                            purchaseManager: purchaseManager,
-                            onUnlocked: {
-                                userStatus.activatePremium()
-                                onPurchaseCompleted()
-                            },
-                            onRestored: {
-                                // Already owned: resume the preparation rather
-                                // than replay the just-purchased moment.
-                                userStatus.restorePremium()
-                                onContinue()
-                            }
-                        )
-
-                        freeRetrySection
+                    HStack {
+                        Rectangle().frame(height: 1)
+                        Text("LA SUITE").font(.caption.bold())
+                        Rectangle().frame(height: 1)
                     }
+                    .foregroundColor(LegitimaColors.accent.opacity(0.35))
+
+                    guidedPreparationCard
+
+                    restartSection
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 30)
                 .padding(.bottom, 24)
             }
-        }
-        .task {
-            await purchaseManager.loadProduct()
         }
         .onAppear {
             for stage in 1...3 {
@@ -132,27 +101,21 @@ struct LeanResultScreen: View {
         }
     }
 
-    private var freeRetrySection: some View {
-        VStack(spacing: 10) {
-            Button(action: onRestartAnalysis) {
-                Label("Refaire une analyse gratuite", systemImage: "arrow.counterclockwise")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .foregroundColor(LegitimaColors.accent)
-                    .background(LegitimaColors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: LegitimaRadius.control)
-                            .stroke(LegitimaColors.accent.opacity(0.4), lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
-            }
-            .disabled(!userStatus.canStartAnalysis)
-            .opacity(userStatus.canStartAnalysis ? 1 : 0.5)
-
-            Text(userStatus.freeQuotaLabel)
-                .font(.caption)
-                .foregroundColor(LegitimaColors.muted)
+    /// Reachable from every state of the result screen. It is also the only
+    /// way back to the CV import, which lives in the onboarding form.
+    private var restartSection: some View {
+        Button(action: onRestartAnalysis) {
+            Label("Reprendre mon parcours et relancer l'analyse", systemImage: "arrow.counterclockwise")
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .foregroundColor(LegitimaColors.accent)
+                .background(LegitimaColors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: LegitimaRadius.control)
+                        .stroke(LegitimaColors.accent.opacity(0.4), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
         }
         .padding(.top, 4)
     }
@@ -160,22 +123,6 @@ struct LeanResultScreen: View {
     private var interviewCountdownDays: Int? {
         guard let date = preparationStore.snapshot.interviewDate else { return nil }
         return InterviewCountdown.daysUntil(date)
-    }
-
-    /// Locked-card copy: quotes the user's own probable objection when the free
-    /// analysis surfaced one, and adds urgency when an interview date is set.
-    private var objectionTeaserContent: String {
-        guard let objection = ObjectionTeaser.firstObjection(
-            from: response.interview_preparation.probable_objections
-        ) else {
-            return "La préparation complète génère les objections probables de votre interlocuteur et des réponses défendables, construites à partir de votre fil conducteur."
-        }
-
-        if let days = interviewCountdownDays {
-            return "\(InterviewCountdown.label(daysUntil: days)). Cette objection probable n'a pas encore de réponse préparée : « \(objection) »\n\nLa préparation complète construit vos réponses défendables avant le jour J."
-        }
-
-        return "Une objection probable pour votre profil : « \(objection) »\n\nLa préparation complète construit la réponse défendable, et couvre les autres objections identifiées."
     }
 
     private func interviewCountdownCard(days: Int) -> some View {
@@ -190,9 +137,7 @@ struct LeanResultScreen: View {
                     .foregroundColor(LegitimaColors.ink)
 
                 JustifiedText(
-                    userStatus.isPremium
-                        ? "Gardez votre préparation à portée de main pour la révision finale."
-                        : "Transformez cette lecture en réponses prêtes avant le jour J.",
+                    "Gardez votre préparation à portée de main pour la révision finale.",
                     color: LegitimaColors.muted
                 )
             }
@@ -209,11 +154,11 @@ struct LeanResultScreen: View {
         )
     }
 
-    private var premiumPreparationCard: some View {
+    private var guidedPreparationCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("VOTRE PRÉPARATION PREMIUM", systemImage: "crown.fill")
+            Label("VOTRE PRÉPARATION GUIDÉE", systemImage: "point.3.connected.trianglepath.dotted")
                 .font(.caption.bold())
-                .foregroundColor(LegitimaColors.gold)
+                .foregroundColor(LegitimaColors.accent)
 
             if let result = interviewPreparationStore.saved.result {
                 Text(result.title)
@@ -233,7 +178,7 @@ struct LeanResultScreen: View {
             }
 
             Button(action: onContinue) {
-                Text(premiumPreparationButtonTitle)
+                Text(guidedPreparationButtonTitle)
                     .legitimaPrimaryLabel()
             }
         }
@@ -244,12 +189,12 @@ struct LeanResultScreen: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: LegitimaRadius.card)
-                .stroke(LegitimaColors.gold.opacity(0.25), lineWidth: 1)
+                .stroke(LegitimaColors.accent.opacity(0.25), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 
-    private var premiumPreparationButtonTitle: String {
+    private var guidedPreparationButtonTitle: String {
         if interviewPreparationStore.saved.result != nil {
             return "Revoir ma préparation"
         }
@@ -272,7 +217,7 @@ struct LeanResultScreen: View {
                 .font(.system(.largeTitle, design: .rounded).weight(.bold))
                 .foregroundColor(LegitimaColors.ink)
 
-            Text("Vous avez maintenant une première lecture solide. La préparation complète sert à transformer cette matière en récit, en réponses et en posture d’entretien.")
+            Text("Vous avez maintenant une lecture complète de votre trajectoire. La préparation guidée transforme cette matière en réponses pour un entretien précis.")
                 .font(.subheadline)
                 .foregroundColor(LegitimaColors.muted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -325,55 +270,11 @@ struct LeanResultScreen: View {
         return String(cleaned[..<cutoffIndex]) + "..."
     }
 
-    private var premiumUnlockBanner: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "sparkles.rectangle.stack.fill")
-                .font(.title3)
-                .foregroundColor(LegitimaColors.accent)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Préparation complète activée")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(LegitimaColors.ink)
-
-                JustifiedText(
-                    "Votre accès premium est actif. Reprenez votre préparation guidée quand vous êtes prêt.",
-                    color: LegitimaColors.muted
-                )
-            }
-
-            Spacer(minLength: 0)
-
-            Button(action: {
-                userStatus.dismissPremiumUnlock()
-            }) {
-                Image(systemName: "xmark")
-                    .font(.caption.weight(.bold))
-                    .foregroundColor(LegitimaColors.muted)
-                    .padding(8)
-                    .background(LegitimaColors.surface)
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: LegitimaRadius.card)
-                .fill(Color(light: .rgb(226, 247, 239), dark: .rgb(28, 44, 38)))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: LegitimaRadius.card)
-                .stroke(LegitimaColors.accent.opacity(0.18), lineWidth: 1)
-        )
-    }
-
     private func sectionCard(
         icon: String,
         title: String,
         content: String,
-        backgroundColor: Color,
-        isLocked: Bool = false
+        backgroundColor: Color
     ) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
@@ -381,22 +282,14 @@ struct LeanResultScreen: View {
                 .foregroundColor(LegitimaColors.ink)
 
             VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    if isLocked {
-                        Image(systemName: "lock.fill")
-                            .foregroundColor(LegitimaColors.muted)
-                    }
-
-                    Text(title)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(LegitimaColors.ink)
-                }
+                Text(title)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(LegitimaColors.ink)
 
                 JustifiedText(content, color: LegitimaColors.body)
             }
         }
-        .opacity(isLocked ? 0.65 : 1)
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: LegitimaRadius.card)
@@ -438,11 +331,8 @@ struct LeanResultScreen_Previews: PreviewProvider {
                 )
             ),
             onContinue: {},
-            onPurchaseCompleted: {},
             onRestartAnalysis: {}
         )
-        .environmentObject(UserStatus())
-        .environmentObject(PremiumPurchaseManager())
         .environmentObject(InterviewPreparationStore())
         .environmentObject(LocalPreparationStore())
     }

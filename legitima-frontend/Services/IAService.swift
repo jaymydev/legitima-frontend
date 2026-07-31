@@ -2,7 +2,10 @@ import Foundation
 
 enum BackendConfiguration {
     static let analyzeBaseURLString = "https://legitima-backend.onrender.com"
-    static let cvParseBaseURLString = "https://legitima-backend-ocr.onrender.com"
+    /// Same service as `analyzeBaseURLString`. The OCR deployment ran the very
+    /// same image — both answer `/cv/parse` and `/v2/...` — so it was a
+    /// duplicate. It stays reachable until installed builds have updated.
+    static let cvParseBaseURLString = analyzeBaseURLString
     static let maxCVFileSizeBytes = 10 * 1024 * 1024
 
     static func analyzeURL(path: String) -> URL? {
