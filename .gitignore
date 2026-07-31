@@ -12,3 +12,11 @@ build/
 
 # Misc
 *.xcuserstate
+
+# Secrets — never committed. Listed explicitly because publishing this
+# repository makes every future mistake here permanent and public.
+.env
+.env.*
+*.p12
+*.mobileprovision
+*.pem
