@@ -189,9 +189,20 @@ extension ProtectedJSONStore where Value == PreparationSnapshot {
     }
 }
 
-extension ProtectedJSONStore where Value == PremiumPreparationSnapshot {
-    static var premiumPreparation: Self {
-        Self(fileURL: applicationSupportURL.appendingPathComponent("premium-preparation.json"))
+/// Files an earlier version wrote and nothing reads any more.
+///
+/// `premium-preparation.json` held a second copy of the analysis — so, the
+/// user's career history. Dropping the code that wrote it would have left that
+/// copy sitting on every device that ever ran the old build. Keeping personal
+/// data the app has no use for is exactly what we should not do, so it is
+/// deleted on launch instead.
+enum OrphanedStorage {
+    static let fileNames = ["premium-preparation.json"]
+
+    static func removeAll(in directory: URL = applicationSupportURL) {
+        for name in fileNames {
+            try? FileManager.default.removeItem(at: directory.appendingPathComponent(name))
+        }
     }
 }
 

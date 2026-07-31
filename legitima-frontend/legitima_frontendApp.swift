@@ -10,9 +10,12 @@ import SwiftUI
 @main
 struct legitima_frontendApp: App {
     @StateObject private var router = AppRouter()
-    @StateObject private var premiumDraft = PremiumPreparationDraft()
     @StateObject private var preparationStore = LocalPreparationStore()
     @StateObject private var interviewPreparationStore = InterviewPreparationStore()
+
+    init() {
+        OrphanedStorage.removeAll()
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -31,7 +34,6 @@ struct legitima_frontendApp: App {
                         }
                     }
             }
-            .environmentObject(premiumDraft)
             .environmentObject(preparationStore)
             .environmentObject(interviewPreparationStore)
             .environmentObject(router)
@@ -45,9 +47,6 @@ struct legitima_frontendApp: App {
             WelcomeScreen(
                 hasSavedWork: preparationStore.hasSavedWork,
                 onContinue: {
-                    if let analysis = preparationStore.snapshot.analysis {
-                        premiumDraft.baseAnalysis = analysis
-                    }
                     router.enterApp(savedAnalysis: preparationStore.snapshot.analysis)
                 }
             )
@@ -55,7 +54,6 @@ struct legitima_frontendApp: App {
         case .onboarding:
             LeanOnboardingScreen(
                 onAnalysisComplete: { response in
-                    premiumDraft.baseAnalysis = response
                     preparationStore.saveAnalysis(response)
                     router.showResult(response)
                 }

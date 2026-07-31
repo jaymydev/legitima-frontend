@@ -10,7 +10,41 @@ struct LocalStateTests {
         testLoadingProgressNeverOverclaims()
         testInterviewRemindersNeverFireLateOrIntoThePast()
         testIntentPickerCoversEveryPublishedUseCase()
+        try testOrphanedStorageIsDeleted()
         print("Local state tests passed")
+    }
+
+    /// The orphaned file held a copy of the analysis — the user's career
+    /// history. Dropping the writing code without deleting it would have left
+    /// personal data on every device that ran the old build.
+    private static func testOrphanedStorageIsDeleted() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let kept = directory.appendingPathComponent("preparation.json")
+        try Data("{}".utf8).write(to: kept)
+
+        for name in OrphanedStorage.fileNames {
+            try Data("{}".utf8).write(to: directory.appendingPathComponent(name))
+        }
+
+        OrphanedStorage.removeAll(in: directory)
+
+        for name in OrphanedStorage.fileNames {
+            precondition(
+                !FileManager.default.fileExists(atPath: directory.appendingPathComponent(name).path),
+                "\(name) doit être supprimé : il contient des données de carrière"
+            )
+        }
+        precondition(
+            FileManager.default.fileExists(atPath: kept.path),
+            "le nettoyage ne doit toucher que les fichiers orphelins"
+        )
+
+        // Running on a device that never had the old build must not throw.
+        OrphanedStorage.removeAll(in: directory)
     }
 
     private static func testInterviewRemindersNeverFireLateOrIntoThePast() {
