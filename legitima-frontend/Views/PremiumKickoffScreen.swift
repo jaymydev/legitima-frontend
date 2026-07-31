@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// The 30 seconds after purchase. The buy triggers a real backend call that
-/// builds the first defensible answer while honest staged steps animate.
-/// While the kickoff endpoint is not deployed, the screen degrades to a
-/// continuity bridge (« rien à re-saisir ») before the guided flow.
+/// The step between the analysis and the guided preparation, shown once. A
+/// real backend call builds the first defensible answer while honest staged
+/// steps animate. While the kickoff endpoint is not deployed, the screen
+/// degrades to a continuity bridge (« rien à re-saisir ») before the flow.
 struct PremiumKickoffScreen: View {
     @EnvironmentObject private var preparationStore: LocalPreparationStore
 
@@ -113,7 +113,7 @@ struct PremiumKickoffScreen: View {
                 .foregroundColor(LegitimaColors.ink)
                 .multilineTextAlignment(.center)
 
-            Text("Votre accès premium est bien actif et vos données sont conservées. Vous pouvez réessayer, ou passer directement à votre préparation guidée.")
+            Text("Vos données sont conservées. Vous pouvez réessayer, ou passer directement à votre préparation guidée.")
                 .font(.subheadline)
                 .foregroundColor(LegitimaColors.muted)
                 .multilineTextAlignment(.center)
@@ -155,9 +155,9 @@ struct PremiumKickoffScreen: View {
     private func readyView(_ kickoff: PremiumKickoffResponse) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Label("LEGITIMA PREMIUM", systemImage: "crown.fill")
+                Label("PREMIÈRE RÉPONSE", systemImage: "shield.fill")
                     .font(.caption.bold())
-                    .foregroundColor(LegitimaColors.gold)
+                    .foregroundColor(LegitimaColors.accent)
                     .frame(maxWidth: .infinity)
 
                 Text("Votre première réponse défendable")
@@ -227,7 +227,7 @@ struct PremiumKickoffScreen: View {
                 .foregroundColor(LegitimaColors.accent)
                 .transition(.scale(scale: 0.4).combined(with: .opacity))
 
-            Text("Premium activé")
+            Text("Votre préparation continue")
                 .font(.title2.bold())
                 .foregroundColor(LegitimaColors.ink)
 

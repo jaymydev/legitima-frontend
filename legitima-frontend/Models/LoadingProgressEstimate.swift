@@ -35,14 +35,17 @@ enum LoadingProgressEstimate {
         }
     }
 
-    /// Said once past 12 s, then replaced past 30 s. A cold start on the
-    /// hosting side is the normal case here, so staying silent would read as
-    /// a freeze.
+    /// Said once past 20 s, then replaced past 45 s.
+    ///
+    /// The thresholds were 12 s and 30 s, set when the backend slept between
+    /// calls. It no longer does: a generation answers in 8–9 s, so a 12 s
+    /// notice fired on runs that were merely finishing normally — telling
+    /// someone something is wrong when nothing is.
     static func slowNotice(elapsed: TimeInterval) -> String? {
         switch elapsed {
-        case ..<12:
+        case ..<20:
             return nil
-        case ..<30:
+        case ..<45:
             return "C’est un peu plus long que d’habitude. On continue."
         default:
             return "Le serveur met plus de temps à répondre. Vos informations sont conservées."

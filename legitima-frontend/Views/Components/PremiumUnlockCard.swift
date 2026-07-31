@@ -1,5 +1,9 @@
+#if DEBUG
 import SwiftUI
 
+/// The paywall Legitima no longer has. Kept under `#if DEBUG` so the StoreKit
+/// integration stays readable and runnable in previews without shipping a
+/// purchase surface. See README.md.
 struct PremiumUnlockCard: View {
     @ObservedObject var purchaseManager: PremiumPurchaseManager
     /// A purchase completed now — celebrate and hand over the first answer.
@@ -135,3 +139,15 @@ struct PremiumUnlockCard: View {
         }
     }
 }
+
+struct PremiumUnlockCard_Previews: PreviewProvider {
+    static var previews: some View {
+        PremiumUnlockCard(
+            purchaseManager: PremiumPurchaseManager(),
+            onUnlocked: {},
+            onRestored: {}
+        )
+        .padding()
+    }
+}
+#endif

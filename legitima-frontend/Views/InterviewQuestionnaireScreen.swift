@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct InterviewQuestionnaireScreen: View {
-    @EnvironmentObject private var userStatus: UserStatus
     @StateObject private var viewModel: InterviewQuestionnaireViewModel
 
     let onComplete: (InterviewPreparationResponse) -> Void
@@ -62,13 +61,13 @@ struct InterviewQuestionnaireScreen: View {
                     }
 
                     Button {
-                        startAnalysis()
+                        Task { await viewModel.analyze() }
                     } label: {
                         Text("Préparer mon entretien")
                             .legitimaPrimaryLabel()
                     }
-                    .disabled(viewModel.isLoading || !viewModel.canSubmit || !userStatus.canStartAnalysis)
-                    .opacity(viewModel.canSubmit && userStatus.canStartAnalysis ? 1 : 0.55)
+                    .disabled(viewModel.isLoading || !viewModel.canSubmit)
+                    .opacity(viewModel.canSubmit ? 1 : 0.55)
 
                     if let errorMessage = viewModel.errorMessage {
                         Text(errorMessage)
@@ -89,7 +88,8 @@ struct InterviewQuestionnaireScreen: View {
                         "Structuration de vos arguments",
                         "Rédaction de votre synthèse",
                     ],
-                    accent: LegitimaColors.accent
+                    accent: LegitimaColors.accent,
+                    typicalDuration: 12
                 )
                 .padding(24)
                 .transition(.opacity)
@@ -106,8 +106,8 @@ struct InterviewQuestionnaireScreen: View {
         }
     }
 
-    /// Mirrors the recruitment flow: show what the free analysis already
-    /// provides, so the premium never reads as a cold restart.
+    /// Mirrors the recruitment flow: show what the first analysis already
+    /// provides, so the guided preparation never reads as a cold restart.
     @ViewBuilder
     private var existingDataCards: some View {
         if !context.careerExperiences.trimmed.isEmpty {
@@ -171,14 +171,5 @@ struct InterviewQuestionnaireScreen: View {
             get: { viewModel.answers[questionID] ?? "" },
             set: { viewModel.answers[questionID] = $0 }
         )
-    }
-
-    private func startAnalysis() {
-        userStatus.refreshFreeQuotaIfNeeded()
-        guard userStatus.canStartAnalysis else {
-            viewModel.errorMessage = "Vous avez atteint vos 20 analyses de test pour aujourd’hui. Votre brouillon reste sauvegardé."
-            return
-        }
-        Task { await viewModel.analyze() }
     }
 }

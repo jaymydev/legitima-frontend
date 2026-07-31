@@ -12,7 +12,11 @@ struct AnalysisLoadingCard: View {
     let accent: Color
 
     /// Typical duration for this call. Only shapes the pacing of the estimate.
-    var typicalDuration: TimeInterval = 18
+    ///
+    /// Measured against the Starter deployment: `/analyze` answers in 8–9 s.
+    /// The former value of 18 s was set when the service slept between calls
+    /// and paid a 32 s cold start; it made every normal wait look stalled.
+    var typicalDuration: TimeInterval = 10
 
     @State private var progress: Double = 0
     @State private var elapsed: TimeInterval = 0

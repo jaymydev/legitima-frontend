@@ -34,11 +34,16 @@ The repository also includes a GitHub Actions workflow at [.github/workflows/ios
 
 ## Backend base URL
 
-The frontend now targets the deployed Render backend for real-device testing and TestFlight:
+The frontend targets a single deployed Render backend:
 
 - `https://legitima-backend.onrender.com`
 
-No local backend URL should remain active in the iOS app configuration for the current V1 test flow.
+CV parsing used to point at a second service, `legitima-backend-ocr`. Both ran
+the same image and answered the same routes, so it was a duplicate; the client
+now sends everything to `legitima-backend`. Keep the OCR service alive until
+installed builds have updated, then remove it.
+
+No local backend URL should remain active in the iOS app configuration.
 
 The currently documented integration surface is:
 
@@ -57,21 +62,36 @@ The frontend repository source of truth for backend integration is:
 
 Do not add or call backend endpoints that are not documented there.
 
-## Current Premium Flow
+## The app is free, and the StoreKit code is deliberate
 
-The current premium behavior is intentionally split in two steps:
+Legitima has no in-app purchase. Every part of the product — the analysis, the
+kickoff, the guided preparation, the debrief, the PDF export — is available to
+everyone, and there is no per-device quota.
 
-- after a successful free analysis, locked premium cards are visible as teasers;
-- when premium is unlocked, those cards are revealed immediately on the result screen without a separate upsell screen;
-- after that immediate reward, the user continues directly into the deeper premium preparation flow without an intermediate roadmap screen.
+The StoreKit integration that used to gate the guided preparation is still in
+the repository, wrapped in `#if DEBUG`:
 
-This keeps the premium transition rewarding before it becomes more effortful.
+- `Services/PremiumPurchaseManager.swift`
+- `Services/SimulatedPremiumUnlockStore.swift`
+- `Views/Components/PremiumUnlockCard.swift`
+- `Products.storekit`
 
-Inside the guided premium journey:
+**It is not dead code left behind by accident.** `#if DEBUG` excludes it from
+the Release binary, so the shipped app contains no purchase surface at all,
+while the implementation stays readable here and runnable from the Xcode
+preview of `PremiumUnlockCard` against the local `Products.storekit`
+configuration. Nothing in the app calls it. Delete the four items above if you
+ever want the repository to stop carrying it.
 
-- `Préparer une réponse claire et solide` is used for a single difficult question or objection;
-- `Recevoir ma synthèse premium` then leads to a synthesis-only screen that reuses the existing `AnalysisResponse` without triggering a second AI call;
-- that final premium synthesis is intentionally more value-dense than the lean result because it reframes the same analysis into premium-ready interview material.
+The user-facing flow is now:
+
+- onboarding → analysis;
+- the result screen shows the whole analysis, unlocked;
+- one kickoff screen, shown exactly once, builds the first defensible answer;
+- then the guided preparation for the interview type the user is preparing.
+
+Rate limiting lives on the backend (per IP), not in the client. A quota held in
+`UserDefaults` protected nothing against abuse and only punished honest users.
 
 ## Agent rules
 
