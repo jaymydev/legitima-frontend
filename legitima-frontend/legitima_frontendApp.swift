@@ -10,11 +10,9 @@ import SwiftUI
 @main
 struct legitima_frontendApp: App {
     @StateObject private var router = AppRouter()
-    @StateObject private var userStatus = UserStatus()
     @StateObject private var premiumDraft = PremiumPreparationDraft()
     @StateObject private var preparationStore = LocalPreparationStore()
     @StateObject private var interviewPreparationStore = InterviewPreparationStore()
-    @StateObject private var purchaseManager = PremiumPurchaseManager()
 
     var body: some Scene {
         WindowGroup {
@@ -22,39 +20,21 @@ struct legitima_frontendApp: App {
                 rootView
                     .navigationDestination(for: AppRouter.Route.self) { route in
                         switch route {
-                        case .progression:
-                            ProgressionScreen(
-                                onBackToResults: {
-                                    router.backToResults()
-                                },
-                                onRestartAnalysis: {
-                                    preparationStore.beginNewAnalysis()
-                                    router.restartAnalysis()
-                                }
-                            )
-                        case .premiumKickoff:
+                        case .kickoff:
                             PremiumKickoffScreen(
                                 onContinue: {
                                     router.continueFromKickoff()
                                 }
                             )
-                        case .premiumInterviewEntry:
+                        case .interviewEntry:
                             PremiumInterviewEntryScreen()
                         }
                     }
             }
-            .environmentObject(userStatus)
             .environmentObject(premiumDraft)
             .environmentObject(preparationStore)
             .environmentObject(interviewPreparationStore)
             .environmentObject(router)
-            .environmentObject(purchaseManager)
-            .task {
-                await purchaseManager.loadProduct()
-                if await purchaseManager.hasPremiumEntitlement() {
-                    userStatus.restorePremium()
-                }
-            }
         }
     }
 
@@ -62,13 +42,13 @@ struct legitima_frontendApp: App {
     private var rootView: some View {
         switch router.root {
         case .access:
-            TestAccessScreen(
+            WelcomeScreen(
                 hasSavedWork: preparationStore.hasSavedWork,
-                onContinueTesting: {
+                onContinue: {
                     if let analysis = preparationStore.snapshot.analysis {
                         premiumDraft.baseAnalysis = analysis
                     }
-                    router.enterTestMode(savedAnalysis: preparationStore.snapshot.analysis)
+                    router.enterApp(savedAnalysis: preparationStore.snapshot.analysis)
                 }
             )
 
@@ -85,10 +65,15 @@ struct legitima_frontendApp: App {
             LeanResultScreen(
                 response: response,
                 onContinue: {
-                    router.showPremiumInterviewEntry()
-                },
-                onPurchaseCompleted: {
-                    router.showPremiumKickoff()
+                    // The kickoff is the first defensible answer, and it is
+                    // worth one screen exactly once. Someone coming back to
+                    // review their preparation goes straight to the work.
+                    if preparationStore.snapshot.kickoff == nil,
+                       interviewPreparationStore.saved.result == nil {
+                        router.showKickoff()
+                    } else {
+                        router.showInterviewEntry()
+                    }
                 },
                 onRestartAnalysis: {
                     preparationStore.beginNewAnalysis()

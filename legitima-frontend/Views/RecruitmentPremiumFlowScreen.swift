@@ -115,7 +115,7 @@ struct RecruitmentPremiumFlowScreen: View {
                         "Rédaction de votre plan d’action",
                     ],
                     accent: accent,
-                    typicalDuration: 25
+                    typicalDuration: 12
                 )
                 .padding(24)
                 .transition(.opacity)
@@ -180,11 +180,16 @@ struct RecruitmentPremiumFlowScreen: View {
 
     private var evidenceStep: some View {
         VStack(spacing: 16) {
-            existingDataCard(
-                title: "Vos expériences sont déjà disponibles",
-                content: context.careerExperiences,
-                icon: "checkmark.circle.fill"
-            )
+            // Announcing « vos expériences sont déjà disponibles » above an
+            // empty card promised something that was not there, and the CV
+            // import lives back in the onboarding form.
+            if !context.careerExperiences.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                existingDataCard(
+                    title: "Vos expériences sont déjà disponibles",
+                    content: context.careerExperiences,
+                    icon: "checkmark.circle.fill"
+                )
+            }
             textCard(questionID: "key_strengths", minHeight: 105)
             textCard(questionID: "proof_example", minHeight: 130)
             textCard(questionID: "measurable_impact", minHeight: 95)
@@ -240,7 +245,7 @@ struct RecruitmentPremiumFlowScreen: View {
                     Task { await viewModel.analyze() }
                 }
             } label: {
-                Text(step < 3 ? "Continuer" : "Générer ma préparation premium")
+                Text(step < 3 ? "Continuer" : "Générer ma préparation")
                     .legitimaPrimaryLabel()
             }
             .disabled(!isCurrentStepComplete || viewModel.isLoading)
@@ -292,6 +297,12 @@ struct RecruitmentPremiumFlowScreen: View {
         )
     }
 
+    private var hasCareerExperiences: Bool {
+        !context.careerExperiences
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
+    }
+
     private var isCurrentStepComplete: Bool {
         let requiredAnswersAreComplete = Self.requiredQuestionIDs(forStep: step).allSatisfy {
             !(viewModel.answers[$0] ?? "")
@@ -327,7 +338,9 @@ struct RecruitmentPremiumFlowScreen: View {
     private var stepSubtitle: String {
         [
             "Quelques repères rapides pour adapter la préparation.",
-            "Nous réutilisons vos expériences : aucun CV à importer de nouveau.",
+            hasCareerExperiences
+                ? "Nous réutilisons vos expériences : aucun CV à importer de nouveau."
+                : "Décrivez ce que vous voulez démontrer, avec un exemple concret.",
             "Préparons le point qui vous demande le plus d’attention.",
             "Définissez l’impression à laisser avant la génération finale.",
         ][safeStep]

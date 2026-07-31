@@ -1,7 +1,11 @@
+#if DEBUG
 import Combine
 import Foundation
 import StoreKit
 
+/// Legitima ships free, so nothing in the app calls this. It is kept out of
+/// the Release binary by `#if DEBUG` and demonstrable from the Xcode preview
+/// of `PremiumUnlockCard` against `Products.storekit`. See README.md.
 @MainActor
 final class PremiumPurchaseManager: ObservableObject {
     static let productID = "com.milehana.legitima.premium.test"
@@ -128,3 +132,4 @@ final class PremiumPurchaseManager: ObservableObject {
         return true
     }
 }
+#endif

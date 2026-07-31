@@ -121,21 +121,32 @@ struct InterviewPreparationStateTests {
     private static func testFreemiumEntryStillUsesLeanOnboarding() {
         let router = AppRouter()
 
-        router.enterTestMode(savedAnalysis: nil)
+        router.enterApp(savedAnalysis: nil)
         guard case .onboarding = router.root else {
-            preconditionFailure("Empty test sessions must open LeanOnboarding")
+            preconditionFailure("A first launch must open LeanOnboarding")
         }
 
-        router.enterTestMode(savedAnalysis: sampleLeanAnalysis)
+        router.enterApp(savedAnalysis: sampleLeanAnalysis)
         guard case .result(let restored) = router.root else {
             preconditionFailure("Saved analyses must reopen their result")
         }
         precondition(restored == sampleLeanAnalysis)
 
-        router.showPremiumInterviewEntry()
+        router.showInterviewEntry()
         precondition(
-            router.path == [.premiumInterviewEntry],
-            "Premium results must open the guided preparation directly"
+            router.path == [.interviewEntry],
+            "Results must open the guided preparation directly"
+        )
+
+        // The kickoff is a one-off step, and leaving it replaces it in the
+        // stack: back must never return to a generation already passed.
+        router.backToResults()
+        router.showKickoff()
+        precondition(router.path == [.kickoff])
+        router.continueFromKickoff()
+        precondition(
+            router.path == [.interviewEntry],
+            "Continuing from the kickoff must not leave it behind in the stack"
         )
     }
 

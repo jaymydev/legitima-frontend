@@ -10,9 +10,8 @@ final class AppRouter: ObservableObject {
     }
 
     enum Route: Hashable {
-        case progression
-        case premiumKickoff
-        case premiumInterviewEntry
+        case kickoff
+        case interviewEntry
     }
 
     @Published var root: Root = .access
@@ -23,27 +22,23 @@ final class AppRouter: ObservableObject {
         path = []
     }
 
-    func enterTestMode(savedAnalysis: AnalysisResponse?) {
+    func enterApp(savedAnalysis: AnalysisResponse?) {
         path = []
         root = savedAnalysis.map(Root.result) ?? .onboarding
     }
 
-    func showProgression() {
-        path.append(.progression)
+    func showInterviewEntry() {
+        path.append(.interviewEntry)
     }
 
-    func showPremiumInterviewEntry() {
-        path.append(.premiumInterviewEntry)
-    }
-
-    func showPremiumKickoff() {
-        path.append(.premiumKickoff)
+    func showKickoff() {
+        path.append(.kickoff)
     }
 
     /// Leaving the kickoff replaces it in the stack so back never returns to
-    /// a stale purchase transition.
+    /// a generation the user has already moved past.
     func continueFromKickoff() {
-        path = [.premiumInterviewEntry]
+        path = [.interviewEntry]
     }
 
     func backToResults() {

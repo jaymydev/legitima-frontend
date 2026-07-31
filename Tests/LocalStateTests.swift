@@ -7,48 +7,10 @@ struct LocalStateTests {
         try testDraftAndAnalysisRestoration()
         try testInterviewDatePersistence()
         testInterviewCountdown()
-        testObjectionTeaserExtraction()
-        testDailyTestQuota()
-        testSimulatedPremiumUnlockPersistence()
         testLoadingProgressNeverOverclaims()
-        testRestoringPremiumDoesNotReplayTheUnlockBanner()
         testInterviewRemindersNeverFireLateOrIntoThePast()
         testIntentPickerCoversEveryPublishedUseCase()
         print("Local state tests passed")
-    }
-
-    @MainActor
-    private static func testRestoringPremiumDoesNotReplayTheUnlockBanner() {
-        let suiteName = "premium-restore-\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suiteName)!
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-
-        // A purchase made now is a moment: it arms the banner.
-        let buying = UserStatus(defaults: defaults)
-        precondition(!buying.isPremium)
-        precondition(!buying.hasSeenPremiumUnlock)
-        buying.activatePremium()
-        precondition(buying.isPremium)
-        precondition(buying.hasSeenPremiumUnlock)
-
-        // Recovering access the user already owns is not a moment. This is the
-        // launch path: routing it through activatePremium() replayed the
-        // congratulation card on every single launch.
-        let restoring = UserStatus(defaults: defaults)
-        restoring.restorePremium()
-        precondition(restoring.isPremium)
-        precondition(!restoring.hasSeenPremiumUnlock, "une restauration ne doit pas rejouer la bannière")
-
-        // Dismissing then restoring again must stay dismissed.
-        buying.dismissPremiumUnlock()
-        precondition(!buying.hasSeenPremiumUnlock)
-        buying.restorePremium()
-        precondition(buying.isPremium)
-        precondition(!buying.hasSeenPremiumUnlock)
-
-        // Premium access must still suspend the free quota either way.
-        precondition(restoring.canStartAnalysis)
-        precondition(restoring.freeQuotaLabel == "Analyses premium actives")
     }
 
     private static func testInterviewRemindersNeverFireLateOrIntoThePast() {
@@ -117,7 +79,8 @@ struct LocalStateTests {
     }
 
     private static func testLoadingProgressNeverOverclaims() {
-        let typical: TimeInterval = 18
+        // Matches the shipped pacing, itself measured against the backend.
+        let typical: TimeInterval = 10
 
         // Starts at zero and only ever moves forward.
         precondition(LoadingProgressEstimate.progress(elapsed: 0, typicalDuration: typical) == 0)
@@ -153,9 +116,12 @@ struct LocalStateTests {
         precondition(LoadingProgressEstimate.stepIndex(for: 0.85, count: 2) == 1)
         precondition(LoadingProgressEstimate.stepIndex(for: 0.5, count: 1) == 0)
 
-        // The notice appears once, then escalates once. Never before 12 s.
+        // The notice appears once, then escalates once. Never before 20 s —
+        // a normal generation answers in 8–9 s, so anything earlier would
+        // announce a problem to someone whose request is simply finishing.
         precondition(LoadingProgressEstimate.slowNotice(elapsed: 5) == nil)
-        precondition(LoadingProgressEstimate.slowNotice(elapsed: 11.9) == nil)
+        precondition(LoadingProgressEstimate.slowNotice(elapsed: 12) == nil)
+        precondition(LoadingProgressEstimate.slowNotice(elapsed: 19.9) == nil)
         let first = LoadingProgressEstimate.slowNotice(elapsed: 20)
         let second = LoadingProgressEstimate.slowNotice(elapsed: 45)
         precondition(first != nil && second != nil && first != second)
@@ -263,93 +229,8 @@ struct LocalStateTests {
         precondition(InterviewCountdown.label(daysUntil: 5) == "Votre entretien a lieu dans 5 jours")
     }
 
-    private static func testObjectionTeaserExtraction() {
-        // Empty or whitespace-only input yields nothing.
-        precondition(ObjectionTeaser.firstObjection(from: "") == nil)
-        precondition(ObjectionTeaser.firstObjection(from: "  \n\n  ") == nil)
 
-        // A plain question is returned as-is, punctuation included.
-        precondition(
-            ObjectionTeaser.firstObjection(from: "Pourquoi une transition en 2025 ?")
-                == "Pourquoi une transition en 2025 ?"
-        )
 
-        // Only the first sentence of a paragraph is kept.
-        precondition(
-            ObjectionTeaser.firstObjection(
-                from: "Votre parcours manque de continuité. Il faudra aussi expliquer le changement de secteur."
-            ) == "Votre parcours manque de continuité."
-        )
-
-        // List markers are stripped and only the first item is used.
-        precondition(
-            ObjectionTeaser.firstObjection(
-                from: "- Pourquoi avoir quitté votre poste ?\n- Que faisiez-vous en 2025 ?"
-            ) == "Pourquoi avoir quitté votre poste ?"
-        )
-        precondition(
-            ObjectionTeaser.firstObjection(
-                from: "1. Première objection notable ?\n2. Seconde objection ?"
-            ) == "Première objection notable ?"
-        )
-
-        // Blank leading lines are skipped.
-        precondition(
-            ObjectionTeaser.firstObjection(from: "\n\n• Objection après lignes vides ?")
-                == "Objection après lignes vides ?"
-        )
-
-        // Long sentences are truncated with an ellipsis under the cap.
-        let long = String(repeating: "a", count: 300)
-        let truncated = ObjectionTeaser.firstObjection(from: long)
-        precondition(truncated != nil)
-        precondition(truncated!.count <= 180)
-        precondition(truncated!.hasSuffix("..."))
-    }
-
-    @MainActor
-    private static func testDailyTestQuota() {
-        let suiteName = "LocalStateTests.\(UUID().uuidString)"
-        guard let defaults = UserDefaults(suiteName: suiteName) else {
-            preconditionFailure("Unable to create isolated UserDefaults")
-        }
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-
-        defaults.set(0, forKey: "user_status.remaining_free_analyses")
-        defaults.set(2, forKey: "user_status.configured_daily_limit")
-
-        let status = UserStatus(defaults: defaults)
-        precondition(status.remainingFreeAnalyses == 20)
-
-        for _ in 0..<20 {
-            precondition(status.canStartAnalysis)
-            status.consumeFreeAnalysisIfNeeded()
-        }
-
-        precondition(status.remainingFreeAnalyses == 0)
-        precondition(!status.canStartAnalysis)
-    }
-
-    @MainActor
-    private static func testSimulatedPremiumUnlockPersistence() {
-        let suiteName = "LocalStateTests.premium.\(UUID().uuidString)"
-        guard let defaults = UserDefaults(suiteName: suiteName) else {
-            preconditionFailure("Unable to create isolated UserDefaults")
-        }
-        defer { defaults.removePersistentDomain(forName: suiteName) }
-
-        let store = SimulatedPremiumUnlockStore(defaults: defaults)
-        precondition(!store.isUnlocked)
-
-        store.unlock()
-        precondition(store.isUnlocked)
-
-        let reloaded = SimulatedPremiumUnlockStore(defaults: defaults)
-        precondition(reloaded.isUnlocked)
-
-        reloaded.reset()
-        precondition(!store.isUnlocked)
-    }
 
     private static let sampleAnalysis = AnalysisResponse(
         analysis: AnalysisSection(
