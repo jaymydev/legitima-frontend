@@ -2,10 +2,8 @@
 
 **Dernière mise à jour : 3 août 2026**
 
-> ⚠️ **À compléter avant publication.** Deux informations ne peuvent pas être
-> déduites du code : l'identité du responsable de traitement et l'adresse de
-> contact. Elles sont marquées `[À COMPLÉTER]` ci-dessous. Ce document est une rédaction de départ, pas un
-> avis juridique : faites-le relire si l'enjeu le justifie.
+> ⚠️ Ce document est une rédaction de départ, pas un avis juridique :
+> faites-le relire si l'enjeu le justifie.
 
 ## En résumé
 
@@ -16,8 +14,8 @@ analyse — puis effacé de la mémoire, sans être conservé.
 
 ## 1. Responsable du traitement
 
-`[À COMPLÉTER : nom ou raison sociale, adresse]`
-Contact : `[À COMPLÉTER : adresse e-mail]`
+Milehana JOSEPH
+Contact : contact@milehanajoseph.com
 
 **Aucun délégué à la protection des données n'est désigné.** L'article 37 du
 RGPD ne l'impose qu'aux autorités publiques, aux organismes dont l'activité
@@ -176,7 +174,7 @@ prouver son identité. Ici, non — nous ne détenons aucun compte permettant de
 vous identifier, donc rien à vous demander et rien à vous restituer. C'est la
 conséquence directe de ne rien conserver.
 
-Pour toute question : `[À COMPLÉTER : adresse e-mail]`.
+Pour toute question : contact@milehanajoseph.com.
 
 Vous pouvez également introduire une réclamation auprès de la CNIL
 (www.cnil.fr).
