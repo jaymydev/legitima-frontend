@@ -18,7 +18,16 @@ It is not the long-term target architecture and should be treated as a temporary
 
 One backend, for every route:
 
-- `https://legitima-backend.onrender.com`
+- `https://legitima-backend-ocr.onrender.com`
+
+**The name is misleading and the reason matters.** Two Render services run the
+backend repository. `legitima-backend` was created on the native Python
+runtime, `legitima-backend-ocr` from the Dockerfile — and only the Dockerfile
+installs the `tesseract` binary that `POST /cv/parse` needs for photos. Both
+answer every route, so they look interchangeable; a CV *image* returns
+`500 OCR engine is not available` on the first. Render cannot change a
+service's runtime after creation, nor move an `onrender.com` subdomain, so the
+client points at the one that works. `GET /health` reports OCR availability.
 
 CV parsing used to target a second Render service, `legitima-backend-ocr`.
 Both deployed the same image and answered the same routes, so it was a

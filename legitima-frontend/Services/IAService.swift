@@ -1,19 +1,33 @@
 import Foundation
 
 enum BackendConfiguration {
-    static let analyzeBaseURLString = "https://legitima-backend.onrender.com"
-    /// Same service as `analyzeBaseURLString`. The OCR deployment ran the very
-    /// same image — both answer `/cv/parse` and `/v2/...` — so it was a
-    /// duplicate. It stays reachable until installed builds have updated.
-    static let cvParseBaseURLString = analyzeBaseURLString
+    /// One backend, and it has to be the Docker one.
+    ///
+    /// Two Render services run this repository. `legitima-backend` uses the
+    /// native Python runtime: `pip install` and nothing else, so the machine
+    /// has no `tesseract` binary. `legitima-backend-ocr` is built from the
+    /// Dockerfile, which installs it. They answer the same routes, which is
+    /// why they looked interchangeable — but importing a CV *photo* returns
+    /// `500 OCR engine is not available` on the first and works on the second.
+    ///
+    /// 1.0 pointed here at `legitima-backend` and shipped that break. Render
+    /// cannot change a service's runtime after creation, and renaming does not
+    /// move the `onrender.com` subdomain, so the fix has to come from the
+    /// client.
+    ///
+    /// The name is misleading for a primary backend. Moving to a domain we own
+    /// would let the host change without another App Store submission; until
+    /// then, this string is the one that works.
+    static let baseURLString = "https://legitima-backend-ocr.onrender.com"
+
     static let maxCVFileSizeBytes = 10 * 1024 * 1024
 
     static func analyzeURL(path: String) -> URL? {
-        URL(string: "\(analyzeBaseURLString)\(path)")
+        URL(string: "\(baseURLString)\(path)")
     }
 
     static func cvParseURL(path: String) -> URL? {
-        URL(string: "\(cvParseBaseURLString)\(path)")
+        analyzeURL(path: path)
     }
 }
 
