@@ -20,6 +20,12 @@ analyse — puis effacé de la mémoire, sans être conservé.
 `[À COMPLÉTER : nom ou raison sociale, adresse]`
 Contact : `[À COMPLÉTER : adresse e-mail]`
 
+**Aucun délégué à la protection des données n'est désigné.** L'article 37 du
+RGPD ne l'impose qu'aux autorités publiques, aux organismes dont l'activité
+principale suppose un suivi systématique à grande échelle, ou à ceux traitant à
+grande échelle des données sensibles — aucune de ces situations ici. L'adresse
+ci-dessus est le point de contact pour toute question relative à vos données.
+
 ## 2. Ce que l'application traite
 
 Legitima ne demande ni compte, ni identifiant, ni adresse e-mail. Aucune
@@ -27,13 +33,17 @@ inscription n'est possible, ni nécessaire.
 
 Les seules données traitées sont celles que vous saisissez vous-même :
 
-- le poste que vous visez ;
-- les étapes de votre parcours professionnel ;
-- le point que vous souhaitez pouvoir expliquer en entretien, si vous en
-  renseignez un ;
-- la date de votre entretien, si vous en renseignez une ;
-- vos réponses au questionnaire de préparation ;
-- le contenu du CV que vous importez, le cas échéant (PDF ou photo).
+| Donnée | Nécessaire ? |
+| --- | --- |
+| Le poste que vous visez | Nécessaire à l'analyse |
+| Les étapes de votre parcours professionnel | Nécessaire à l'analyse |
+| Le point à expliquer en entretien | Facultatif |
+| La date de votre entretien | Facultatif — sert aux rappels |
+| Vos réponses au questionnaire de préparation | Nécessaires à la préparation guidée ; certaines questions sont elles-mêmes facultatives et signalées comme telles |
+| Le contenu d'un CV importé | Facultatif — c'est un raccourci de saisie |
+
+Sans les deux premières, aucune analyse n'est possible : c'est la matière même
+du service. Tout le reste peut rester vide, et l'application fonctionne.
 
 S'y ajoutent les textes produits par l'analyse à partir de ces éléments.
 
@@ -74,7 +84,24 @@ sont pas utilisées pour entraîner ses modèles, et sont conservées au maximum
 aux appels d'API. Ce transfert hors de l'Union européenne s'appuie sur les
 clauses contractuelles types de la Commission européenne.
 
-## 5. Données sensibles
+## 5. Analyse automatisée de votre parcours
+
+Le cœur du service est une analyse produite par un modèle de langage, sans
+intervention humaine. Elle évalue des éléments relatifs à votre vie
+professionnelle — cohérence du parcours, fragilités probables, points d'appui —
+ce qui constitue un **profilage** au sens de l'article 4(4) du RGPD.
+
+Deux précisions importantes :
+
+- **Aucune décision n'est prise à votre sujet.** Le résultat vous est remis à
+  vous, pour vous préparer. Il n'est transmis à aucun employeur, recruteur ou
+  tiers, et ne produit aucun effet juridique. L'article 22, qui encadre les
+  décisions automatisées, ne trouve donc pas à s'appliquer.
+- **Le résultat est un point de vue, pas un verdict.** Un modèle de langage
+  peut se tromper, ou formuler une lecture que vous jugerez inexacte. Vous
+  restez seul juge de ce que vous direz en entretien.
+
+## 6. Données sensibles
 
 Les champs de Legitima sont libres. Vous pouvez donc y écrire, si vous le
 souhaitez, une information relevant d'une catégorie particulière au sens de
@@ -88,7 +115,7 @@ donner la cause médicale suffit à l'analyse.
 Si vous en saisissez malgré tout, elles suivent le même chemin que le reste :
 transmises pour produire l'analyse, jamais conservées côté serveur.
 
-## 6. Base légale
+## 7. Base légale
 
 Le traitement repose sur l'exécution du service que vous demandez
 (article 6.1.b du RGPD) : sans le texte que vous saisissez, aucune analyse
@@ -99,7 +126,13 @@ traitement repose sur votre consentement explicite (article 9.2.a), donné par
 le fait de les saisir volontairement dans un champ libre après cet
 avertissement.
 
-## 7. Durées de conservation
+**Vous pouvez le retirer à tout moment**, et sans démarche auprès de nous :
+effacez le texte concerné dans l'application. Il disparaît de votre appareil,
+et il n'en existe aucune copie chez nous à supprimer. Le retrait ne remet pas
+en cause les analyses déjà produites à partir de ce texte, que vous pouvez
+également effacer.
+
+## 8. Durées de conservation
 
 | Donnée | Durée |
 | --- | --- |
@@ -108,7 +141,7 @@ avertissement.
 | Journaux techniques (sans contenu) | 30 jours |
 | Données côté OpenAI | Jusqu'à 30 jours, selon sa politique API |
 
-## 8. Autorisations demandées
+## 9. Autorisations demandées
 
 - **Appareil photo** — uniquement si vous choisissez de photographier un CV.
   L'image est transmise pour en extraire le texte, puis n'est pas conservée.
@@ -118,27 +151,34 @@ avertissement.
 
 Les deux sont facultatives et l'application fonctionne sans.
 
-## 9. Vos droits
+## 10. Vos droits
 
-Vous disposez d'un droit d'accès, de rectification, d'effacement, de
-limitation, d'opposition et de portabilité.
+Au titre du RGPD et de la loi Informatique et Libertés (loi n° 78-17 du
+6 janvier 1978), vous disposez d'un droit d'accès, de rectification,
+d'effacement, de limitation, d'opposition et de portabilité, ainsi que du droit
+de définir des directives sur le sort de vos données après votre décès.
 
 En pratique, l'absence de compte les rend immédiats : vos données sont sur
 votre appareil, vous pouvez les modifier ou les effacer à tout moment depuis
 l'application, et désinstaller l'application les supprime toutes. Nous ne
 détenons rien qui vous soit rattachable.
 
+Une précision utile : pour exercer ces droits ailleurs, il faut d'ordinaire
+prouver son identité. Ici, non — nous ne détenons aucun compte permettant de
+vous identifier, donc rien à vous demander et rien à vous restituer. C'est la
+conséquence directe de ne rien conserver.
+
 Pour toute question : `[À COMPLÉTER : adresse e-mail]`.
 
 Vous pouvez également introduire une réclamation auprès de la CNIL
 (www.cnil.fr).
 
-## 10. Mineurs
+## 11. Mineurs
 
 Legitima s'adresse à des personnes en activité ou en recherche d'emploi et
 n'est pas destinée aux moins de 16 ans.
 
-## 11. Modifications
+## 12. Modifications
 
 Toute modification de cette politique sera publiée à cette adresse, avec une
 date de mise à jour actualisée.
