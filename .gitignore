@@ -20,3 +20,10 @@ build/
 *.p12
 *.mobileprovision
 *.pem
+
+# Local assistant notes. Not project documentation: they go stale, they
+# describe how one person likes to work, and a reader of this repository is
+# better served by the README. Kept on disk, out of git.
+.claude/memory/
+.claude/worktrees/
+.claude/settings.local.json
