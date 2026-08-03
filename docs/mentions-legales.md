@@ -60,11 +60,16 @@ Il en découle trois limites, énoncées ici parce qu'elles sont réelles :
 Le nom Legitima, l'identité visuelle et l'interface de l'application sont la
 propriété de l'éditeur.
 
-Le code source est publié sous `[À COMPLÉTER : licence retenue, ou « tous
-droits réservés » si vous n'en choisissez pas]` :
+Le code source est publié sous **licence MIT** :
 
 - application iOS : https://github.com/jaymydev/legitima-frontend
 - serveur : https://github.com/jaymydev/legitima-backend
+
+La licence MIT porte sur **le code**, et sur lui seul. Elle autorise chacun à
+le lire, le modifier, le réutiliser, y compris commercialement, à condition de
+conserver la mention de droit d'auteur. Elle **ne cède ni le nom Legitima, ni
+l'identité visuelle** : personne n'est autorisé à publier une application sous
+ce nom.
 
 **Les textes que vous saisissez et les analyses produites à partir d'eux vous
 appartiennent.** L'éditeur n'en revendique aucun droit, ne les conserve pas et

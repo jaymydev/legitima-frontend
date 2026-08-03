@@ -164,6 +164,12 @@ build.
 `legitima-frontend.xcodeproj/project.pbxproj` carries a local build-number bump
 that is not committed.
 
+## Licence
+
+Code under the [MIT licence](LICENSE) — read it, change it, reuse it, keep the
+copyright line. The name Legitima and the visual identity are not covered: the
+licence grants the code, not the right to ship an app under this name.
+
 [AGENTS.md](AGENTS.md) holds the product boundaries. The short version: keep
 the app guided and grounded, do not invent backend endpoints, do not add
 payment, accounts, cloud sync or social features, and follow
