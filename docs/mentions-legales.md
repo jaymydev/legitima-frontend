@@ -33,9 +33,15 @@ Europe ; confirmez-la dans votre contrat App Store Connect]`
 
 **Serveur applicatif :**
 Render Services, Inc.
-`[À COMPLÉTER : adresse du siège, disponible dans les conditions générales de
-Render]`
-Région d'hébergement : `[À COMPLÉTER : voir le tableau de bord Render]`
+`[À COMPLÉTER : adresse du siège — figure dans l'accord de traitement des
+données (DPA) de Render, ou dans les registres d'entreprises du Delaware]`
+Région d'hébergement : **Oregon (`us-west1`), États-Unis**
+
+**Frontal :**
+Cloudflare, Inc.
+`[À COMPLÉTER : adresse du siège, si vous choisissez de la mentionner]`
+Cloudflare assure la protection et la distribution en frontal du serveur ; les
+connexions françaises sont reçues par son point de présence de Paris.
 
 ## Nature du service et limites
 
