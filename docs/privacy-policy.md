@@ -2,11 +2,8 @@
 
 **Dernière mise à jour : 3 août 2026**
 
-> ⚠️ **À compléter avant publication.** Trois champs ne peuvent pas être
-> renseignés depuis le code : l'identité du responsable de traitement,
-> l'adresse de contact, et la région d'hébergement Render. Ils sont marqués
-> `[À COMPLÉTER]` ci-dessous. Ce document est une rédaction de départ, pas un
-> avis juridique : faites-le relire si l'enjeu le justifie.
+> ⚠️ Ce document est une rédaction de départ, pas un avis juridique :
+> faites-le relire si l'enjeu le justifie.
 
 ## En résumé
 
@@ -17,8 +14,8 @@ analyse — puis effacé de la mémoire, sans être conservé.
 
 ## 1. Responsable du traitement
 
-`[À COMPLÉTER : nom ou raison sociale, adresse]`
-Contact : `[À COMPLÉTER : adresse e-mail]`
+Milehana JOSEPH
+Contact : contact@milehanajoseph.com
 
 **Aucun délégué à la protection des données n'est désigné.** L'article 37 du
 RGPD ne l'impose qu'aux autorités publiques, aux organismes dont l'activité
@@ -65,10 +62,16 @@ réglages de votre appareil, qui relèvent de vous et d'Apple.
 
 Pour produire une analyse, le texte que vous avez saisi est transmis :
 
-1. à notre serveur, hébergé par **Render Services, Inc.**, région
-   `[À COMPLÉTER : région Render, par exemple Francfort ou Oregon]` ;
-2. puis à **OpenAI, L.L.C.**, aux **États-Unis**, qui exécute le modèle de
+1. à **Cloudflare, Inc.**, qui assure la protection et la distribution en
+   frontal. La connexion depuis votre appareil est reçue par un point de
+   présence proche de vous — Paris pour la France ;
+2. puis à notre serveur, hébergé par **Render Services, Inc.** dans la région
+   **Oregon (`us-west1`), aux États-Unis** ;
+3. puis à **OpenAI, L.L.C.**, aux **États-Unis**, qui exécute le modèle de
    langage produisant l'analyse.
+
+**Vos données quittent donc l'Union européenne dès la deuxième étape**, et non
+seulement au moment de l'appel au modèle.
 
 Notre serveur ne conserve rien : la requête est traitée puis la réponse vous
 est renvoyée. Aucune base de données ne contient votre parcours.
@@ -81,8 +84,11 @@ de vos réponses ne peut pas s'y retrouver.
 Concernant OpenAI : les données envoyées via son interface de programmation ne
 sont pas utilisées pour entraîner ses modèles, et sont conservées au maximum
 30 jours à des fins de détection d'abus, conformément à sa politique applicable
-aux appels d'API. Ce transfert hors de l'Union européenne s'appuie sur les
-clauses contractuelles types de la Commission européenne.
+aux appels d'API.
+
+Les transferts vers Cloudflare, Render et OpenAI, tous établis aux États-Unis,
+s'appuient sur les clauses contractuelles types de la Commission européenne
+prévues à l'article 46 du RGPD.
 
 ## 5. Analyse automatisée de votre parcours
 
@@ -168,7 +174,7 @@ prouver son identité. Ici, non — nous ne détenons aucun compte permettant de
 vous identifier, donc rien à vous demander et rien à vous restituer. C'est la
 conséquence directe de ne rien conserver.
 
-Pour toute question : `[À COMPLÉTER : adresse e-mail]`.
+Pour toute question : contact@milehanajoseph.com.
 
 Vous pouvez également introduire une réclamation auprès de la CNIL
 (www.cnil.fr).

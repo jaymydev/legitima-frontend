@@ -2,23 +2,22 @@
 
 **Dernière mise à jour : 3 août 2026**
 
-> ⚠️ **À compléter avant publication.** Les champs `[À COMPLÉTER]` demandent des
-> informations que le code ne contient pas. Lisez aussi la note sur l'éditeur
-> non professionnel en fin de document : selon votre situation, vous n'êtes
-> peut-être pas tenu de publier votre adresse personnelle.
-
 ## Éditeur de l'application
 
-Legitima est éditée par :
+Legitima est éditée par **Milehana JOSEPH**, personne physique, à titre non
+professionnel.
 
-`[À COMPLÉTER : nom et prénom, ou raison sociale]`
-`[À COMPLÉTER : adresse]`
-`[À COMPLÉTER : adresse e-mail]`
+**Contact :** contact@milehanajoseph.com
+**Directeur de la publication :** Milehana JOSEPH
 
-`[À COMPLÉTER, uniquement si vous exercez sous forme d'entreprise : forme
-juridique, capital social, numéro SIREN/RCS, numéro de TVA intracommunautaire]`
+Aucune adresse postale n'est publiée. L'article 6 III-2 de la LCEN permet à
+l'éditeur non professionnel de ne pas rendre publiques ses coordonnées, à
+condition d'avoir communiqué son identité à son hébergeur — ce qui est le cas :
+Apple et Render la détiennent au titre des comptes utilisés pour distribuer
+l'application et exploiter le serveur, tous deux nommés ci-dessous.
 
-**Directeur de la publication :** `[À COMPLÉTER : nom et prénom]`
+Legitima est gratuite, sans publicité, sans achat intégré et sans aucune forme
+de monétisation.
 
 ## Hébergement
 
@@ -28,14 +27,16 @@ sont mentionnés.
 **Distribution de l'application :**
 Apple Distribution International Ltd.
 Hollyhill Industrial Estate, Hollyhill, Cork, Irlande
-`[À VÉRIFIER : cette entité est celle qui distribue les applications iOS en
-Europe ; confirmez-la dans votre contrat App Store Connect]`
 
 **Serveur applicatif :**
 Render Services, Inc.
-`[À COMPLÉTER : adresse du siège, disponible dans les conditions générales de
-Render]`
-Région d'hébergement : `[À COMPLÉTER : voir le tableau de bord Render]`
+525 Brannan St, Suite 300, San Francisco, CA 94107, États-Unis
+Région d'hébergement : Oregon (`us-west1`), États-Unis
+
+**Frontal :**
+Cloudflare, Inc. — États-Unis
+Cloudflare assure la protection et la distribution en frontal du serveur ; les
+connexions françaises sont reçues par son point de présence de Paris.
 
 ## Nature du service et limites
 
@@ -88,7 +89,7 @@ reste sur votre appareil ; ce que vous écrivez est transmis à notre serveur pu
 ## Contact
 
 Pour toute question relative à l'application ou à ces mentions :
-`[À COMPLÉTER : adresse e-mail]`
+contact@milehanajoseph.com
 
 ## Droit applicable
 
@@ -99,28 +100,21 @@ défaut de résolution amiable, les tribunaux français sont compétents.
 
 ## Note à l'éditeur — à lire avant de compléter
 
-L'article 6 III de la LCEN distingue deux cas.
+Le document ci-dessus retient le régime de l'**éditeur non professionnel**
+(article 6 III-2 de la LCEN) : le nom est publié, l'adresse postale ne l'est
+pas, les hébergeurs sont nommés.
 
-**Éditeur professionnel** : doit publier son identité et son adresse. C'est le
-document ci-dessus.
+C'est une position intermédiaire assumée. La LCEN décrit deux cas — l'éditeur
+professionnel publie identité **et** adresse ; l'éditeur non professionnel peut
+rester anonyme en ne nommant que son hébergeur. Publier son nom sans son adresse
+n'est littéralement ni l'un ni l'autre, mais c'est la pratique courante des
+services personnels gratuits, et cohérent avec l'objet ici : le nom est ce que
+l'on veut montrer, l'adresse du domicile n'apporte rien.
 
-**Éditeur non professionnel** — une personne physique qui édite un service à
-titre non professionnel — **peut ne pas publier son identité**. Elle doit alors
-mentionner uniquement le nom de l'hébergeur, et avoir communiqué ses propres
-coordonnées à celui-ci.
+**Ce qui ferait basculer dans le régime professionnel**, sans discussion :
+créer une structure, monétiser l'application, ou y adosser une activité.
+Il faudrait alors ajouter l'adresse, et le cas échéant la forme juridique, le
+capital, le SIREN et le numéro de TVA.
 
-Legitima est gratuite, sans publicité et sans achat intégré, ce qui plaide pour
-le second cas. Mais elle est publiée sous un compte développeur nominatif et
-sert de pièce de portfolio dans une démarche professionnelle, ce qui brouille la
-frontière. Deux remarques pratiques :
-
-1. Si vous créez un jour une structure ou monétisez l'app, le régime
-   professionnel s'applique sans discussion.
-2. Pour un portfolio, publier votre nom est souvent l'effet recherché — c'est
-   l'adresse postale personnelle qui pose question. Une adresse
-   professionnelle ou une simple adresse e-mail de contact suffit dans bien des
-   cas.
-
-En cas de doute sur votre situation, faites relire ce document. Il a été rédigé
-à partir du fonctionnement réel de l'application, mais **ce n'est pas un avis
-juridique.**
+Ce document a été rédigé à partir du fonctionnement réel de l'application, mais
+**ce n'est pas un avis juridique.**
