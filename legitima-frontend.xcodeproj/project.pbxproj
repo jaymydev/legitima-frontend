@@ -254,6 +254,7 @@
 				DEVELOPMENT_TEAM = 3F8QL9ZU8Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Legitima;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Legitima utilise la caméra pour prendre une photo de votre CV et préremplir votre résumé de parcours.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -288,6 +289,7 @@
 				DEVELOPMENT_TEAM = 3F8QL9ZU8Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Legitima;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Legitima utilise la caméra pour prendre une photo de votre CV et préremplir votre résumé de parcours.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
