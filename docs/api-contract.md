@@ -2,9 +2,9 @@
 
 This document is the frontend repository source of truth for backend integration work.
 
-All frontend integration work must also respect [AGENTS.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/AGENTS.md), especially the product-boundary, UX, and sensitive-data handling rules.
+All frontend integration work must also respect [AGENTS.md](../AGENTS.md), especially the product-boundary, UX, and sensitive-data handling rules.
 
-For the medium-term migration path beyond the transitional `/analyze` endpoint, see [docs/analyze-transition-plan.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/docs/analyze-transition-plan.md).
+For the medium-term migration path beyond the transitional `/analyze` endpoint, see [analyze-transition-plan.md](analyze-transition-plan.md).
 
 ## Status
 
@@ -16,24 +16,34 @@ It is not the long-term target architecture and should be treated as a temporary
 
 ## Base URL
 
-Current frontend target backends:
+One backend, for every route:
 
-- analyze backend: `https://legitima-backend.onrender.com`
-- CV parse backend: `https://legitima-backend-ocr.onrender.com`
+- `https://legitima-backend.onrender.com`
 
-The iOS frontend should now point to the public Render deployment for real-device testing and TestFlight preparation.
+CV parsing used to target a second Render service, `legitima-backend-ocr`.
+Both deployed the same image and answered the same routes, so it was a
+duplicate — and a second unauthenticated door to the same OpenAI account, with
+its own rate-limit counters, which doubled the effective per-IP quota. The
+client stopped calling it in #71; the service is being retired.
 
-No loopback, localhost, or local network machine IP should remain active in the shipped frontend configuration for the current V1 flow.
+No loopback, localhost, or local network machine IP should remain active in the shipped frontend configuration.
 
 ## Currently expected backend surface
 
-The frontend currently expects the backends to expose:
+The client calls exactly these five routes, all on the single backend above:
 
-- `GET https://legitima-backend-ocr.onrender.com/health`
-- `POST https://legitima-backend.onrender.com/analyze`
-- `POST https://legitima-backend-ocr.onrender.com/cv/parse`
-- `GET https://legitima-backend.onrender.com/v2/interview-preparation/use-cases`
-- `POST https://legitima-backend.onrender.com/v2/interview-preparation/analyze`
+- `POST /analyze`
+- `POST /cv/parse`
+- `GET /v2/interview-preparation/use-cases`
+- `POST /v2/interview-preparation/kickoff`
+- `POST /v2/interview-preparation/analyze`
+
+`GET /health` exists but the client does not call it; it is there for the
+hosting platform.
+
+Every route is rate limited per client IP — 10/hour for the three that spend
+OpenAI tokens, 20/hour for `/cv/parse`, 120/hour otherwise. A refusal is `429`
+with a `Retry-After` header in seconds.
 
 No other V1 integration route should be consumed by the frontend unless it is explicitly documented here.
 
