@@ -1,126 +1,170 @@
-# Legitima Frontend
+# Legitima — iOS client
 
-Legitima Frontend is the SwiftUI iOS client for Legitima, a guided interview preparation app for people who need to explain a non-linear, fragmented, or atypical career path with legitimacy.
+Legitima helps someone defend a non-linear career path in a job interview.
 
-V1 scope stays limited to:
+The product mechanism is **narrative → answers**, never generic advice. You
+describe your path in a few lines; the app returns a strategic reading of it,
+names the objection an interviewer is likely to raise, and builds the answer
+you can actually say out loud. A guided preparation then adapts that material
+to the specific conversation ahead — recruitment, internal mobility, annual
+review, and three more.
 
-- guided onboarding;
-- target role input;
-- career path input;
-- sensitive period review;
-- strategic reframing display;
-- professional narrative construction;
-- difficult interview question preparation;
-- final preparation summary.
+SwiftUI, iOS 26.2+, French only. Free, with no account and no in-app purchase.
 
-## Open the project in Xcode
+The backend lives in a separate repository and is documented in
+[docs/api-contract.md](docs/api-contract.md).
 
-1. Open Xcode.
-2. Choose `File` -> `Open...`.
-3. Select [legitima-frontend.xcodeproj](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/legitima-frontend.xcodeproj).
-4. Pick an iOS Simulator and run the `legitima-frontend` app target.
+## How it fits together
 
-## Automated build check
+```
+WelcomeScreen ──▶ LeanOnboardingScreen ──▶ LeanResultScreen
+                   (career text, CV import)   (the full analysis)
+                                                    │
+                                    PremiumKickoffScreen ── shown once
+                                    (first defensible answer)
+                                                    │
+                                    PremiumInterviewEntryScreen
+                                    (questionnaire → guided preparation)
+```
 
-Before opening Xcode, you can validate that the project still compiles with:
+Everything the user writes and everything the backend returns is stored on the
+device, in Application Support, as JSON written with
+`completeFileProtectionUntilFirstUserAuthentication`. There is no account, no
+sync and no server-side storage of user work. Closing the app mid-questionnaire
+and coming back a week later resumes where it stopped, including the step.
+
+| Layer | Where |
+| --- | --- |
+| Screens | `legitima-frontend/Views/` |
+| View models | `legitima-frontend/ViewModels/` |
+| Models and local stores | `legitima-frontend/Models/` |
+| Backend calls | `legitima-frontend/Services/` |
+| Design tokens, colours, motion | `legitima-frontend/Theme/` |
+
+## Running it
+
+Open `legitima-frontend.xcodeproj` in Xcode, pick a simulator, run the
+`legitima-frontend` scheme.
+
+To check that the project still compiles without opening Xcode:
 
 ```sh
 ./scripts/check-build.sh
 ```
 
-This performs a simulator-targeted `xcodebuild` compile check without requiring code signing.
+That builds for a generic device without code signing. To build for a
+simulator instead, pass any destination `xcodebuild` accepts:
 
-The repository also includes a GitHub Actions workflow at [.github/workflows/ios-build.yml](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/.github/workflows/ios-build.yml) so pull requests and pushes to `main` automatically run the same build verification.
+```sh
+BUILD_DESTINATION='platform=iOS Simulator,name=iPhone 16' ./scripts/check-build.sh
+```
 
-## Backend base URL
+## Tests
 
-The frontend targets a single deployed Render backend:
+There is no XCTest target. The logic worth testing is Foundation-only — local
+persistence, the reminder schedule, the loading estimate, routing — so it is
+covered by two standalone executables compiled directly:
 
-- `https://legitima-backend.onrender.com`
+```sh
+SRC=(legitima-frontend/Models/LocalPreparationStore.swift \
+     legitima-frontend/Models/AnalysisResponse.swift \
+     legitima-frontend/Models/InterviewPreparation.swift \
+     legitima-frontend/Models/InterviewReminderPlan.swift \
+     legitima-frontend/Models/LoadingProgressEstimate.swift \
+     legitima-frontend/Models/PremiumEntryRouting.swift \
+     legitima-frontend/Models/PremiumKickoff.swift \
+     legitima-frontend/Models/InterviewDebrief.swift \
+     legitima-frontend/Models/PreparationExportContent.swift \
+     legitima-frontend/Services/IAService.swift \
+     legitima-frontend/Services/JSONBuilder.swift \
+     legitima-frontend/Navigation/AppRouter.swift)
 
-CV parsing used to point at a second service, `legitima-backend-ocr`. Both ran
-the same image and answered the same routes, so it was a duplicate; the client
-now sends everything to `legitima-backend`. Keep the OCR service alive until
-installed builds have updated, then remove it.
+rm -f /tmp/lst /tmp/ipt
+swiftc -parse-as-library -o /tmp/lst Tests/LocalStateTests.swift "${SRC[@]}" && /tmp/lst
+swiftc -parse-as-library -o /tmp/ipt Tests/InterviewPreparationStateTests.swift "${SRC[@]}" && /tmp/ipt
+```
 
-No local backend URL should remain active in the iOS app configuration.
+**`rm -f` the target first.** If compilation fails and an older binary is still
+there, it runs and prints `tests passed` — a green result for code that never
+built.
 
-The currently documented integration surface is:
+## Backend
 
-- `GET /health`
-- `POST /analyze` as a transitional V1 endpoint for the current onboarding -> analysis -> result flow
+One deployed service: `https://legitima-backend.onrender.com`.
 
-`POST /analyze` currently supports only French output. The frontend must continue to send `input.meta.language = "fr"` and should not assume support for any other language until the contract changes.
+The client calls five routes, all documented in
+[docs/api-contract.md](docs/api-contract.md):
 
-Before changing any endpoint usage, update the API contract first.
+| Route | Used for |
+| --- | --- |
+| `POST /analyze` | the strategic reading of a career path |
+| `POST /cv/parse` | extracting experience from a CV, PDF or photo |
+| `GET /v2/interview-preparation/use-cases` | the questionnaire catalog |
+| `POST /v2/interview-preparation/kickoff` | the first defensible answer |
+| `POST /v2/interview-preparation/analyze` | the guided preparation |
 
-## API contract
+Output is French only: `input.meta.language` must be `"fr"`, and the backend
+rejects anything else. Update the contract before changing endpoint usage.
 
-The frontend repository source of truth for backend integration is:
+Rate limiting is per IP on the backend. It is deliberately not in the client —
+see below.
 
-[docs/api-contract.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/docs/api-contract.md)
+## Decisions worth explaining
 
-Do not add or call backend endpoints that are not documented there.
+Some of what is in this repository looks odd without the reasoning.
 
-## The app is free, and the StoreKit code is deliberate
+**StoreKit is present but excluded from the Release binary.** Legitima was
+built with a paywall and now ships free. Rather than delete that work,
+`PremiumPurchaseManager`, `SimulatedPremiumUnlockStore`, `PremiumUnlockCard`
+and `Products.storekit` are wrapped in `#if DEBUG`. The shipped app contains no
+purchase surface at all; the implementation stays readable here and runnable
+from the Xcode preview of `PremiumUnlockCard`. Nothing in the app calls it.
+This is intentional, not code someone forgot to remove.
 
-Legitima has no in-app purchase. Every part of the product — the analysis, the
-kickoff, the guided preparation, the debrief, the PDF export — is available to
-everyone, and there is no per-device quota.
+**There is no quota in the client.** There used to be one, in `UserDefaults`.
+It protected nothing — reinstalling reset it — and its real purpose was
+conversion, which disappeared with the paywall. A limit that only inconveniences
+honest users is worse than no limit. The real one is per IP on the backend.
 
-The StoreKit integration that used to gate the guided preparation is still in
-the repository, wrapped in `#if DEBUG`:
+**The loading indicator is calibrated against measurements, not guesses.** It
+was tuned when the backend slept between requests and paid a 32-second cold
+start. On a warm service `/analyze` answers in 8–9 s, so the old settings made
+every normal wait look stalled and announced "this is taking longer than usual"
+at 12 seconds — before a normal request had even finished. See
+`LoadingProgressEstimate`.
 
-- `Services/PremiumPurchaseManager.swift`
-- `Services/SimulatedPremiumUnlockStore.swift`
-- `Views/Components/PremiumUnlockCard.swift`
-- `Products.storekit`
+**Progress is estimated, and says so.** The backend reports no progress; a
+generation is one request that answers when it is done. The bar follows a
+decelerating curve with a hard ceiling below 100 %, never moves backwards, and
+derives its wording from the same value so the words and the number cannot
+disagree.
 
-**It is not dead code left behind by accident.** `#if DEBUG` excludes it from
-the Release binary, so the shipped app contains no purchase surface at all,
-while the implementation stays readable here and runnable from the Xcode
-preview of `PremiumUnlockCard` against the local `Products.storekit`
-configuration. Nothing in the app calls it. Delete the four items above if you
-ever want the repository to stop carrying it.
+## Sensitive data
 
-The user-facing flow is now:
+CV content, career history, sensitive periods, interview answers and generated
+analysis are all sensitive. The app never logs them — there is no `print`,
+`NSLog` or `debugPrint` anywhere in the target — and never stores more than it
+needs.
 
-- onboarding → analysis;
-- the result screen shows the whole analysis, unlocked;
-- one kickoff screen, shown exactly once, builds the first defensible answer;
-- then the guided preparation for the interview type the user is preparing.
+The free-text field asking what a user needs to explain in an interview
+deliberately gives employment examples and not health ones. It is the only
+channel for a difficulty a timeline cannot show, so it stays; but inviting
+health data into it would be inviting a GDPR special category.
 
-Rate limiting lives on the backend (per IP), not in the client. A quota held in
-`UserDefaults` protected nothing against abuse and only punished honest users.
+What the user writes is sent to the backend and from there to OpenAI. The
+welcome screen says so before anything is typed.
 
-## Agent rules
+## Conventions
 
-This repository includes [AGENTS.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/AGENTS.md), and contributors and agents should follow it strictly.
+One `codex/<topic>` branch per change, one pull request, squash-merge. CI runs
+on pull requests only — macOS runners are billed at ten times the Linux rate,
+and a push trigger rebuilt the same tree twice. Markdown-only changes skip the
+build.
 
-At a minimum:
+`legitima-frontend.xcodeproj/project.pbxproj` carries a local build-number bump
+that is not committed.
 
-- follow the product boundaries defined in `AGENTS.md`;
-- do not invent backend endpoints;
-- follow [docs/api-contract.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/docs/api-contract.md);
-- keep the app guided, structured, and professionally reassuring;
-- avoid unrelated features, dependencies, and sensitive-data logging.
-
-## Changes that require explicit human approval
-
-Do not add any of the following without explicit human approval:
-
-- payment, premium billing, or subscription logic;
-- social features;
-- recruiter features;
-- CV generation as the main product;
-- complex account systems;
-- authentication or account-management flows;
-- cloud sync;
-- unrelated coaching modules;
-- new screens, screen redesigns, or navigation changes for this task;
-- backend endpoints that are not documented in [docs/api-contract.md](/Users/milehanalivecomm/Documents/Developer/new/legitima-frontend/docs/api-contract.md);
-- dependencies or architecture changes unrelated to the documented V1 scope.
-
-## Sensitive data handling
-
-Treat CV content, career history, sensitive periods, interview answers, and AI-generated career analysis as sensitive. Do not log raw backend responses or user career/interview data to the console, and do not store sensitive data unnecessarily.
+[AGENTS.md](AGENTS.md) holds the product boundaries. The short version: keep
+the app guided and grounded, do not invent backend endpoints, do not add
+payment, accounts, cloud sync or social features, and follow
+[docs/api-contract.md](docs/api-contract.md).
