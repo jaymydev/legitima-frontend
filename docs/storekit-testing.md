@@ -1,5 +1,10 @@
 # StoreKit Premium simulation
 
+> **Document historique.** Legitima ne comporte plus d'achat intégré. Le code
+> StoreKit est conservé sous `#if DEBUG`, donc absent du binaire livré : voir
+> la section correspondante du [README](../README.md). Cette note décrit
+> comment l'exercer en local.
+
 The shared `legitima-frontend` scheme uses `legitima-frontend/Products.storekit`.
 It defines one local non-consumable product:
 

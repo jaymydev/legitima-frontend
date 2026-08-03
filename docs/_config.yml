@@ -1,0 +1,19 @@
+title: Legitima
+description: Défendez un parcours atypique en entretien.
+lang: fr
+
+theme: jekyll-theme-primer
+
+# Only the three user-facing pages are built into the site. The rest of docs/
+# is engineering material — an API contract, a superseded product framing, a
+# StoreKit testing note — and stays readable in the repository without being
+# served as if it spoke to users.
+#
+# This matters beyond tidiness: product-decision-v2.md describes a paid model
+# that no longer exists, and publishing it next to a privacy policy stating
+# the app is free would put the site in contradiction with itself.
+exclude:
+  - analyze-transition-plan.md
+  - api-contract.md
+  - product-decision-v2.md
+  - storekit-testing.md

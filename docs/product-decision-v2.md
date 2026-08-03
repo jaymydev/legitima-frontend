@@ -1,5 +1,17 @@
 # Décision produit V2 — Cadrage du parcours et du modèle freemium
 
+> **Document historique — dépassé depuis le 31/07/2026.**
+>
+> Ce cadrage décrit un modèle payant : « la démonstration est gratuite,
+> l'application est payante ». **Ce n'est plus le cas.** Legitima est
+> entièrement gratuite, sans achat intégré ni quota. La barrière premium a été
+> retirée et tout le contenu est accessible.
+>
+> Il est conservé parce qu'il explique pourquoi le produit est découpé comme il
+> l'est — le mécanisme « récit → réponses », et pourquoi la préparation guidée
+> existe séparément de l'analyse. Lisez le [README](../README.md) pour l'état
+> actuel.
+
 Statut : **validé** (2026-07-29)
 Portée : frontend iOS + implications backend. Ce document est la référence pour toutes les PR produit à venir. En cas de conflit avec un document plus ancien, ce document prévaut (AGENTS.md reste l'autorité sur les règles de contribution).
 
