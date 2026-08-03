@@ -2,11 +2,6 @@
 
 **Dernière mise à jour : 3 août 2026**
 
-> ⚠️ **Deux points restent à confirmer avant publication**, tous deux relatifs
-> aux hébergeurs : l'adresse du siège de Render, et l'entité Apple exacte selon
-> votre contrat App Store Connect. Ils sont marqués ci-dessous. Voir aussi la
-> note en fin de document sur le régime d'éditeur retenu.
-
 ## Éditeur de l'application
 
 Legitima est éditée par **Milehana JOSEPH**, personne physique, à titre non
@@ -32,16 +27,11 @@ sont mentionnés.
 **Distribution de l'application :**
 Apple Distribution International Ltd.
 Hollyhill Industrial Estate, Hollyhill, Cork, Irlande
-`[À VÉRIFIER : cette entité est celle qui distribue les applications iOS en
-Europe ; confirmez-la dans votre contrat App Store Connect]`
 
 **Serveur applicatif :**
 Render Services, Inc.
-`[À COMPLÉTER : adresse du siège. Render ne la publie ni dans ses conditions
-générales ni dans sa politique de confidentialité ; elle figure dans l'accord de
-traitement des données signé lors de la création du compte, ou dans les
-registres d'entreprises de l'État d'immatriculation.]`
-Région d'hébergement : **Oregon (`us-west1`), États-Unis**
+525 Brannan St, Suite 300, San Francisco, CA 94107, États-Unis
+Région d'hébergement : Oregon (`us-west1`), États-Unis
 
 **Frontal :**
 Cloudflare, Inc. — États-Unis
