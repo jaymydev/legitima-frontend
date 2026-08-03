@@ -14,7 +14,7 @@
       <BuildableProductRunnable runnableDebuggingMode = "0">
          <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "134BADBA2F3D28E500D17512" BuildableName = "legitima-frontend.app" BlueprintName = "legitima-frontend" ReferencedContainer = "container:legitima-frontend.xcodeproj"/>
       </BuildableProductRunnable>
-      <StoreKitConfigurationFileReference identifier = "../legitima-frontend/Products.storekit"/>
+      <StoreKitConfigurationFileReference identifier = "../StoreKit/Products.storekit"/>
    </LaunchAction>
    <ProfileAction buildConfiguration = "Release" shouldUseLaunchSchemeArgsEnv = "YES" savedToolIdentifier = "" useCustomWorkingDirectory = "NO" debugDocumentVersioning = "YES">
       <BuildableProductRunnable runnableDebuggingMode = "0">

@@ -115,11 +115,20 @@ Some of what is in this repository looks odd without the reasoning.
 
 **StoreKit is present but excluded from the Release binary.** Legitima was
 built with a paywall and now ships free. Rather than delete that work,
-`PremiumPurchaseManager`, `SimulatedPremiumUnlockStore`, `PremiumUnlockCard`
-and `Products.storekit` are wrapped in `#if DEBUG`. The shipped app contains no
-purchase surface at all; the implementation stays readable here and runnable
-from the Xcode preview of `PremiumUnlockCard`. Nothing in the app calls it.
-This is intentional, not code someone forgot to remove.
+`PremiumPurchaseManager`, `SimulatedPremiumUnlockStore` and `PremiumUnlockCard`
+are wrapped in `#if DEBUG`. Nothing in the app calls them, and the Release
+binary contains none of their symbols and does not link StoreKit — checked with
+`nm` and `otool` rather than assumed. The implementation stays readable here
+and runnable from the Xcode preview of `PremiumUnlockCard`. This is
+intentional, not code someone forgot to remove.
+
+`StoreKit/Products.storekit` lives outside `legitima-frontend/` on purpose, and
+that detail matters. A `.storekit` file is JSON: no preprocessor directive can
+exclude it. `legitima-frontend/` is a file-system-synchronized group, so
+everything inside it is copied into the app bundle as a resource — and a
+Release build was shipping a file declaring a 4.99 product, inside an app
+submitted as free with no in-app purchase. Moving it out fixes that. The scheme
+still points at it, so the Debug demo works unchanged.
 
 **There is no quota in the client.** There used to be one, in `UserDefaults`.
 It protected nothing — reinstalling reset it — and its real purpose was

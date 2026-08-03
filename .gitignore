@@ -6,6 +6,9 @@ xcuserdata/
 *.xcworkspace
 DerivedData/
 build/
+# Every derived-data path, not just the default name. A Release inspection
+# build used .build/ReleaseCheck and slipped 170 artefact files into a commit.
+.build/
 
 # SwiftPM
 .swiftpm/
