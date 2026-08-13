@@ -64,7 +64,10 @@ struct RecruitmentPremiumFlowScreen: View {
             )
             .ignoresSafeArea()
 
-            ScrollView {
+            VStack(spacing: 0) {
+                pinnedProgressStrip
+
+                ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     if let onChangeUseCase {
                         Button(action: onChangeUseCase) {
@@ -73,7 +76,7 @@ struct RecruitmentPremiumFlowScreen: View {
                         }
                     }
 
-                    progressHeader
+                    stepHeading
 
                     Group {
                         switch step {
@@ -104,14 +107,15 @@ struct RecruitmentPremiumFlowScreen: View {
                 .frame(maxWidth: 720)
                 .padding(22)
                 .frame(maxWidth: .infinity)
+                }
+                .disabled(viewModel.isLoading)
             }
-            .disabled(viewModel.isLoading)
 
             if viewModel.isLoading {
                 AnalysisLoadingCard(
                     steps: [
                         "Relecture de vos réponses",
-                        "Construction de vos réponses aux objections",
+                        "Construction de vos réponses aux questions difficiles",
                         "Rédaction de votre plan d’action",
                     ],
                     accent: accent,
@@ -145,27 +149,49 @@ struct RecruitmentPremiumFlowScreen: View {
         }
     }
 
-    private var progressHeader: some View {
-        VStack(alignment: .leading, spacing: 12) {
+    /// Pinned above the scroll view, so it never leaves the screen.
+    ///
+    /// It used to scroll away with the title. Testers asked for it to stay:
+    /// filling in a form about a stressful subject without knowing how much is
+    /// left is a reason to abandon it. Only the counter and the bar are pinned —
+    /// the title belongs with the questions it introduces.
+    private var pinnedProgressStrip: some View {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("PRÉPARATION RECRUTEMENT")
                     .font(.caption.bold())
                     .foregroundColor(accent)
                 Spacer()
-                Text("\(step + 1)/4")
+                Text("Étape \(safeStep + 1) sur \(Self.stepCount)")
                     .font(.caption.bold())
                     .foregroundColor(LegitimaColors.muted)
             }
 
-            ProgressView(value: Double(step + 1), total: 4)
+            ProgressView(value: Double(safeStep + 1), total: Double(Self.stepCount))
                 .tint(accent)
                 .animation(LegitimaMotion.control, value: step)
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .frame(height: 1)
+                .foregroundColor(LegitimaColors.hairline)
+        }
+    }
 
+    private var stepHeading: some View {
+        VStack(alignment: .leading, spacing: 8) {
             Text(stepTitle)
                 .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                .fixedSize(horizontal: false, vertical: true)
 
             Text(stepSubtitle)
                 .foregroundColor(LegitimaColors.muted)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -200,13 +226,13 @@ struct RecruitmentPremiumFlowScreen: View {
         VStack(spacing: 16) {
             if !context.sensitivePoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 existingDataCard(
-                    title: "Point sensible repris du freemium",
+                    title: "Le point que vous voulez expliquer",
                     content: context.sensitivePoint,
                     icon: "arrow.triangle.2.circlepath"
                 )
             }
             textCard(questionID: "feared_question", minHeight: 120)
-            choiceCard(questionID: "secondary_topic")
+            choiceCard(questionID: "secondary_topic", selectionLimit: 3)
             choiceCard(questionID: "answer_tone")
         }
     }
@@ -253,13 +279,14 @@ struct RecruitmentPremiumFlowScreen: View {
         }
     }
 
-    private func choiceCard(questionID: String) -> some View {
+    private func choiceCard(questionID: String, selectionLimit: Int = 1) -> some View {
         Group {
             if let question = question(questionID) {
                 RecruitmentChoiceCard(
                     question: question,
                     selection: answerBinding(questionID),
-                    accent: accent
+                    accent: accent,
+                    selectionLimit: selectionLimit
                 )
             }
         }
@@ -332,7 +359,8 @@ struct RecruitmentPremiumFlowScreen: View {
     }
 
     private var stepTitle: String {
-        ["Votre prochain entretien", "Ce que vous voulez démontrer", "La question difficile", "Votre objectif"][safeStep]
+        // Plural since more than one sensitive topic can be picked.
+        ["Votre prochain entretien", "Ce que vous voulez démontrer", "Les questions difficiles", "Votre objectif"][safeStep]
     }
 
     private var stepSubtitle: String {

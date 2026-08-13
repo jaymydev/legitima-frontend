@@ -121,7 +121,7 @@ struct InterviewQuestionnaireScreen: View {
 
         if !context.sensitivePoint.trimmed.isEmpty {
             RecruitmentExistingDataCard(
-                title: "La zone sensible identifiée",
+                title: "Le point que vous voulez expliquer",
                 content: context.sensitivePoint,
                 icon: "exclamationmark.bubble.fill",
                 accent: LegitimaColors.accent

@@ -19,7 +19,7 @@ struct PremiumKickoffScreen: View {
 
     private static let steps = [
         "Analyse relue",
-        "Objection principale identifiée",
+        "La question la plus probable identifiée",
         "Rédaction de la réponse défendable",
     ]
 
@@ -167,7 +167,7 @@ struct PremiumKickoffScreen: View {
                     .multilineTextAlignment(.center)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("L’OBJECTION PROBABLE")
+                    Text("LA QUESTION QUI RISQUE DE VENIR")
                         .font(.caption.bold())
                         .foregroundColor(Color(light: .rgb(153, 60, 29), dark: .rgb(240, 153, 123)))
                     JustifiedText("« \(kickoff.objection) »", color: LegitimaColors.ink)
@@ -204,7 +204,7 @@ struct PremiumKickoffScreen: View {
                             .legitimaPrimaryLabel()
                     }
 
-                    Text("La préparation guidée couvre les autres objections, votre ancrage et votre synthèse finale.")
+                    Text("La préparation guidée couvre les autres questions difficiles, vos points forts et votre plan d'action.")
                         .font(.caption)
                         .foregroundColor(LegitimaColors.muted)
                         .multilineTextAlignment(.center)

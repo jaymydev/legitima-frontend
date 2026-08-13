@@ -50,12 +50,13 @@ struct InterviewPreparationResultScreen: View {
                         title: "Plan d’action",
                         icon: "checklist",
                         items: response.actionPlan
-                    )
-
-                    if let exportURL {
-                        ShareLink(item: exportURL) {
-                            Label("Exporter ma synthèse (PDF)", systemImage: "square.and.arrow.up")
-                                .legitimaPrimaryLabel()
+                    ) {
+                        if let exportURL {
+                            ShareLink(item: exportURL) {
+                                Label("Exporter mon plan d'action", systemImage: "square.and.arrow.up")
+                                    .legitimaPrimaryLabel()
+                            }
+                            .padding(.top, 4)
                         }
                     }
 
@@ -94,7 +95,7 @@ struct InterviewPreparationResultScreen: View {
                 .foregroundColor(LegitimaColors.ink)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text("L’OBJECTION PROBABLE")
+                Text("LA QUESTION QUI RISQUE DE VENIR")
                     .font(.caption.bold())
                     .foregroundColor(Color(light: .rgb(153, 60, 29), dark: .rgb(240, 153, 123)))
                 JustifiedText("« \(kickoff.objection) »", color: LegitimaColors.ink)
@@ -177,7 +178,17 @@ struct InterviewPreparationResultScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
-    private func listCard(title: String, icon: String, items: [String]) -> some View {
+    /// `footer` carries the export button into the action-plan card.
+    ///
+    /// It used to sit on its own below every card, so the gesture that takes the
+    /// plan away was separated from the plan itself. Testers read the action plan
+    /// as unclear partly for that reason.
+    private func listCard<Footer: View>(
+        title: String,
+        icon: String,
+        items: [String],
+        @ViewBuilder footer: () -> Footer = { EmptyView() }
+    ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Label(title, systemImage: icon)
                 .font(.headline)
@@ -191,6 +202,7 @@ struct InterviewPreparationResultScreen: View {
                     JustifiedText(item, textStyle: .body, color: LegitimaColors.muted)
                 }
             }
+            footer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)

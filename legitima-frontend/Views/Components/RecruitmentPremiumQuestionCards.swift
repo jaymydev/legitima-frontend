@@ -29,34 +29,82 @@ struct RecruitmentTargetRoleCard: View {
 }
 
 struct RecruitmentChoiceCard: View {
+    /// How many options may be picked at once.
+    ///
+    /// One for the questions that genuinely have one answer — the stage of the
+    /// process, who is across the table, the tone. More for the ones that do
+    /// not: nobody walks into an interview worried about exactly one thing, and
+    /// forcing a single pick asks someone to rank their own stress, which is the
+    /// work they came here to hand over.
+    ///
+    /// The answer stays one string, because that is what the backend takes.
+    static let separator = ", "
+
     let question: InterviewQuestion
     @Binding var selection: String
     let accent: Color
+    var selectionLimit: Int = 1
+
+    private var selectedOptions: [String] {
+        selection
+            .components(separatedBy: Self.separator)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+    }
+
+    private var isFull: Bool {
+        selectionLimit > 1 && selectedOptions.count >= selectionLimit
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             RecruitmentQuestionHeading(question: question)
 
+            if selectionLimit > 1 {
+                Text("Plusieurs choix possibles, jusqu'à \(selectionLimit).")
+                    .font(.caption)
+                    .foregroundColor(LegitimaColors.muted)
+            }
+
             RecruitmentFlowLayout(spacing: 8) {
                 ForEach(question.options, id: \.self) { option in
+                    let isSelected = selectedOptions.contains(option)
+
                     Button(option) {
-                        withAnimation(LegitimaMotion.control) { selection = option }
+                        withAnimation(LegitimaMotion.control) {
+                            selection = toggling(option, isSelected: isSelected)
+                        }
                     }
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(selection == option ? .white : accent)
+                    .foregroundColor(isSelected ? .white : accent)
                     .padding(.horizontal, 13)
                     .padding(.vertical, 10)
-                    .background(
-                        selection == option
-                            ? LegitimaColors.accentSurface
-                            : LegitimaColors.chip
-                    )
+                    .background(isSelected ? LegitimaColors.accentSurface : LegitimaColors.chip)
                     .clipShape(Capsule())
-                    .sensoryFeedback(.selection, trigger: selection == option)
+                    // A full card greys the options it will not accept, rather
+                    // than accepting the tap and silently dropping it.
+                    .opacity(!isSelected && isFull ? 0.45 : 1)
+                    .disabled(!isSelected && isFull)
+                    .sensoryFeedback(.selection, trigger: isSelected)
                 }
             }
         }
         .recruitmentCardStyle()
+    }
+
+    private func toggling(_ option: String, isSelected: Bool) -> String {
+        guard selectionLimit > 1 else {
+            return isSelected ? "" : option
+        }
+
+        var options = selectedOptions
+        if isSelected {
+            options.removeAll { $0 == option }
+        } else {
+            guard options.count < selectionLimit else { return selection }
+            options.append(option)
+        }
+        return options.joined(separator: Self.separator)
     }
 }
 
