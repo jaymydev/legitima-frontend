@@ -33,47 +33,52 @@ struct LeanResultScreen: View {
                             .revealed(revealStage >= 2)
                     }
 
+                    // Four cards, named for what the reader gets rather than for
+                    // what the analysis computed. Testers could not tell
+                    // "Requalification des zones sensibles" from "Anticipation
+                    // des objections", and read both as definitions.
                     sectionCard(
                         icon: "lightbulb.fill",
-                        title: "Compréhension stratégique",
-                        content: response.analysis.strategic_reading + "\n\n" + response.analysis.dominant_competencies,
+                        title: "Synthèse de votre parcours",
+                        content: [
+                            response.analysis.strategic_reading,
+                            response.analysis.dominant_competencies,
+                            response.analysis.career_logic,
+                            response.narrative.core_thread
+                        ].joinedParagraphs,
                         backgroundColor: Color(light: .rgb(227, 245, 236), dark: .rgb(30, 44, 37))
                     )
                     .revealed(revealStage >= 3)
 
                     sectionCard(
-                        icon: "arrow.triangle.branch",
-                        title: "Relecture structurée du parcours",
-                        content: response.analysis.career_logic + "\n\n" + response.narrative.core_thread,
-                        backgroundColor: Color(light: .rgb(255, 247, 225), dark: .rgb(45, 41, 29))
-                    )
-
-                    sectionCard(
                         icon: "exclamationmark.bubble.fill",
-                        title: "Requalification des zones sensibles",
-                        content: response.sensitive_reframing.identified_fragilities + "\n\n" + response.sensitive_reframing.strategic_reinterpretation + "\n\n" + response.sensitive_reframing.rational_reframing,
+                        title: "Identification des zones sensibles",
+                        content: [
+                            response.sensitive_reframing.identified_fragilities,
+                            response.sensitive_reframing.strategic_reinterpretation,
+                            response.sensitive_reframing.rational_reframing
+                        ].joinedParagraphs,
                         backgroundColor: Color(light: .rgb(255, 236, 228), dark: .rgb(46, 36, 31))
                     )
 
                     sectionCard(
                         icon: "shield.fill",
-                        title: "Anticipation des objections",
-                        content: response.interview_preparation.probable_objections + "\n\n" + response.interview_preparation.structured_answers,
+                        title: "Réponses aux questions difficiles",
+                        content: [
+                            response.interview_preparation.probable_objections,
+                            response.interview_preparation.structured_answers
+                        ].joinedParagraphs,
                         backgroundColor: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28))
                     )
 
                     sectionCard(
                         icon: "checkmark.seal.fill",
-                        title: "Ancrage de légitimité",
-                        content: response.legitimacy_anchor.objective_strength + "\n\n" + response.legitimacy_anchor.final_alignment_statement,
+                        title: "Points forts et légitimité",
+                        content: [
+                            response.legitimacy_anchor.objective_strength,
+                            response.legitimacy_anchor.final_alignment_statement
+                        ].joinedParagraphs,
                         backgroundColor: Color(light: .rgb(228, 239, 253), dark: .rgb(30, 38, 49))
-                    )
-
-                    sectionCard(
-                        icon: "sparkles",
-                        title: "Synthèse stratégique",
-                        content: response.narrative.positioning_statement,
-                        backgroundColor: Color(light: .rgb(242, 233, 252), dark: .rgb(39, 33, 48))
                     )
 
                     HStack {
@@ -172,7 +177,7 @@ struct LeanResultScreen: View {
                     .foregroundColor(LegitimaColors.ink)
 
                 JustifiedText(
-                    "Quelques questions ciblées sur votre entretien, puis nous générons vos réponses aux objections, votre ancrage de légitimité et votre synthèse finale.",
+                    "Quelques questions sur votre entretien, puis nous préparons vos réponses aux questions difficiles et votre plan d'action.",
                     color: LegitimaColors.muted
                 )
             }
@@ -203,9 +208,13 @@ struct LeanResultScreen: View {
             : "Reprendre ma préparation"
     }
 
+    /// Four levels of type, in order: where you are, the title, the reassurance,
+    /// then the detail. Testers read the old header as one flat block and asked
+    /// for the title to be bigger — the fix is the gap between the levels, not
+    /// the title alone.
     private var resultHeroSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("LECTURE STRATÉGIQUE")
+        VStack(alignment: .leading, spacing: 12) {
+            Text("VOTRE ANALYSE PERSONNALISÉE")
                 .font(.caption.weight(.bold))
                 .foregroundColor(LegitimaColors.accent)
                 .padding(.horizontal, 12)
@@ -213,16 +222,24 @@ struct LeanResultScreen: View {
                 .background(LegitimaColors.surface)
                 .clipShape(Capsule())
 
-            Text("Votre parcours commence à prendre forme")
-                .font(.system(.largeTitle, design: .rounded).weight(.bold))
+            Text("Un point sur votre situation")
+                .font(.system(.largeTitle, design: .rounded).weight(.heavy))
                 .foregroundColor(LegitimaColors.ink)
+                .fixedSize(horizontal: false, vertical: true)
 
-            Text("Vous avez maintenant une lecture complète de votre trajectoire. La préparation guidée transforme cette matière en réponses pour un entretien précis.")
+            Text("Votre parcours commence à prendre forme")
+                .font(.system(.title3, design: .rounded).weight(.semibold))
+                .foregroundColor(LegitimaColors.body)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("La préparation guidée transforme cette matière en réponses, pour un entretien précis.")
                 .font(.subheadline)
                 .foregroundColor(LegitimaColors.muted)
                 .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 2)
 
             insightHighlightCard
+                .padding(.top, 6)
         }
     }
 
@@ -239,7 +256,7 @@ struct LeanResultScreen: View {
             }
 
             VStack(alignment: .leading, spacing: 7) {
-                Text("Le point clé")
+                Text("La phrase à retenir")
                     .font(.caption.weight(.bold))
                     .foregroundColor(LegitimaColors.accent)
 
@@ -255,8 +272,16 @@ struct LeanResultScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
+    /// The positioning sentence, not the strategic reading.
+    ///
+    /// It used to be `strategic_reading`, which the first card also opens with —
+    /// so the same sentence appeared twice, a screen apart. Testers reported the
+    /// model repeating itself; this instance was the app's doing. The positioning
+    /// statement is also the one line someone would actually say out loud, which
+    /// is what belongs at the top.
     private var heroInsightText: String {
-        let trimmed = response.analysis.strategic_reading.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = response.narrative.positioning_statement
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             return "Votre analyse pose déjà une base de cohérence. La suite sert à la rendre plus facile à expliquer et à défendre."
         }
@@ -300,6 +325,19 @@ struct LeanResultScreen: View {
                 .stroke(LegitimaColors.hairline, lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
+    }
+}
+
+extension Array where Element == String {
+    /// Join into paragraphs, dropping the empty ones.
+    ///
+    /// Concatenating with `"\n\n"` unconditionally left a blank gap wherever the
+    /// model returned an empty field, which read as a layout bug rather than as
+    /// a missing sentence.
+    var joinedParagraphs: String {
+        map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n\n")
     }
 }
 
