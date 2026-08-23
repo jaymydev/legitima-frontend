@@ -44,10 +44,13 @@ struct legitima_frontendApp: App {
     private var rootView: some View {
         switch router.root {
         case .access:
-            WelcomeScreen(
-                hasSavedWork: preparationStore.hasSavedWork,
-                onContinue: {
-                    router.enterApp(savedAnalysis: preparationStore.snapshot.analysis)
+            // Maquette du pivot : le choix du type d'entretien devient le
+            // premier écran. `onContinue` enregistre le choix et la date, et
+            // s'arrête là — la suite du tunnel n'est pas encore écrite.
+            InterviewTypeEntryScreen(
+                onContinue: { type, date in
+                    preparationStore.updateIntendedUseCase(type.rawValue)
+                    preparationStore.updateInterviewDate(date)
                 }
             )
 
