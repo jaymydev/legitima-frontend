@@ -12,6 +12,8 @@ final class AppRouter: ObservableObject {
     enum Route: Hashable {
         case kickoff
         case interviewEntry
+        /// Maquette du pivot : les questions préparées pour le type choisi.
+        case preparedQuestions(String)
     }
 
     @Published var root: Root = .access
@@ -25,6 +27,10 @@ final class AppRouter: ObservableObject {
     func enterApp(savedAnalysis: AnalysisResponse?) {
         path = []
         root = savedAnalysis.map(Root.result) ?? .onboarding
+    }
+
+    func showPreparedQuestions(useCaseID: String) {
+        path.append(.preparedQuestions(useCaseID))
     }
 
     func showInterviewEntry() {

@@ -31,6 +31,8 @@ struct legitima_frontendApp: App {
                             )
                         case .interviewEntry:
                             PremiumInterviewEntryScreen()
+                        case .preparedQuestions:
+                            PreparedInterviewScreen(preparation: .sampleRecruitment)
                         }
                     }
             }
@@ -51,6 +53,7 @@ struct legitima_frontendApp: App {
                 onContinue: { type, date in
                     preparationStore.updateIntendedUseCase(type.rawValue)
                     preparationStore.updateInterviewDate(date)
+                    router.showPreparedQuestions(useCaseID: type.rawValue)
                 }
             )
 
