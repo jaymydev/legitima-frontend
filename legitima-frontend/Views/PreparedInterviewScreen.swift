@@ -1,33 +1,7 @@
 import SwiftUI
 
-/// Two ways to show a prepared question, side by side for the decision.
-///
-/// The tension is the whole design. `intent` — what the interviewer is really
-/// checking — is what lets someone improvise when the question lands
-/// differently. It is also the third block of text on a page that has to be
-/// read in five minutes, in a corridor.
-enum QuestionCardStyle: String, CaseIterable, Identifiable {
-    /// Question, intention, réponse : les trois visibles d'emblée.
-    case expanded
-    /// L'intention repliée derrière un geste, pour tenir la page.
-    case compact
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .expanded: return "Tout visible"
-        case .compact: return "Intention repliée"
-        }
-    }
-}
-
 struct PreparedInterviewScreen: View {
     let preparation: PreparedInterview
-
-    /// Mock scaffolding: lets the two layouts be compared on the device rather
-    /// than described. Goes away once one is chosen.
-    @State private var style: QuestionCardStyle = .expanded
 
     var body: some View {
         ZStack {
@@ -44,7 +18,6 @@ struct PreparedInterviewScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     header
-                    styleSwitcher
 
                     ForEach(Array(preparation.questions.enumerated()), id: \.offset) { index, question in
                         questionCard(index: index, question: question)
@@ -81,15 +54,6 @@ struct PreparedInterviewScreen: View {
         }
     }
 
-    private var styleSwitcher: some View {
-        Picker("Présentation", selection: $style) {
-            ForEach(QuestionCardStyle.allCases) { option in
-                Text(option.label).tag(option)
-            }
-        }
-        .pickerStyle(.segmented)
-    }
-
     private func questionCard(index: Int, question: PreparedQuestion) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
@@ -105,19 +69,8 @@ struct PreparedInterviewScreen: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            switch style {
-            case .expanded:
-                intentLine(question.intent)
-                answerBlock(question.answer)
-            case .compact:
-                answerBlock(question.answer)
-                DisclosureGroup("Pourquoi cette question ?") {
-                    intentLine(question.intent)
-                        .padding(.top, 6)
-                }
-                .font(.subheadline.weight(.semibold))
-                .tint(LegitimaColors.accent)
-            }
+            intentLine(question.intent)
+            answerBlock(question.answer)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
@@ -125,16 +78,24 @@ struct PreparedInterviewScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
     }
 
+    /// One short line between the question and the answer.
+    ///
+    /// Folding it away, as one mock did, meant nobody would ever open it — a
+    /// collapsed explanation is not read in a corridor. Putting it in full above
+    /// the answer delayed the thing the reader came for. Kept visible, kept to a
+    /// line: the backend caps it at 80 characters for exactly this place.
     private func intentLine(_ intent: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
             Image(systemName: "eye.fill")
-                .font(.caption)
+                .font(.caption2)
                 .foregroundColor(LegitimaColors.muted)
             Text(intent)
-                .font(.subheadline)
+                .font(.footnote)
                 .foregroundColor(LegitimaColors.muted)
+                .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
+        .padding(.leading, 34)
     }
 
     /// The answer is the thing you say, so it gets the weight on the page.
@@ -194,7 +155,7 @@ extension PreparedInterview {
             ),
             PreparedQuestion(
                 question: "Pourquoi ce poste, chez nous ?",
-                intent: "Il cherche à savoir si vous avez lu l'annonce ou si vous postulez partout.",
+                intent: "Il vérifie si vous avez vraiment lu l'annonce.",
                 answer: "Citez une mission précise de l'offre, dites en quoi vous l'avez déjà faite, puis ce qui vous attire dans l'entreprise."
             ),
             PreparedQuestion(
@@ -204,12 +165,12 @@ extension PreparedInterview {
             ),
             PreparedQuestion(
                 question: "Racontez une situation difficile que vous avez gérée.",
-                intent: "Il veut voir votre part personnelle, pas celle de l'équipe.",
+                intent: "Il veut votre part personnelle, pas celle de l'équipe.",
                 answer: "Décrivez la situation en deux phrases, puis ce que VOUS avez décidé, puis le résultat obtenu."
             ),
             PreparedQuestion(
                 question: "Quelles sont vos prétentions salariales ?",
-                intent: "Il vérifie que vous êtes dans l'enveloppe avant d'aller plus loin.",
+                intent: "Il vérifie que vous êtes dans l'enveloppe.",
                 answer: "Donnez une fourchette, pas un chiffre. Ajoutez qu'elle reste ouverte selon le périmètre exact du poste."
             )
         ],
