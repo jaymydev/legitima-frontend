@@ -31,8 +31,8 @@ struct legitima_frontendApp: App {
                             )
                         case .interviewEntry:
                             PremiumInterviewEntryScreen()
-                        case .preparedQuestions:
-                            PreparedInterviewScreen(preparation: .sampleRecruitment)
+                        case let .preparedQuestions(useCaseID):
+                            InterviewPreparationFlowScreen(useCaseID: useCaseID)
                         }
                     }
             }

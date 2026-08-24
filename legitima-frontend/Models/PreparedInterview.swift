@@ -26,3 +26,37 @@ struct PreparedInterview: Codable, Equatable {
         case actionPlan = "action_plan"
     }
 }
+
+/// What the client sends to `POST /v3/interview/questions`.
+///
+/// `answers` and `experiences` may both be empty — a performance review needs
+/// neither. That is the pivot's promise, so nothing here may quietly require
+/// them back.
+struct PreparedInterviewRequest: Encodable {
+    let useCaseID: String
+    let questionnaireVersion: String
+    let answers: [PreparedInterviewAnswer]
+    let experiences: [PreparedInterviewExperience]
+
+    private enum CodingKeys: String, CodingKey {
+        case answers, experiences
+        case useCaseID = "use_case_id"
+        case questionnaireVersion = "questionnaire_version"
+    }
+}
+
+struct PreparedInterviewAnswer: Encodable {
+    let questionID: String
+    let answer: String
+
+    private enum CodingKeys: String, CodingKey {
+        case answer
+        case questionID = "question_id"
+    }
+}
+
+struct PreparedInterviewExperience: Encodable {
+    let title: String
+    let company: String
+    let period: String
+}
