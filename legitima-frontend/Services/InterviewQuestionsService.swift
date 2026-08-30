@@ -24,21 +24,6 @@ final class InterviewQuestionsService {
         return try await request(path: "/v3/interview/bank?\(query)", method: "GET")
     }
 
-    func fetchUseCases() async throws -> InterviewUseCaseCatalog {
-        try await request(path: "/v3/interview/use-cases", method: "GET")
-    }
-
-    /// Generation runs while someone waits on a loading screen, so it fails in
-    /// seconds rather than hanging on the default 60 s timeout.
-    func prepare(_ payload: PreparedInterviewRequest) async throws -> PreparedInterview {
-        try await request(
-            path: "/v3/interview/questions",
-            method: "POST",
-            body: try JSONEncoder().encode(payload),
-            timeout: 45
-        )
-    }
-
     private func request<Response: Decodable>(
         path: String,
         method: String,

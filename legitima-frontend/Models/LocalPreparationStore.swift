@@ -1,27 +1,20 @@
 import Combine
 import Foundation
 
+/// Ce que l'app garde entre deux ouvertures.
+///
+/// Il ne reste que deux choses : le type d'entretien choisi et sa date. Le
+/// parcours, le point sensible, l'analyse, le kickoff et le débrief ont disparu
+/// avec le parcours par le CV — c'est le type d'entretien qui porte désormais la
+/// préparation, et les réponses vivent dans les blancs remplis sur l'appareil.
 struct PreparationSnapshot: Codable, Equatable {
-    var targetRole: String = ""
-    var careerSummary: String = ""
-    var sensitivePoint: String = ""
-    var interviewDate: Date?
     var intendedUseCaseID: String?
-    var analysis: AnalysisResponse?
-    var debrief: InterviewDebrief?
-    var kickoff: PremiumKickoffResponse?
+    var interviewDate: Date?
     var updatedAt: Date = .now
-
-    var hasWork: Bool {
-        analysis != nil
-            || !targetRole.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || !careerSummary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || !sensitivePoint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
 }
 
 enum InterviewCountdown {
-    /// Whole days between today and the interview day, or nil when the date is past.
+    /// Nombre de jours pleins d'ici l'entretien, ou nil si la date est passée.
     static func daysUntil(
         _ date: Date,
         from reference: Date = .now,
@@ -36,29 +29,6 @@ enum InterviewCountdown {
         return days
     }
 
-    /// Whole days since the interview day, from the day after onwards. The
-    /// interview day itself stays a countdown day, so a single date never
-    /// drives both the countdown and the debrief prompt at once.
-    static func daysSince(
-        _ date: Date,
-        from reference: Date = .now,
-        calendar: Calendar = .current
-    ) -> Int? {
-        let start = calendar.startOfDay(for: date)
-        let target = calendar.startOfDay(for: reference)
-        guard let days = calendar.dateComponents([.day], from: start, to: target).day,
-              days >= 1 else {
-            return nil
-        }
-        return days
-    }
-
-    static func pastLabel(daysSince days: Int) -> String {
-        days == 1
-            ? "Votre entretien a eu lieu hier"
-            : "Votre entretien a eu lieu il y a \(days) jours"
-    }
-
     static func label(daysUntil days: Int) -> String {
         switch days {
         case 0:
@@ -67,19 +37,6 @@ enum InterviewCountdown {
             return "Votre entretien a lieu demain"
         default:
             return "Votre entretien a lieu dans \(days) jours"
-        }
-    }
-
-    /// Third-person framing for the generation context, so the deadline can
-    /// steer priorities and the day-J action plan.
-    static func promptLine(daysUntil days: Int) -> String {
-        switch days {
-        case 0:
-            return "Échéance : l'entretien a lieu aujourd'hui."
-        case 1:
-            return "Échéance : l'entretien a lieu demain."
-        default:
-            return "Échéance : l'entretien a lieu dans \(days) jours."
         }
     }
 }
@@ -99,27 +56,6 @@ final class LocalPreparationStore: ObservableObject {
         snapshot = storage.load() ?? PreparationSnapshot()
     }
 
-    var hasSavedWork: Bool {
-        snapshot.hasWork
-    }
-
-    func saveDraft(targetRole: String, careerSummary: String, sensitivePoint: String) {
-        snapshot.targetRole = targetRole
-        snapshot.careerSummary = careerSummary
-        snapshot.sensitivePoint = sensitivePoint
-        persist()
-    }
-
-    func saveAnalysis(_ analysis: AnalysisResponse) {
-        snapshot.analysis = analysis
-        persist()
-    }
-
-    func updateTargetRole(_ targetRole: String) {
-        snapshot.targetRole = targetRole
-        persist()
-    }
-
     func updateInterviewDate(_ interviewDate: Date?) {
         snapshot.interviewDate = interviewDate
         persist()
@@ -127,23 +63,6 @@ final class LocalPreparationStore: ObservableObject {
 
     func updateIntendedUseCase(_ useCaseID: String?) {
         snapshot.intendedUseCaseID = useCaseID
-        persist()
-    }
-
-    func saveDebrief(_ debrief: InterviewDebrief) {
-        snapshot.debrief = debrief
-        persist()
-    }
-
-    /// The first paid deliverable. Kept so it survives leaving the kickoff and
-    /// relaunching the app — it is the proof of what the purchase bought.
-    func saveKickoff(_ kickoff: PremiumKickoffResponse) {
-        snapshot.kickoff = kickoff
-        persist()
-    }
-
-    func beginNewAnalysis() {
-        snapshot.analysis = nil
         persist()
     }
 
@@ -189,15 +108,19 @@ extension ProtectedJSONStore where Value == PreparationSnapshot {
     }
 }
 
-/// Files an earlier version wrote and nothing reads any more.
+/// Fichiers qu'une version antérieure écrivait et que plus rien ne lit.
 ///
-/// `premium-preparation.json` held a second copy of the analysis — so, the
-/// user's career history. Dropping the code that wrote it would have left that
-/// copy sitting on every device that ever ran the old build. Keeping personal
-/// data the app has no use for is exactly what we should not do, so it is
-/// deleted on launch instead.
+/// `premium-preparation.json` gardait une copie de l'analyse — donc l'historique
+/// professionnel de la personne. Les deux fichiers ajoutés ici gardent ses
+/// réponses au questionnaire et le catalogue téléchargé : le pivot les a rendus
+/// inutiles, et garder des données personnelles dont l'app n'a plus l'usage est
+/// exactement ce qu'il ne faut pas faire. Ils sont donc effacés au lancement.
 enum OrphanedStorage {
-    static let fileNames = ["premium-preparation.json"]
+    static let fileNames = [
+        "premium-preparation.json",
+        "interview-preparation.json",
+        "interview-catalog.json",
+    ]
 
     static func removeAll(in directory: URL = applicationSupportURL) {
         for name in fileNames {
@@ -206,73 +129,7 @@ enum OrphanedStorage {
     }
 }
 
-extension ProtectedJSONStore where Value == InterviewUseCaseCatalog {
-    static var interviewCatalog: Self {
-        Self(fileURL: applicationSupportURL.appendingPathComponent("interview-catalog.json"))
-    }
-}
-
-extension ProtectedJSONStore where Value == SavedInterviewPreparation {
-    static var interviewPreparation: Self {
-        Self(fileURL: applicationSupportURL.appendingPathComponent("interview-preparation.json"))
-    }
-}
-
-@MainActor
-final class InterviewPreparationStore: ObservableObject {
-    @Published private(set) var saved: SavedInterviewPreparation
-
-    private let storage: ProtectedJSONStore<SavedInterviewPreparation>
-
-    convenience init() {
-        self.init(storage: .interviewPreparation)
-    }
-
-    init(storage: ProtectedJSONStore<SavedInterviewPreparation>) {
-        self.storage = storage
-        saved = storage.load() ?? SavedInterviewPreparation()
-    }
-
-    func saveDraft(useCase: InterviewUseCase, answers: [String: String]) {
-        saved.useCase = useCase
-        saved.answers = answers
-        saved.updatedAt = .now
-        storage.save(saved)
-    }
-
-    func saveStep(_ step: Int) {
-        guard saved.step != step else { return }
-        saved.step = step
-        saved.updatedAt = .now
-        storage.save(saved)
-    }
-
-    func saveResult(_ result: InterviewPreparationResponse) {
-        saved.result = result
-        saved.updatedAt = .now
-        storage.save(saved)
-    }
-
-    /// Begin a fresh preparation, discarding any previous answers and result.
-    ///
-    /// Always resets, including for the use case already saved. Only resetting
-    /// on a *different* use case made the most likely second preparation — the
-    /// same kind of interview at another company — impossible to run: the user
-    /// got their previous answers back, and after a relaunch the routing sent
-    /// them straight to the old result. Resuming is a separate, explicit
-    /// action offered next to this one, so nothing is discarded by surprise.
-    func startNew(useCase: InterviewUseCase) {
-        saved = SavedInterviewPreparation(useCase: useCase)
-        storage.save(saved)
-    }
-
-    func clear() {
-        saved = SavedInterviewPreparation()
-        storage.remove()
-    }
-}
-
-private var applicationSupportURL: URL {
+var applicationSupportURL: URL {
     let baseURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     return baseURL.appendingPathComponent("Legitima", isDirectory: true)
 }

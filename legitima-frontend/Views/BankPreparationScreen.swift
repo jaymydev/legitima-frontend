@@ -83,6 +83,17 @@ struct BankPreparationScreen: View {
                 ForEach(Array(page.questions.enumerated()), id: \.element.id) { index, question in
                     card(index: index, question: question)
                 }
+
+                // Le document qu'on relit dans la salle d'attente. Généré à la
+                // demande, avec les blancs tels qu'ils sont au moment du partage.
+                if let url = PreparationPDFExporter.writeTemporaryPDF(
+                    for: PreparationExportContent(page: page, filled: slots.values)
+                ) {
+                    ShareLink(item: url) {
+                        Label("Exporter mes réponses", systemImage: "square.and.arrow.up")
+                            .legitimaPrimaryLabel()
+                    }
+                }
             }
             .frame(maxWidth: 720)
             .padding(22)
