@@ -21,10 +21,14 @@ struct CVImportFlowSheet: View {
     @State private var isShowingCamera = false
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var extractedSteps: [EditableCVStep] = []
+    /// Les lignes non modifiées, gardées à part : elles servent à remplir des
+    /// balises, où l'intitulé et la société doivent rester séparés.
+    @State private var extractedExperiences: [CVExperienceRow] = []
     @State private var errorMessage: String?
 
     private let cvImportService = CVImportService()
     let onUseSummary: (String) -> Void
+    var onUseExperiences: ([CVExperienceRow]) -> Void = { _ in }
     var introText: String = "Nous allons extraire les étapes les plus utiles de votre parcours. Vous pourrez tout corriger avant de continuer."
     var applyButtonTitle: String = "Utiliser ces étapes"
     var reviewFootnote: String = "Vous pourrez encore ajuster ce texte dans l'écran précédent avant de continuer."
@@ -380,6 +384,7 @@ struct CVImportFlowSheet: View {
 
             await MainActor.run {
                 extractedSteps = result.steps.map { EditableCVStep(text: $0) }
+                extractedExperiences = result.experiences
                 withAnimation(.easeInOut(duration: 0.2)) {
                     flowState = .review
                 }
@@ -401,6 +406,7 @@ struct CVImportFlowSheet: View {
 
         let summary = cleanedSteps.map { "• \($0)" }.joined(separator: "\n")
         onUseSummary(summary)
+        onUseExperiences(extractedExperiences)
         dismiss()
     }
 }

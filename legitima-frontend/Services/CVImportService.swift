@@ -4,6 +4,7 @@ import ImageIO
 import UIKit
 
 struct CVImportResult {
+    var experiences: [CVExperienceRow] = []
     let steps: [String]
 
     var summary: String {
@@ -12,10 +13,15 @@ struct CVImportResult {
 }
 
 private struct CVParseResponse: Decodable {
-    let experiences: [CVParsedExperience]
+    let experiences: [CVExperienceRow]
 }
 
-private struct CVParsedExperience: Decodable {
+/// Une ligne de CV telle que /cv/parse la renvoie.
+///
+/// Exposée parce que les balises ont besoin du détail : le résumé texte perd la
+/// séparation entre l'intitulé, la société et la période, et c'est justement
+/// cette séparation qui permet de remplir des blancs sans rien demander.
+struct CVExperienceRow: Decodable, Equatable {
     let title: String
     let company: String
     let period: String
@@ -170,7 +176,7 @@ final class CVImportService {
             throw CVImportServiceError.noTextDetected
         }
 
-        return CVImportResult(steps: uniqueSteps)
+        return CVImportResult(experiences: decodedResponse.experiences, steps: uniqueSteps)
     }
 
     private func imageUploadPayload(from image: UIImage, originalData: Data?) throws -> (data: Data, fileName: String, mimeType: CVUploadMimeType) {
@@ -356,7 +362,7 @@ final class CVImportService {
         }
     }
 
-    private func formatBackendExperience(_ experience: CVParsedExperience) -> String? {
+    private func formatBackendExperience(_ experience: CVExperienceRow) -> String? {
         let components = [
             experience.title.trimmingCharacters(in: .whitespacesAndNewlines),
             experience.company.trimmingCharacters(in: .whitespacesAndNewlines),

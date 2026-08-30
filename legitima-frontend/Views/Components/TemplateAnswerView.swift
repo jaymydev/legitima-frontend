@@ -81,6 +81,8 @@ struct SlotEditorSheet: View {
     @EnvironmentObject private var slots: SlotStore
     @Environment(\.dismiss) private var dismiss
     @State private var draft = ""
+    @State private var isImportingCV = false
+    @State private var isPastingOffer = false
 
     var body: some View {
         NavigationStack {
@@ -120,6 +122,33 @@ struct SlotEditorSheet: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
+                // Le raccourci n'est proposé que là où il remplit vraiment
+                // quelque chose. On ne demande jamais un CV en amont « au cas
+                // où » : seulement devant un blanc qu'il peut combler.
+                if SlotVocabulary.filledByCV.contains(slot) {
+                    Button {
+                        isImportingCV = true
+                    } label: {
+                        Label("Remplir depuis mon CV", systemImage: "doc.text")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(LegitimaColors.accent)
+                    }
+                    Text("Votre CV remplira aussi les autres blancs qu'il contient.")
+                        .font(.footnote)
+                        .foregroundColor(LegitimaColors.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                if slot == SlotVocabulary.filledByOffer {
+                    Button {
+                        isPastingOffer = true
+                    } label: {
+                        Label("Coller l'offre d'emploi", systemImage: "doc.on.clipboard")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(LegitimaColors.accent)
+                    }
+                }
+
                 Text("Cette information reste sur votre téléphone.")
                     .font(.footnote)
                     .foregroundColor(LegitimaColors.muted)
@@ -142,6 +171,24 @@ struct SlotEditorSheet: View {
             }
         }
         .onAppear { draft = slots.value(for: slot) ?? "" }
+        .sheet(isPresented: $isImportingCV) {
+            CVImportFlowSheet(
+                onUseSummary: { _ in },
+                onUseExperiences: { experiences in
+                    for (name, value) in SlotAutofill.values(from: experiences) {
+                        slots.set(value, for: name)
+                    }
+                    draft = slots.value(for: slot) ?? draft
+                },
+                introText: "Nous en tirerons vos postes, vos entreprises et votre ancienneté. Vous pourrez tout corriger.",
+                applyButtonTitle: "Remplir mes réponses"
+            )
+        }
+        .sheet(isPresented: $isPastingOffer) {
+            OfferMissionPicker { mission in
+                draft = mission
+            }
+        }
     }
 }
 
@@ -153,5 +200,81 @@ extension String {
     var capitalizedFirst: String {
         guard let first else { return self }
         return first.uppercased() + dropFirst()
+    }
+}
+
+/// Coller une annonce, puis choisir la mission qui compte.
+///
+/// Le découpage est fait sur l'appareil et la personne choisit : rien n'est
+/// envoyé nulle part, et rien ne peut lui être attribué qu'elle n'ait retenu.
+struct OfferMissionPicker: View {
+    let onPick: (String) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var offer = ""
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Collez l'offre")
+                        .font(.system(.title2, design: .rounded).weight(.bold))
+                        .foregroundColor(LegitimaColors.ink)
+
+                    Text("Nous en sortons les missions. Vous choisissez celle sur laquelle vous voulez répondre.")
+                        .font(.subheadline)
+                        .foregroundColor(LegitimaColors.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    PlaceholderTextEditor(
+                        placeholder: "Collez le texte de l'annonce",
+                        text: $offer,
+                        primaryColor: LegitimaColors.ink,
+                        minHeight: 160
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: LegitimaRadius.control)
+                            .stroke(LegitimaColors.hairline, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
+
+                    let missions = SlotAutofill.missions(in: offer)
+                    if !missions.isEmpty {
+                        Text("Missions trouvées")
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(LegitimaColors.accent)
+
+                        ForEach(missions, id: \.self) { mission in
+                            Button {
+                                onPick(mission)
+                                dismiss()
+                            } label: {
+                                Text(mission)
+                                    .font(.subheadline)
+                                    .foregroundColor(LegitimaColors.ink)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(14)
+                                    .background(LegitimaColors.chip)
+                                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } else if !offer.isEmpty {
+                        Text("Aucune mission repérée. Écrivez-la vous-même dans le champ précédent.")
+                            .font(.footnote)
+                            .foregroundColor(LegitimaColors.muted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(22)
+            }
+            .background(LegitimaColors.surfaceStrong.ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Annuler") { dismiss() }
+                }
+            }
+        }
     }
 }
