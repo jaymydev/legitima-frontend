@@ -6,6 +6,24 @@ import Foundation
 /// contract that lets the backend change its questions without a client
 /// release, and a client answering from a copy it holds locally would defeat it.
 final class InterviewQuestionsService {
+    /// La banque écrite à la main. Aucun appel modèle derrière : la réponse est
+    /// instantanée, ne coûte rien, et arrive même sans que la personne ait saisi
+    /// quoi que ce soit.
+    func fetchBank(
+        useCaseID: String,
+        seen: [String] = [],
+        metier: String? = nil
+    ) async throws -> BankPage {
+        var query = "use_case_id=\(useCaseID)"
+        if !seen.isEmpty {
+            query += "&seen=\(seen.joined(separator: ","))"
+        }
+        if let metier, !metier.isEmpty {
+            query += "&metier=\(metier)"
+        }
+        return try await request(path: "/v3/interview/bank?\(query)", method: "GET")
+    }
+
     func fetchUseCases() async throws -> InterviewUseCaseCatalog {
         try await request(path: "/v3/interview/use-cases", method: "GET")
     }

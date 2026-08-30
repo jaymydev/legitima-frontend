@@ -12,6 +12,7 @@ struct legitima_frontendApp: App {
     @StateObject private var router = AppRouter()
     @StateObject private var preparationStore = LocalPreparationStore()
     @StateObject private var interviewPreparationStore = InterviewPreparationStore()
+    @StateObject private var slotStore = SlotStore()
 
     init() {
         OrphanedStorage.removeAll()
@@ -32,12 +33,13 @@ struct legitima_frontendApp: App {
                         case .interviewEntry:
                             PremiumInterviewEntryScreen()
                         case let .preparedQuestions(useCaseID):
-                            InterviewPreparationFlowScreen(useCaseID: useCaseID)
+                            BankPreparationScreen(useCaseID: useCaseID)
                         }
                     }
             }
             .environmentObject(preparationStore)
             .environmentObject(interviewPreparationStore)
+            .environmentObject(slotStore)
             .environmentObject(router)
         }
     }
