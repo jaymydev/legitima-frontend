@@ -77,10 +77,18 @@ enum SlotAutofill {
     }
 
     private static func isCandidateSection(_ line: String) -> Bool {
-        let lowered = line.lowercased()
-        return ["profil recherché", "votre profil", "profil :", "compétences requises",
-                "ce que nous recherchons", "qualifications", "prérequis"]
+        // Sans accents des deux côtés : beaucoup d'annonces sont saisies dans des
+        // outils qui les perdent, et « Profil recherche » doit couper autant que
+        // « Profil recherché ». Vu à l'essai : sans ça, « 5 ans minimum
+        // d'expérience » remontait parmi les missions.
+        let lowered = folded(line)
+        return ["profil recherche", "votre profil", "profil :", "competences requises",
+                "ce que nous recherchons", "qualifications", "prerequis", "profil souhaite"]
             .contains { lowered.contains($0) }
+    }
+
+    private static func folded(_ text: String) -> String {
+        text.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "fr_FR"))
     }
 
     private static func isJobTitle(_ line: String) -> Bool {

@@ -121,11 +121,19 @@ struct BankPreparationScreen: View {
                 .background(LegitimaColors.chip)
                 .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
+            // La relance porte les mêmes balises que le gabarit. Affichée telle
+            // quelle, elle montrait « je suis à <SALAIRE_ACTUEL> » — ce qui se lit
+            // comme une variable non remplacée, pas comme un blanc à remplir.
             if !question.followUp.isEmpty {
-                Label(question.followUp, systemImage: "arrow.turn.down.right")
-                    .font(.footnote)
-                    .foregroundColor(LegitimaColors.muted)
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack(alignment: .top, spacing: 6) {
+                    Image(systemName: "arrow.turn.down.right")
+                        .font(.footnote)
+                        .foregroundColor(LegitimaColors.muted)
+                    Text(TemplateFilling.plainText(question.followUp, filled: slots.values))
+                        .font(.footnote)
+                        .foregroundColor(LegitimaColors.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             if !question.avoid.isEmpty {
