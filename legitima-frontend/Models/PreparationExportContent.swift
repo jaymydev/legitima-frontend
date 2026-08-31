@@ -18,9 +18,21 @@ struct PreparationExportContent {
     let title: String
     let blocks: [Block]
 
-    init(page: BankPage, filled: [String: String], personalized: PreparedInterview? = nil) {
+    /// `comfortable` est le filtre de confort : ce sur quoi la personne se
+    /// sait à l'aise sort du document — c'est lui qu'on relit en cinq minutes,
+    /// et chaque question retirée rend les autres plus lisibles. Une question
+    /// de la banque y figure par son identifiant, une personnalisée par son
+    /// texte. La numérotation se resserre : un document relu dans le couloir
+    /// qui saute du 2 au 5 se lit comme un document auquel il manque des pages.
+    init(
+        page: BankPage,
+        filled: [String: String],
+        personalized: PreparedInterview? = nil,
+        comfortable: Set<String> = []
+    ) {
         title = "Vos questions d'entretien"
-        var assembled = page.questions.enumerated().map { index, question in
+        let kept = page.questions.filter { !comfortable.contains($0.id) }
+        var assembled = kept.enumerated().map { index, question in
             var paragraphs = [TemplateFilling.plainText(question.answer, filled: filled)]
             if !question.followUp.isEmpty {
                 paragraphs.append(question.followUp)
@@ -38,9 +50,12 @@ struct PreparationExportContent {
         // La numérotation continue celle de la banque : dans la salle
         // d'attente, c'est un seul document qu'on relit, pas deux.
         if let personalized {
-            assembled += personalized.questions.enumerated().map { index, question in
+            let keptPersonalized = personalized.questions.filter {
+                !comfortable.contains($0.question)
+            }
+            assembled += keptPersonalized.enumerated().map { index, question in
                 Block(
-                    title: "\(page.questions.count + index + 1). \(question.question)",
+                    title: "\(kept.count + index + 1). \(question.question)",
                     paragraphs: [
                         question.isSentence ? question.answer : "Comment répondre : " + question.answer
                     ],

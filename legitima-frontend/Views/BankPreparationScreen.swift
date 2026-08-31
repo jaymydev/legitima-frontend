@@ -12,10 +12,16 @@ struct BankPreparationScreen: View {
     @State private var stage: Stage = .loading
     @State private var personalized: PreparedInterview?
     @State private var isPersonalizing = false
+    /// Le filtre de confort. Une question de la banque y entre par son
+    /// identifiant, une question personnalisée par son texte — elle n'a pas
+    /// d'identifiant et « Refaire » la remplace, donc une marque orpheline ne
+    /// fait que dormir dans le fichier.
+    @State private var comfortable: Set<String> = []
 
     private let service = InterviewQuestionsService()
     private let seenStore = ProtectedJSONStore<[String]>.seenQuestions
     private let personalizedStore = ProtectedJSONStore<[String: PreparedInterview]>.personalizedPreparations
+    private let comfortStore = ProtectedJSONStore<[String]>.comfortMarks
 
     enum Stage {
         case loading
@@ -84,7 +90,11 @@ struct BankPreparationScreen: View {
                 }
 
                 ForEach(Array(page.questions.enumerated()), id: \.element.id) { index, question in
-                    card(index: index, question: question)
+                    if comfortable.contains(question.id) {
+                        comfortableRow(index: index, title: question.question, key: question.id)
+                    } else {
+                        card(index: index, question: question)
+                    }
                 }
 
                 if let personalized {
@@ -99,7 +109,8 @@ struct BankPreparationScreen: View {
                     for: PreparationExportContent(
                         page: page,
                         filled: slots.values,
-                        personalized: personalized
+                        personalized: personalized,
+                        comfortable: comfortable
                     )
                 ) {
                     ShareLink(item: url) {
@@ -169,7 +180,15 @@ struct BankPreparationScreen: View {
             }
 
             ForEach(Array(prepared.questions.enumerated()), id: \.offset) { index, question in
-                personalizedCard(index: startIndex + index, question: question)
+                if comfortable.contains(question.question) {
+                    comfortableRow(
+                        index: startIndex + index,
+                        title: question.question,
+                        key: question.question
+                    )
+                } else {
+                    personalizedCard(index: startIndex + index, question: question)
+                }
             }
 
             if !prepared.actionPlan.isEmpty {
@@ -227,6 +246,8 @@ struct BankPreparationScreen: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(LegitimaColors.chip)
             .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
+
+            comfortButton(key: question.question)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
@@ -300,11 +321,81 @@ struct BankPreparationScreen: View {
                     .foregroundColor(LegitimaColors.gold)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            comfortButton(key: question.id)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(LegitimaColors.surface)
         .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
+    }
+
+    // MARK: - Le filtre de confort
+
+    /// « Si l'utilisateur est à l'aise sur un sujet, on ne le traite pas dans
+    /// le rapport final. » Le seul geste qui raccourcit la page au lieu de
+    /// l'allonger — et c'est un fait sur la personne qui ne coûte ni saisie ni
+    /// vérification : c'est elle qui coche.
+    private func comfortButton(key: String) -> some View {
+        Button {
+            toggleComfort(key)
+        } label: {
+            Label("Je suis à l'aise sur cette question", systemImage: "checkmark.circle")
+                .font(.footnote.weight(.semibold))
+                .foregroundColor(LegitimaColors.accent)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// La question repliée, pas retirée : elle reste lisible et le geste reste
+    /// réversible d'un tap. Seul le PDF l'exclut — c'est lui qu'on relit dans
+    /// le couloir, et c'est lui que le retour visait.
+    private func comfortableRow(index: Int, title: String, key: String) -> some View {
+        Button {
+            toggleComfort(key)
+        } label: {
+            HStack(alignment: .top, spacing: 10) {
+                Text("\(index + 1)")
+                    .font(.caption.bold())
+                    .frame(width: 24, height: 24)
+                    .background(LegitimaColors.chip)
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(LegitimaColors.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                    Text("À l'aise — ne figurera pas dans le PDF. Touchez pour rouvrir.")
+                        .font(.caption)
+                        .foregroundColor(LegitimaColors.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                }
+
+                Spacer(minLength: 0)
+
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(LegitimaColors.accent)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(LegitimaColors.surface.opacity(0.6))
+            .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.card))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func toggleComfort(_ key: String) {
+        withAnimation(LegitimaMotion.reveal) {
+            if comfortable.contains(key) {
+                comfortable.remove(key)
+            } else {
+                comfortable.insert(key)
+            }
+        }
+        comfortStore.save(comfortable.sorted())
     }
 
     private func load() async {
@@ -315,6 +406,7 @@ struct BankPreparationScreen: View {
             let page = try await service.fetchBank(useCaseID: useCaseID, seen: seen)
             seenStore.save(Array((seen + page.questions.map(\.id)).suffix(120)))
             personalized = personalizedStore.load()?[useCaseID]
+            comfortable = Set(comfortStore.load() ?? [])
             stage = .ready(page)
         } catch {
             stage = .failed(error.localizedDescription)
@@ -330,5 +422,12 @@ extension ProtectedJSONStore where Value == [String] {
                 .appendingPathComponent("Legitima", isDirectory: true)
                 .appendingPathComponent("seen-questions.json")
         )
+    }
+
+    /// Comme les blancs : coché une fois, retenu pour les fois suivantes.
+    /// Se savoir à l'aise sur « parlez-moi de vous » ne se périme pas d'une
+    /// préparation à l'autre.
+    static var comfortMarks: Self {
+        Self(fileURL: applicationSupportURL.appendingPathComponent("comfort-marks.json"))
     }
 }
