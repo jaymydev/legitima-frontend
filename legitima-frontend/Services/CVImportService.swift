@@ -42,15 +42,15 @@ enum CVImportServiceError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .unreadableDocument:
-            return "Le fichier n'a pas pu etre lu. Reessayez avec un PDF, une photo JPEG ou une image PNG lisible."
+            return "Le fichier n'a pas pu être lu. Réessayez avec un PDF, une photo JPEG ou une image PNG lisible."
         case .noTextDetected:
-            return "Nous n'avons pas trouve d'experience professionnelle exploitable. Verifiez que le CV est lisible et reessayez."
+            return "Nous n'avons pas trouvé d'expérience professionnelle exploitable. Vérifiez que le CV est lisible et réessayez."
         case .noCameraAvailable:
-            return "La camera n'est pas disponible sur cet appareil."
+            return "La caméra n'est pas disponible sur cet appareil."
         case .unsupportedFileType:
             return "Ce format de fichier n'est pas pris en charge. Utilisez un PDF, une photo JPEG ou une image PNG."
         case .imageConversionFailed:
-            return "L'image n'a pas pu etre preparee pour l'import. Reessayez avec une image plus lisible."
+            return "L'image n'a pas pu être préparée pour l'import. Réessayez avec une image plus lisible."
         }
     }
 }
@@ -112,7 +112,7 @@ final class CVImportService {
                 domain: "",
                 code: 413,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Le fichier depasse la taille maximale de 10 Mo pour l'import CV."
+                    NSLocalizedDescriptionKey: "Le fichier dépasse la taille maximale de 10 Mo pour l'import CV."
                 ]
             )
         }
@@ -155,7 +155,7 @@ final class CVImportService {
             throw NSError(
                 domain: "",
                 code: 0,
-                userInfo: [NSLocalizedDescriptionKey: "Reponse backend invalide."]
+                userInfo: [NSLocalizedDescriptionKey: "Réponse backend invalide."]
             )
         }
 
@@ -170,7 +170,7 @@ final class CVImportService {
             throw NSError(
                 domain: "",
                 code: 0,
-                userInfo: [NSLocalizedDescriptionKey: "La reponse CV du backend est invalide."]
+                userInfo: [NSLocalizedDescriptionKey: "La réponse CV du backend est invalide."]
             )
         }
 
@@ -256,13 +256,13 @@ final class CVImportService {
 
         switch statusCode {
         case 413:
-            fallbackMessage = "Le fichier depasse la taille maximale de 10 Mo pour l'import CV."
+            fallbackMessage = "Le fichier dépasse la taille maximale de 10 Mo pour l'import CV."
         case 415:
             fallbackMessage = "Ce format de fichier n'est pas pris en charge. Utilisez un PDF, une photo JPEG ou une image PNG."
         case 422:
-            fallbackMessage = "Nous n'avons pas trouve d'experience professionnelle exploitable. Verifiez que le CV est lisible et reessayez."
+            fallbackMessage = "Nous n'avons pas trouvé d'expérience professionnelle exploitable. Vérifiez que le CV est lisible et réessayez."
         case 500:
-            fallbackMessage = "Le traitement du CV est momentanement indisponible. Reessayez dans quelques instants."
+            fallbackMessage = "Le traitement du CV est momentanément indisponible. Réessayez dans quelques instants."
         default:
             fallbackMessage = "Erreur serveur pendant l'import CV."
         }
