@@ -244,8 +244,21 @@ struct LocalStateTests {
             )]
         )
         let colored = PreparationExportContent(page: salary, filled: ["PRÉTENTION_BASSE": "42 000 €"])
-        precondition(colored.blocks[0].paragraphs[1] == .init("Et si on vous propose 42 000 € ?", tone: .followUp))
+        precondition(colored.blocks[0].paragraphs[1].text == "Et si on vous propose 42 000 € ?")
+        precondition(colored.blocks[0].paragraphs[1].tone == .followUp)
         precondition(colored.blocks[0].paragraphs[2] == .init("Ne donnez jamais votre plancher.", tone: .avoid))
+
+        // Un trou reste un trou jusque dans le document : le blanc rempli est
+        // marqué rempli, le blanc vide est marqué vide — c'est ce qui permet
+        // au PDF de le peindre comme quelque chose à compléter à l'oral, et
+        // non comme du texte à dire tel quel.
+        precondition(colored.blocks[0].paragraphs[0].segments == [
+            .init(text: "Entre ", kind: .literal),
+            .init(text: "42 000 €", kind: .filled),
+            .init(text: " et ", kind: .literal),
+            .init(text: "le haut de votre fourchette", kind: .empty),
+            .init(text: ".", kind: .literal),
+        ])
     }
 
     /// The orphaned file held a copy of the analysis — the user's career

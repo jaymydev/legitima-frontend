@@ -26,12 +26,22 @@ struct PreparationExportContent {
         case plain
     }
 
+    /// Un paragraphe est fait de segments : le rendu peut ainsi peindre un
+    /// blanc non rempli comme un trou — souligné, coloré — au lieu de le
+    /// fondre dans la phrase, où il se lirait comme du texte à dire.
     struct Paragraph: Equatable {
-        let text: String
+        let segments: [TemplateFilling.Segment]
         let tone: Tone
 
+        var text: String { segments.map(\.text).joined() }
+
         init(_ text: String, tone: Tone = .plain) {
-            self.text = text
+            segments = [.init(text: text, kind: .literal)]
+            self.tone = tone
+        }
+
+        init(segments: [TemplateFilling.Segment], tone: Tone) {
+            self.segments = segments
             self.tone = tone
         }
     }
@@ -65,14 +75,14 @@ struct PreparationExportContent {
         let kept = page.questions.filter { !comfortable.contains($0.id) }
         var assembled = kept.enumerated().map { index, question -> Block in
             var paragraphs = [
-                Paragraph(TemplateFilling.plainText(question.answer, filled: filled), tone: .say)
+                Paragraph(segments: TemplateFilling.segments(question.answer, filled: filled), tone: .say)
             ]
             if !question.followUp.isEmpty {
                 // La relance porte les mêmes balises que le gabarit. Partie
                 // brute, elle imprimait « <PRÉTENTION_BASSE> » dans un document
                 // relu sans l'app sous la main.
                 paragraphs.append(
-                    Paragraph(TemplateFilling.plainText(question.followUp, filled: filled), tone: .followUp)
+                    Paragraph(segments: TemplateFilling.segments(question.followUp, filled: filled), tone: .followUp)
                 )
             }
             if !question.avoid.isEmpty {
@@ -135,20 +145,51 @@ struct PreparationExportContent {
 /// Remplacer les balises d'un gabarit par ce qui a été saisi.
 ///
 /// Partagé entre l'écran et le PDF pour qu'ils ne puissent pas diverger : ce
-/// qu'on emporte doit être mot pour mot ce qu'on a lu.
+/// qu'on emporte doit être mot pour mot ce qu'on a lu — et un trou doit se
+/// voir comme un trou sur les deux supports. D'où les segments : le découpage
+/// dit ce que chaque morceau est, et chaque rendu choisit seulement comment le
+/// peindre.
 enum TemplateFilling {
-    static func plainText(_ template: String, filled: [String: String]) -> String {
-        var output = ""
+    struct Segment: Equatable {
+        enum Kind: Equatable {
+            /// Le texte du gabarit, tel qu'écrit.
+            case literal
+            /// Un blanc rempli par la personne : se lit comme le reste, en gras.
+            case filled
+            /// Un blanc encore vide : son libellé, marqué comme un trou — c'est
+            /// à la personne de le compléter, à l'oral s'il le faut.
+            case empty
+        }
+
+        let text: String
+        let kind: Kind
+    }
+
+    static func segments(_ template: String, filled: [String: String]) -> [Segment] {
+        var output: [Segment] = []
         var remainder = Substring(template)
+
+        func literal(_ text: Substring) {
+            if !text.isEmpty { output.append(Segment(text: String(text), kind: .literal)) }
+        }
 
         while let open = remainder.firstIndex(of: "<"),
               let close = remainder[open...].firstIndex(of: ">") {
-            output += remainder[..<open]
+            literal(remainder[..<open])
             let name = String(remainder[remainder.index(after: open)..<close])
-            output += filled[name] ?? SlotVocabulary.label(for: name)
+            if let value = filled[name], !value.isEmpty {
+                output.append(Segment(text: value, kind: .filled))
+            } else {
+                output.append(Segment(text: SlotVocabulary.label(for: name), kind: .empty))
+            }
             remainder = remainder[remainder.index(after: close)...]
         }
 
-        return output + remainder
+        literal(remainder)
+        return output
+    }
+
+    static func plainText(_ template: String, filled: [String: String]) -> String {
+        segments(template, filled: filled).map(\.text).joined()
     }
 }

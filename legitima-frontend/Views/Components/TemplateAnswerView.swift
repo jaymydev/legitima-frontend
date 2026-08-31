@@ -46,30 +46,25 @@ struct TemplateAnswerView: View {
         }
     }
 
+    // Le découpage vient de TemplateFilling, le même que celui du PDF : le
+    // trou souligné qu'on voit ici est, mot pour mot et signe pour signe,
+    // celui qu'on retrouvera dans le document.
     private var rendered: AttributedString {
         var output = AttributedString()
-        var remainder = Substring(template)
-
-        while let open = remainder.firstIndex(of: "<"),
-              let close = remainder[open...].firstIndex(of: ">") {
-            output.append(AttributedString(String(remainder[..<open])))
-
-            let name = String(remainder[remainder.index(after: open)..<close])
-            var piece: AttributedString
-            if let filled = slots.value(for: name) {
-                piece = AttributedString(filled)
+        for segment in TemplateFilling.segments(template, filled: slots.values) {
+            var piece = AttributedString(segment.text)
+            switch segment.kind {
+            case .literal:
+                break
+            case .filled:
                 piece.font = .body.weight(.semibold)
                 piece.foregroundColor = LegitimaColors.ink
-            } else {
-                piece = AttributedString(SlotVocabulary.label(for: name))
+            case .empty:
                 piece.foregroundColor = LegitimaColors.accent
                 piece.underlineStyle = .single
             }
             output.append(piece)
-            remainder = remainder[remainder.index(after: close)...]
         }
-
-        output.append(AttributedString(String(remainder)))
         return output
     }
 }

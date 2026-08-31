@@ -130,12 +130,48 @@ enum PreparationPDFExporter {
                 }
 
                 let prefix = block.numbered ? "\(index + 1). " : (paragraph.tone == .acquired ? "✓ " : "")
+                let bodyStyle = paragraphStyle(spacingBefore: 0, spacingAfter: 6, lineSpacing: 3)
+                if !prefix.isEmpty {
+                    document.append(NSAttributedString(
+                        string: prefix,
+                        attributes: [
+                            .font: UIFont.systemFont(ofSize: 12),
+                            .foregroundColor: style.text,
+                            .paragraphStyle: bodyStyle,
+                        ]
+                    ))
+                }
+
+                for segment in paragraph.segments {
+                    // La même convention qu'à l'écran : un blanc rempli se lit
+                    // comme le reste, en gras ; un blanc vide se voit comme un
+                    // trou — souligné et coloré — c'est à la personne de le
+                    // compléter, à l'oral s'il le faut. Fondu dans la phrase,
+                    // il se lirait comme du texte à dire tel quel.
+                    var attributes: [NSAttributedString.Key: Any] = [
+                        .font: UIFont.systemFont(ofSize: 12),
+                        .foregroundColor: style.text,
+                        .paragraphStyle: bodyStyle,
+                    ]
+                    switch segment.kind {
+                    case .literal:
+                        break
+                    case .filled:
+                        attributes[.font] = UIFont.systemFont(ofSize: 12, weight: .semibold)
+                    case .empty:
+                        attributes[.foregroundColor] = Palette.accent
+                        attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+                        attributes[.underlineColor] = Palette.accent
+                    }
+                    document.append(NSAttributedString(string: segment.text, attributes: attributes))
+                }
+
                 document.append(NSAttributedString(
-                    string: prefix + paragraph.text + "\n",
+                    string: "\n",
                     attributes: [
                         .font: UIFont.systemFont(ofSize: 12),
                         .foregroundColor: style.text,
-                        .paragraphStyle: paragraphStyle(spacingBefore: 0, spacingAfter: 6, lineSpacing: 3),
+                        .paragraphStyle: bodyStyle,
                     ]
                 ))
             }
