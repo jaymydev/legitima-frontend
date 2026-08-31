@@ -4,6 +4,7 @@ import ImageIO
 import UIKit
 
 struct CVImportResult {
+    var experiences: [CVExperienceRow] = []
     let steps: [String]
 
     var summary: String {
@@ -12,14 +13,9 @@ struct CVImportResult {
 }
 
 private struct CVParseResponse: Decodable {
-    let experiences: [CVParsedExperience]
+    let experiences: [CVExperienceRow]
 }
 
-private struct CVParsedExperience: Decodable {
-    let title: String
-    let company: String
-    let period: String
-}
 
 enum CVImportServiceError: LocalizedError {
     case unreadableDocument
@@ -170,7 +166,7 @@ final class CVImportService {
             throw CVImportServiceError.noTextDetected
         }
 
-        return CVImportResult(steps: uniqueSteps)
+        return CVImportResult(experiences: decodedResponse.experiences, steps: uniqueSteps)
     }
 
     private func imageUploadPayload(from image: UIImage, originalData: Data?) throws -> (data: Data, fileName: String, mimeType: CVUploadMimeType) {
@@ -356,7 +352,7 @@ final class CVImportService {
         }
     }
 
-    private func formatBackendExperience(_ experience: CVParsedExperience) -> String? {
+    private func formatBackendExperience(_ experience: CVExperienceRow) -> String? {
         let components = [
             experience.title.trimmingCharacters(in: .whitespacesAndNewlines),
             experience.company.trimmingCharacters(in: .whitespacesAndNewlines),

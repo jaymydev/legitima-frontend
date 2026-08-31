@@ -69,6 +69,6 @@ enum InterviewReminderPlan {
     private static func body(daysBefore days: Int) -> String {
         days == 1
             ? "Relisez votre synthèse : les points à faire passer et votre plan d’action."
-            : "Il reste du temps pour préparer vos réponses aux objections."
+            : "Il reste du temps pour préparer vos réponses aux questions difficiles."
     }
 }

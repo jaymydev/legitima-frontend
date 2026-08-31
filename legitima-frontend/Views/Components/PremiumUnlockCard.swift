@@ -24,7 +24,7 @@ struct PremiumUnlockCard: View {
             VStack(spacing: 10) {
                 benefit(
                     "Réponses prêtes pour l’entretien",
-                    subtitle: "Objections couvertes, mots choisis",
+                    subtitle: "Questions difficiles couvertes, mots choisis",
                     icon: "shield.fill",
                     iconColor: Color(light: .rgb(153, 60, 29), dark: .rgb(240, 153, 123)),
                     chipColor: Color(light: .rgb(255, 239, 221), dark: .rgb(46, 39, 28))
@@ -37,7 +37,7 @@ struct PremiumUnlockCard: View {
                     chipColor: Color(light: .rgb(228, 239, 253), dark: .rgb(30, 38, 49))
                 )
                 benefit(
-                    "Synthèse premium exportable",
+                    "Plan d'action exportable en PDF",
                     subtitle: "Votre plan d’action pour le jour J",
                     icon: "sparkles",
                     iconColor: Color(light: .rgb(83, 74, 183), dark: .rgb(175, 169, 236)),

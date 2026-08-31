@@ -4,12 +4,9 @@ import Foundation
 struct LocalStateTests {
     @MainActor
     static func main() throws {
-        try testDraftAndAnalysisRestoration()
         try testInterviewDatePersistence()
         testInterviewCountdown()
-        testLoadingProgressNeverOverclaims()
         testInterviewRemindersNeverFireLateOrIntoThePast()
-        testIntentPickerCoversEveryPublishedUseCase()
         try testOrphanedStorageIsDeleted()
         print("Local state tests passed")
     }
@@ -92,114 +89,6 @@ struct LocalStateTests {
         precondition(ids.count == 2)
     }
 
-    private static func testIntentPickerCoversEveryPublishedUseCase() {
-        // Mirrors the backend catalog. If the two drift apart again, someone
-        // preparing the missing type has no honest answer in onboarding and
-        // gets routed to recruitment by default.
-        let published = [
-            "recruitment", "internal_mobility", "role_evolution",
-            "mid_year", "annual_review", "performance_review",
-        ]
-        let offered = Set(InterviewIntentOption.all.compactMap(\.useCaseID))
-
-        for id in published {
-            precondition(offered.contains(id), "le sélecteur d'intention n'offre pas \(id)")
-        }
-        precondition(offered.count == published.count, "le sélecteur propose un type inconnu du backend")
-        precondition(
-            InterviewIntentOption.all.contains { $0.useCaseID == nil },
-            "l'option « je ne sais pas encore » doit rester : le choix est optionnel"
-        )
-    }
-
-    private static func testLoadingProgressNeverOverclaims() {
-        // Matches the shipped pacing, itself measured against the backend.
-        let typical: TimeInterval = 10
-
-        // Starts at zero and only ever moves forward.
-        precondition(LoadingProgressEstimate.progress(elapsed: 0, typicalDuration: typical) == 0)
-        var previous = 0.0
-        for second in stride(from: 0.0, through: 120.0, by: 0.5) {
-            let value = LoadingProgressEstimate.progress(elapsed: second, typicalDuration: typical)
-            precondition(value >= previous, "la progression ne doit jamais reculer")
-            precondition(value <= LoadingProgressEstimate.ceiling)
-            previous = value
-        }
-
-        // The ceiling is the whole point: the backend gives no progress
-        // signal, so the bar must never sit at 100 % while still waiting.
-        precondition(
-            LoadingProgressEstimate.progress(elapsed: 600, typicalDuration: typical)
-                < LoadingProgressEstimate.ceiling + 0.0001
-        )
-        precondition(
-            LoadingProgressEstimate.progress(elapsed: 600, typicalDuration: typical) > 0.9
-        )
-
-        // It should feel like it is moving early on, then visibly decelerate.
-        let atQuarter = LoadingProgressEstimate.progress(elapsed: typical / 4, typicalDuration: typical)
-        let atTypical = LoadingProgressEstimate.progress(elapsed: typical, typicalDuration: typical)
-        precondition(atQuarter > 0.2, "trop lent au démarrage : l'attente paraîtrait figée")
-        precondition(atTypical > 0.7 && atTypical < LoadingProgressEstimate.ceiling)
-
-        // Steps derive from the same value, so words and number agree.
-        precondition(LoadingProgressEstimate.stepIndex(for: 0.1, count: 3) == 0)
-        precondition(LoadingProgressEstimate.stepIndex(for: 0.5, count: 3) == 1)
-        precondition(LoadingProgressEstimate.stepIndex(for: 0.85, count: 3) == 2)
-        // A shorter list must not index out of bounds.
-        precondition(LoadingProgressEstimate.stepIndex(for: 0.85, count: 2) == 1)
-        precondition(LoadingProgressEstimate.stepIndex(for: 0.5, count: 1) == 0)
-
-        // The notice appears once, then escalates once. Never before 20 s —
-        // a normal generation answers in 8–9 s, so anything earlier would
-        // announce a problem to someone whose request is simply finishing.
-        precondition(LoadingProgressEstimate.slowNotice(elapsed: 5) == nil)
-        precondition(LoadingProgressEstimate.slowNotice(elapsed: 12) == nil)
-        precondition(LoadingProgressEstimate.slowNotice(elapsed: 19.9) == nil)
-        let first = LoadingProgressEstimate.slowNotice(elapsed: 20)
-        let second = LoadingProgressEstimate.slowNotice(elapsed: 45)
-        precondition(first != nil && second != nil && first != second)
-        precondition(second?.contains("conservées") == true)
-    }
-
-    @MainActor
-    private static func testDraftAndAnalysisRestoration() throws {
-        let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        let fileURL = directory.appendingPathComponent("preparation.json")
-        let storage = ProtectedJSONStore<PreparationSnapshot>(fileURL: fileURL)
-        let store = LocalPreparationStore(storage: storage)
-
-        store.saveDraft(
-            targetRole: "Responsable produit",
-            careerSummary: "Développement puis coordination",
-            sensitivePoint: "Transition en 2025"
-        )
-        store.saveAnalysis(sampleAnalysis)
-
-        let restored = LocalPreparationStore(storage: storage)
-        precondition(restored.hasSavedWork)
-        precondition(restored.snapshot.targetRole == "Responsable produit")
-        precondition(restored.snapshot.careerSummary == "Développement puis coordination")
-        precondition(restored.snapshot.sensitivePoint == "Transition en 2025")
-        precondition(restored.snapshot.analysis == sampleAnalysis)
-
-        restored.updateTargetRole("Directrice produit")
-        let updatedRole = LocalPreparationStore(storage: storage)
-        precondition(updatedRole.snapshot.targetRole == "Directrice produit")
-        precondition(updatedRole.snapshot.analysis == sampleAnalysis)
-
-        updatedRole.beginNewAnalysis()
-        let restarted = LocalPreparationStore(storage: storage)
-        precondition(restarted.hasSavedWork)
-        precondition(restarted.snapshot.analysis == nil)
-        precondition(restarted.snapshot.targetRole == "Directrice produit")
-
-        restarted.clear()
-        precondition(!LocalPreparationStore(storage: storage).hasSavedWork)
-        try? FileManager.default.removeItem(at: directory)
-    }
-
     @MainActor
     private static func testInterviewDatePersistence() throws {
         let directory = FileManager.default.temporaryDirectory
@@ -229,15 +118,20 @@ struct LocalStateTests {
         store.updateIntendedUseCase(nil)
         precondition(LocalPreparationStore(storage: storage).snapshot.intendedUseCaseID == nil)
 
-        // Snapshots saved before the interviewDate and intendedUseCaseID
-        // fields existed must still decode.
-        let legacyJSON = """
-        {"targetRole":"Rôle","careerSummary":"Résumé","sensitivePoint":"","updatedAt":0}
-        """.data(using: .utf8)!
+        // Un état écrit par une version antérieure doit encore se décoder.
+        // Le pivot a retiré le parcours, le point sensible, l'analyse et le
+        // kickoff : ces clés traînent sur les appareils qui ont vu l'ancienne
+        // app, et les ignorer vaut mieux que perdre la date d'entretien qui,
+        // elle, survit.
+        let legacyJSON = Data(
+            """
+            {"targetRole":"Rôle","careerSummary":"Résumé","sensitivePoint":"",
+             "analysis":null,"debrief":null,"kickoff":null,"updatedAt":0}
+            """.utf8
+        )
         let legacy = try JSONDecoder().decode(PreparationSnapshot.self, from: legacyJSON)
         precondition(legacy.interviewDate == nil)
         precondition(legacy.intendedUseCaseID == nil)
-        precondition(legacy.targetRole == "Rôle")
 
         try? FileManager.default.removeItem(at: directory)
     }
@@ -262,32 +156,4 @@ struct LocalStateTests {
         precondition(InterviewCountdown.label(daysUntil: 1) == "Votre entretien a lieu demain")
         precondition(InterviewCountdown.label(daysUntil: 5) == "Votre entretien a lieu dans 5 jours")
     }
-
-
-
-
-    private static let sampleAnalysis = AnalysisResponse(
-        analysis: AnalysisSection(
-            strategic_reading: "Lecture",
-            dominant_competencies: "Compétences",
-            career_logic: "Logique"
-        ),
-        sensitive_reframing: SensitiveSection(
-            identified_fragilities: "Fragilité",
-            strategic_reinterpretation: "Réinterprétation",
-            rational_reframing: "Reformulation"
-        ),
-        narrative: NarrativeSection(
-            core_thread: "Fil",
-            positioning_statement: "Positionnement"
-        ),
-        interview_preparation: InterviewSection(
-            probable_objections: "Objections",
-            structured_answers: "Réponses"
-        ),
-        legitimacy_anchor: LegitimacySection(
-            objective_strength: "Force",
-            final_alignment_statement: "Alignement"
-        )
-    )
 }

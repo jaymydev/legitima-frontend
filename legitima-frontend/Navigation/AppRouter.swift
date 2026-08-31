@@ -1,52 +1,25 @@
 import Combine
 import SwiftUI
 
+/// Une pile à une seule destination.
+///
+/// Le routeur portait auparavant trois racines et trois routes, pour un
+/// parcours qui passait par la saisie du parcours, l'analyse, le kickoff puis
+/// le choix du type d'entretien. Le type d'entretien étant devenu le premier
+/// écran, il ne reste qu'à ouvrir les questions.
 @MainActor
 final class AppRouter: ObservableObject {
-    enum Root {
-        case access
-        case onboarding
-        case result(AnalysisResponse)
-    }
-
     enum Route: Hashable {
-        case kickoff
-        case interviewEntry
+        case preparedQuestions(String)
     }
 
-    @Published var root: Root = .access
     @Published var path: [Route] = []
 
-    func showResult(_ response: AnalysisResponse) {
-        root = .result(response)
-        path = []
+    func showPreparedQuestions(useCaseID: String) {
+        path = [.preparedQuestions(useCaseID)]
     }
 
-    func enterApp(savedAnalysis: AnalysisResponse?) {
-        path = []
-        root = savedAnalysis.map(Root.result) ?? .onboarding
-    }
-
-    func showInterviewEntry() {
-        path.append(.interviewEntry)
-    }
-
-    func showKickoff() {
-        path.append(.kickoff)
-    }
-
-    /// Leaving the kickoff replaces it in the stack so back never returns to
-    /// a generation the user has already moved past.
-    func continueFromKickoff() {
-        path = [.interviewEntry]
-    }
-
-    func backToResults() {
+    func backToStart() {
         path.removeAll()
-    }
-
-    func restartAnalysis() {
-        path.removeAll()
-        root = .onboarding
     }
 }

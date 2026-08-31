@@ -1,28 +1,27 @@
 import Foundation
 
-final class InterviewPreparationService {
-    func fetchUseCases() async throws -> InterviewUseCaseCatalog {
-        try await request(path: "/v2/interview-preparation/use-cases", method: "GET")
-    }
-
-    func analyze(_ payload: InterviewPreparationRequest) async throws -> InterviewPreparationResponse {
-        try await request(
-            path: "/v2/interview-preparation/analyze",
-            method: "POST",
-            body: try JSONEncoder().encode(payload)
-        )
-    }
-
-    /// Bounded: this one runs while the user waits on a blocking screen right
-    /// after paying, so it must fail in seconds rather than hang on the default
-    /// 60 s timeout.
-    func kickoff(_ payload: PremiumKickoffRequest) async throws -> PremiumKickoffResponse {
-        try await request(
-            path: "/v2/interview-preparation/kickoff",
-            method: "POST",
-            body: try JSONEncoder().encode(payload),
-            timeout: 30
-        )
+/// Talks to the V3 route: the interview type carries the preparation.
+///
+/// The catalog is fetched rather than hardcoded. `questionnaire_version` is the
+/// contract that lets the backend change its questions without a client
+/// release, and a client answering from a copy it holds locally would defeat it.
+final class InterviewQuestionsService {
+    /// La banque écrite à la main. Aucun appel modèle derrière : la réponse est
+    /// instantanée, ne coûte rien, et arrive même sans que la personne ait saisi
+    /// quoi que ce soit.
+    func fetchBank(
+        useCaseID: String,
+        seen: [String] = [],
+        metier: String? = nil
+    ) async throws -> BankPage {
+        var query = "use_case_id=\(useCaseID)"
+        if !seen.isEmpty {
+            query += "&seen=\(seen.joined(separator: ","))"
+        }
+        if let metier, !metier.isEmpty {
+            query += "&metier=\(metier)"
+        }
+        return try await request(path: "/v3/interview/bank?\(query)", method: "GET")
     }
 
     private func request<Response: Decodable>(
@@ -57,13 +56,15 @@ final class InterviewPreparationService {
             throw IAService.IAServiceError.requestFailed(URLError(.badServerResponse))
         }
         guard httpResponse.statusCode == 200 else {
+            // The backend writes `detail` in French, for this screen. Showing it
+            // as written is the whole point of that contract.
             let backendError = try? JSONDecoder().decode(BackendError.self, from: data)
             let message = backendError?.detail?.first?.msg
                 ?? backendError?.detailMessage
-                ?? "Erreur serveur"
+                ?? "Le service est momentanément indisponible. Réessayez dans quelques instants."
             throw IAService.IAServiceError.requestFailed(
                 NSError(
-                    domain: "LegitimaInterviewPreparation",
+                    domain: "LegitimaInterviewQuestions",
                     code: httpResponse.statusCode,
                     userInfo: [NSLocalizedDescriptionKey: message]
                 )

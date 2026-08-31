@@ -62,26 +62,20 @@ BUILD_DESTINATION='platform=iOS Simulator,name=iPhone 16' ./scripts/check-build.
 ## Tests
 
 There is no XCTest target. The logic worth testing is Foundation-only — local
-persistence, the reminder schedule, the loading estimate, routing — so it is
-covered by two standalone executables compiled directly:
+persistence, the reminder schedule, the slot autofill — so it is covered by a
+standalone executable compiled directly:
 
 ```sh
 SRC=(legitima-frontend/Models/LocalPreparationStore.swift \
-     legitima-frontend/Models/AnalysisResponse.swift \
-     legitima-frontend/Models/InterviewPreparation.swift \
      legitima-frontend/Models/InterviewReminderPlan.swift \
-     legitima-frontend/Models/LoadingProgressEstimate.swift \
-     legitima-frontend/Models/PremiumEntryRouting.swift \
-     legitima-frontend/Models/PremiumKickoff.swift \
-     legitima-frontend/Models/InterviewDebrief.swift \
+     legitima-frontend/Models/QuestionBank.swift \
+     legitima-frontend/Models/CVExperienceRow.swift \
+     legitima-frontend/Models/SlotAutofill.swift \
      legitima-frontend/Models/PreparationExportContent.swift \
-     legitima-frontend/Services/IAService.swift \
-     legitima-frontend/Services/JSONBuilder.swift \
      legitima-frontend/Navigation/AppRouter.swift)
 
-rm -f /tmp/lst /tmp/ipt
+rm -f /tmp/lst
 swiftc -parse-as-library -o /tmp/lst Tests/LocalStateTests.swift "${SRC[@]}" && /tmp/lst
-swiftc -parse-as-library -o /tmp/ipt Tests/InterviewPreparationStateTests.swift "${SRC[@]}" && /tmp/ipt
 ```
 
 **`rm -f` the target first.** If compilation fails and an older binary is still
