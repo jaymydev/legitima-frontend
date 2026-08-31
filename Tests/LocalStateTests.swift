@@ -8,7 +8,119 @@ struct LocalStateTests {
         testInterviewCountdown()
         testInterviewRemindersNeverFireLateOrIntoThePast()
         try testOrphanedStorageIsDeleted()
+        try testPersonalizationContractRoundTrip()
+        try testCVMaterialSurvivesRelaunch()
+        testPersonalizationPrefillOnlyRepeatsWhatWasTyped()
+        testExportCarriesThePersonalizedAnswers()
         print("Local state tests passed")
+    }
+
+    /// Le contrat V3 de personnalisation : les clés partent en snake_case et la
+    /// réponse se décode telle que le backend l'écrit. Une clé qui dérive ici se
+    /// paie en 422 silencieux côté route.
+    private static func testPersonalizationContractRoundTrip() throws {
+        let request = PreparedInterviewRequest(
+            useCaseID: "recruitment",
+            questionnaireVersion: "2.1",
+            answers: [InterviewAnswer(questionID: "job_offer", answer: "Annonce")],
+            experiences: [CVExperienceRow(title: "Dev", company: "Legitima", period: "2024")],
+            cvText: "texte brut"
+        )
+        let encoded = String(decoding: try JSONEncoder().encode(request), as: UTF8.self)
+        for key in ["use_case_id", "questionnaire_version", "question_id", "cv_text",
+                    "\"title\"", "\"company\"", "\"period\""] {
+            precondition(encoded.contains(key), "clé manquante dans la requête : \(key)")
+        }
+
+        let responseJSON = Data(
+            """
+            {"use_case_id":"recruitment","title":"Votre entretien",
+             "questions":[{"question":"Pourquoi nous ?","intent":"Votre motivation",
+                           "answer":"Je vise ce poste.","kind":"sentence"},
+                          {"question":"Vos outils ?","intent":"Le concret",
+                           "answer":"Citez un outil que vous utilisez.","kind":"guidance"}],
+             "action_plan":["Relire l'annonce"]}
+            """.utf8
+        )
+        let prepared = try JSONDecoder().decode(PreparedInterview.self, from: responseJSON)
+        precondition(prepared.questions.count == 2)
+        precondition(prepared.questions[0].isSentence)
+        precondition(!prepared.questions[1].isSentence,
+                     "une consigne prise pour une phrase ferait réciter un devoir")
+        precondition(prepared.actionPlan == ["Relire l'annonce"])
+    }
+
+    /// La matière du CV se garde d'une ouverture à l'autre : la personnalisation
+    /// peut être demandée un autre jour que l'import.
+    private static func testCVMaterialSurvivesRelaunch() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = ProtectedJSONStore<CVMaterial>(
+            fileURL: directory.appendingPathComponent("cv-material.json")
+        )
+
+        precondition(CVMaterial().isEmpty)
+        let material = CVMaterial(
+            rawText: "Développeur — Legitima\n- refonte du site, équipe de 8",
+            experiences: [CVExperienceRow(title: "Développeur", company: "Legitima", period: "2024")]
+        )
+        store.save(material)
+        precondition(store.load() == material)
+    }
+
+    private static func testPersonalizationPrefillOnlyRepeatsWhatWasTyped() {
+        let slots = [
+            "RÉALISATION": "la refonte du site",
+            "RÉSULTAT": "livré dans les délais",
+            "MISSION_DE_L_OFFRE": "piloter le planning",
+        ]
+
+        let draft = PersonalizationPrefill.draft(questionID: "achievement", slots: slots)
+        precondition(draft == "la refonte du site. livré dans les délais")
+        // La mission vient de l'annonce, pas de la personne : la préremplir dans
+        // « racontez une réalisation » lui ferait affirmer ce qu'elle n'a pas dit.
+        precondition(!draft.contains("piloter le planning"))
+
+        // Un identifiant hors des questions ouvertes ne se préremplit jamais.
+        precondition(PersonalizationPrefill.draft(questionID: "job_offer", slots: slots).isEmpty)
+        precondition(PersonalizationPrefill.draft(questionID: "achievement", slots: [:]).isEmpty)
+    }
+
+    private static func testExportCarriesThePersonalizedAnswers() {
+        let page = BankPage(
+            useCaseID: "recruitment",
+            questions: [BankQuestion(id: "q1", question: "Parlez-moi de vous", answer: "Je suis <MÉTIER>.")]
+        )
+        let personalized = PreparedInterview(
+            useCaseID: "recruitment",
+            title: "Votre entretien",
+            questions: [
+                PreparedQuestion(question: "Pourquoi nous ?", intent: "", answer: "Je vise ce poste.", kind: "sentence"),
+                PreparedQuestion(question: "Vos outils ?", intent: "", answer: "Citez un outil.", kind: "guidance"),
+            ],
+            actionPlan: ["Relire l'annonce", "Préparer une question"]
+        )
+
+        let content = PreparationExportContent(
+            page: page,
+            filled: ["MÉTIER": "développeur"],
+            personalized: personalized
+        )
+
+        // La numérotation continue celle de la banque : un seul document.
+        precondition(content.blocks.count == 4)
+        precondition(content.blocks[0].paragraphs[0] == "Je suis développeur.")
+        precondition(content.blocks[1].title == "2. Pourquoi nous ?")
+        precondition(content.blocks[1].paragraphs == ["Je vise ce poste."])
+        // Une consigne est marquée comme telle : imprimée nue, elle se lirait
+        // comme une phrase à dire.
+        precondition(content.blocks[2].paragraphs[0].hasPrefix("Comment répondre : "))
+        precondition(content.blocks[3].title == "Avant d'entrer")
+        precondition(content.blocks[3].numbered)
+
+        // Sans personnalisation, le document est celui d'avant.
+        precondition(PreparationExportContent(page: page, filled: [:]).blocks.count == 1)
     }
 
     /// The orphaned file held a copy of the analysis — the user's career

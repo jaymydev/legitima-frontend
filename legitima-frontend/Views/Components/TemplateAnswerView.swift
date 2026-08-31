@@ -180,6 +180,11 @@ struct SlotEditorSheet: View {
                     }
                     draft = slots.value(for: slot) ?? draft
                 },
+                // La matière reste sur l'appareil : elle ne repartira vers le
+                // serveur que si la personnalisation est demandée.
+                onUseMaterial: { material in
+                    ProtectedJSONStore<CVMaterial>.cvMaterial.save(material)
+                },
                 introText: "Nous en tirerons vos postes, vos entreprises et votre ancienneté. Vous pourrez tout corriger.",
                 applyButtonTitle: "Remplir mes réponses"
             )

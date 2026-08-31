@@ -24,6 +24,30 @@ final class InterviewQuestionsService {
         return try await request(path: "/v3/interview/bank?\(query)", method: "GET")
     }
 
+    /// Le catalogue, pour connaître les questions et la version du
+    /// questionnaire d'un type. Récupéré plutôt que codé en dur : c'est ce qui
+    /// permet au backend de changer ses questions sans nouvelle version d'app.
+    func fetchUseCase(id: String) async throws -> InterviewUseCase? {
+        let catalog: InterviewUseCaseCatalog = try await request(
+            path: "/v3/interview/use-cases",
+            method: "GET"
+        )
+        return catalog.useCases.first { $0.id == id }
+    }
+
+    /// La personnalisation : deux appels modèle côté serveur — la génération,
+    /// puis la passe qui vérifie que rien n'est affirmé sans source. D'où le
+    /// délai long : couper à 60 s abandonnerait des générations qui allaient
+    /// aboutir, et ce qui a été envoyé aurait coûté ses tokens pour rien.
+    func personalize(_ payload: PreparedInterviewRequest) async throws -> PreparedInterview {
+        try await request(
+            path: "/v3/interview/questions",
+            method: "POST",
+            body: try JSONEncoder().encode(payload),
+            timeout: 180
+        )
+    }
+
     private func request<Response: Decodable>(
         path: String,
         method: String,

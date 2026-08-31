@@ -18,9 +18,9 @@ struct PreparationExportContent {
     let title: String
     let blocks: [Block]
 
-    init(page: BankPage, filled: [String: String]) {
+    init(page: BankPage, filled: [String: String], personalized: PreparedInterview? = nil) {
         title = "Vos questions d'entretien"
-        blocks = page.questions.enumerated().map { index, question in
+        var assembled = page.questions.enumerated().map { index, question in
             var paragraphs = [TemplateFilling.plainText(question.answer, filled: filled)]
             if !question.followUp.isEmpty {
                 paragraphs.append(question.followUp)
@@ -34,6 +34,28 @@ struct PreparationExportContent {
                 numbered: false
             )
         }
+
+        // La numérotation continue celle de la banque : dans la salle
+        // d'attente, c'est un seul document qu'on relit, pas deux.
+        if let personalized {
+            assembled += personalized.questions.enumerated().map { index, question in
+                Block(
+                    title: "\(page.questions.count + index + 1). \(question.question)",
+                    paragraphs: [
+                        question.isSentence ? question.answer : "Comment répondre : " + question.answer
+                    ],
+                    numbered: false
+                )
+            }
+            if !personalized.actionPlan.isEmpty {
+                assembled.append(Block(
+                    title: "Avant d'entrer",
+                    paragraphs: personalized.actionPlan,
+                    numbered: true
+                ))
+            }
+        }
+        blocks = assembled
     }
 }
 

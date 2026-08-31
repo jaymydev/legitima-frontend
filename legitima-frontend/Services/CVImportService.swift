@@ -6,6 +6,9 @@ import UIKit
 struct CVImportResult {
     var experiences: [CVExperienceRow] = []
     let steps: [String]
+    /// Le texte extrait avant sa réduction en lignes — la matière de la
+    /// personnalisation. Vide face à un backend qui ne le renvoie pas encore.
+    var rawText: String = ""
 
     var summary: String {
         steps.map { "• \($0)" }.joined(separator: "\n")
@@ -14,6 +17,18 @@ struct CVImportResult {
 
 private struct CVParseResponse: Decodable {
     let experiences: [CVExperienceRow]
+    let rawText: String
+
+    private enum CodingKeys: String, CodingKey {
+        case experiences
+        case rawText = "raw_text"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        experiences = try container.decode([CVExperienceRow].self, forKey: .experiences)
+        rawText = try container.decodeIfPresent(String.self, forKey: .rawText) ?? ""
+    }
 }
 
 
@@ -166,7 +181,11 @@ final class CVImportService {
             throw CVImportServiceError.noTextDetected
         }
 
-        return CVImportResult(experiences: decodedResponse.experiences, steps: uniqueSteps)
+        return CVImportResult(
+            experiences: decodedResponse.experiences,
+            steps: uniqueSteps,
+            rawText: decodedResponse.rawText
+        )
     }
 
     private func imageUploadPayload(from image: UIImage, originalData: Data?) throws -> (data: Data, fileName: String, mimeType: CVUploadMimeType) {
