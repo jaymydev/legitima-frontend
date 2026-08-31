@@ -65,6 +65,33 @@ struct BankPage: Codable, Equatable {
     }
 }
 
+/// Une verticale métier du catalogue, avec son libellé d'affichage.
+///
+/// Servie par le backend plutôt que codée ici : une verticale ajoutée à la
+/// banque apparaît dans l'app sans nouvelle version.
+struct MetierChoice: Codable, Equatable, Identifiable {
+    let id: String
+    let label: String
+}
+
+struct MetierCatalog: Codable, Equatable {
+    let catalog: [MetierChoice]
+
+    init(catalog: [MetierChoice]) {
+        self.catalog = catalog
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // Absente d'un backend antérieur : pas de choix vaut mieux qu'une erreur.
+        catalog = try container.decodeIfPresent([MetierChoice].self, forKey: .catalog) ?? []
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case catalog
+    }
+}
+
 // Ici et pas dans un fichier de vue : l'export PDF s'en sert aussi, et les
 // tests compilent les modèles sans les vues.
 extension String {

@@ -12,7 +12,8 @@ final class InterviewQuestionsService {
     func fetchBank(
         useCaseID: String,
         seen: [String] = [],
-        metier: String? = nil
+        metier: String? = nil,
+        encadrement: Bool = false
     ) async throws -> BankPage {
         var query = "use_case_id=\(useCaseID)"
         if !seen.isEmpty {
@@ -21,7 +22,18 @@ final class InterviewQuestionsService {
         if let metier, !metier.isEmpty {
             query += "&metier=\(metier)"
         }
+        if encadrement {
+            query += "&encadrement=true"
+        }
         return try await request(path: "/v3/interview/bank?\(query)", method: "GET")
+    }
+
+    /// Les verticales métier disponibles, avec leurs libellés. Récupérées
+    /// plutôt que codées : une verticale ajoutée à la banque apparaît dans
+    /// l'app sans nouvelle version.
+    func fetchMetiers() async throws -> [MetierChoice] {
+        let catalog: MetierCatalog = try await request(path: "/v3/interview/metiers", method: "GET")
+        return catalog.catalog
     }
 
     /// Le catalogue, pour connaître les questions et la version du
