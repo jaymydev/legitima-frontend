@@ -429,6 +429,32 @@ struct LocalStateTests {
         let legacy = try JSONDecoder().decode(PreparationSnapshot.self, from: legacyJSON)
         precondition(legacy.interviewDate == nil)
         precondition(legacy.intendedUseCaseID == nil)
+        // Les champs arrivés après coup se décodent absents sans rien casser.
+        precondition(legacy.metierID == nil)
+        precondition(!legacy.encadrement)
+
+        // Le métier et l'encadrement se gardent d'une fois sur l'autre : son
+        // métier ne change pas entre deux préparations.
+        store.updateMetier("cybersecurite")
+        store.updateEncadrement(true)
+        let withMetier = LocalPreparationStore(storage: storage)
+        precondition(withMetier.snapshot.metierID == "cybersecurite")
+        precondition(withMetier.snapshot.encadrement)
+        store.updateMetier(nil)
+        precondition(LocalPreparationStore(storage: storage).snapshot.metierID == nil)
+
+        // Le catalogue des métiers d'un backend antérieur — sans libellés —
+        // se décode en liste vide plutôt qu'en erreur.
+        let emptyCatalog = try JSONDecoder().decode(
+            MetierCatalog.self,
+            from: Data(#"{"metiers":["commerce"]}"#.utf8)
+        )
+        precondition(emptyCatalog.catalog.isEmpty)
+        let catalog = try JSONDecoder().decode(
+            MetierCatalog.self,
+            from: Data(#"{"metiers":["data"],"catalog":[{"id":"data","label":"Data"}]}"#.utf8)
+        )
+        precondition(catalog.catalog == [MetierChoice(id: "data", label: "Data")])
 
         try? FileManager.default.removeItem(at: directory)
     }

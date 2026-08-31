@@ -42,9 +42,11 @@ struct legitima_frontendApp: App {
     @ViewBuilder
     private var rootView: some View {
         InterviewTypeEntryScreen(
-            onContinue: { type, date in
+            onContinue: { type, date, metierID, encadrement in
                 preparationStore.updateIntendedUseCase(type.rawValue)
                 preparationStore.updateInterviewDate(date)
+                preparationStore.updateMetier(metierID)
+                preparationStore.updateEncadrement(encadrement)
                 // Le rappel était programmé depuis l'écran de saisie du parcours.
                 // Il l'est maintenant d'ici, sinon la date ne servirait à rien.
                 Task { await reminderScheduler.sync(interviewDate: date) }

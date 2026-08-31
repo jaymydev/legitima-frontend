@@ -9,6 +9,7 @@ struct BankPreparationScreen: View {
     let useCaseID: String
 
     @EnvironmentObject private var slots: SlotStore
+    @EnvironmentObject private var preparationStore: LocalPreparationStore
     @State private var stage: Stage = .loading
     @State private var personalized: PreparedInterview?
     @State private var isPersonalizing = false
@@ -410,7 +411,12 @@ struct BankPreparationScreen: View {
             // Ce qui a déjà été servi est exclu, pour qu'une seconde préparation
             // ne redonne pas la même page.
             let seen = seenStore.load() ?? []
-            let page = try await service.fetchBank(useCaseID: useCaseID, seen: seen)
+            let page = try await service.fetchBank(
+                useCaseID: useCaseID,
+                seen: seen,
+                metier: preparationStore.snapshot.metierID,
+                encadrement: preparationStore.snapshot.encadrement
+            )
             seenStore.save(Array((seen + page.questions.map(\.id)).suffix(120)))
             personalized = personalizedStore.load()?[useCaseID]
             comfortable = Set(comfortStore.load() ?? [])

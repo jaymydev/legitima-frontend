@@ -10,7 +10,42 @@ import Foundation
 struct PreparationSnapshot: Codable, Equatable {
     var intendedUseCaseID: String?
     var interviewDate: Date?
+    /// La verticale métier choisie, gardée d'une fois sur l'autre : son métier
+    /// ne change pas entre deux préparations.
+    var metierID: String?
+    /// « J'encadre une équipe » : débloque les questions qui ne valent que
+    /// pour l'encadrement. Ça non plus ne change pas d'une fois sur l'autre.
+    var encadrement: Bool = false
     var updatedAt: Date = .now
+
+    init(
+        intendedUseCaseID: String? = nil,
+        interviewDate: Date? = nil,
+        metierID: String? = nil,
+        encadrement: Bool = false,
+        updatedAt: Date = .now
+    ) {
+        self.intendedUseCaseID = intendedUseCaseID
+        self.interviewDate = interviewDate
+        self.metierID = metierID
+        self.encadrement = encadrement
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        // Tout est optionnel au décodage : un fichier écrit par une version
+        // antérieure ne doit jamais coûter la date d'entretien qui, elle, survit.
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        intendedUseCaseID = try container.decodeIfPresent(String.self, forKey: .intendedUseCaseID)
+        interviewDate = try container.decodeIfPresent(Date.self, forKey: .interviewDate)
+        metierID = try container.decodeIfPresent(String.self, forKey: .metierID)
+        encadrement = try container.decodeIfPresent(Bool.self, forKey: .encadrement) ?? false
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? .now
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case intendedUseCaseID, interviewDate, metierID, encadrement, updatedAt
+    }
 }
 
 enum InterviewCountdown {
@@ -63,6 +98,16 @@ final class LocalPreparationStore: ObservableObject {
 
     func updateIntendedUseCase(_ useCaseID: String?) {
         snapshot.intendedUseCaseID = useCaseID
+        persist()
+    }
+
+    func updateMetier(_ metierID: String?) {
+        snapshot.metierID = metierID
+        persist()
+    }
+
+    func updateEncadrement(_ encadrement: Bool) {
+        snapshot.encadrement = encadrement
         persist()
     }
 
