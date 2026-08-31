@@ -1,13 +1,14 @@
 # Legitima — iOS client
 
-Legitima helps someone defend a non-linear career path in a job interview.
+Legitima prepares someone for the interview ahead of them.
 
-The product mechanism is **narrative → answers**, never generic advice. You
-describe your path in a few lines; the app returns a strategic reading of it,
-names the objection an interviewer is likely to raise, and builds the answer
-you can actually say out loud. A guided preparation then adapts that material
-to the specific conversation ahead — recruitment, internal mobility, annual
-review, and three more.
+The product mechanism is **a hand-written question bank, not generation**. You
+pick the interview type — the only required answer — and get the eight
+questions most likely to come up, each with a written answer whose blanks wait
+for your material: an achievement, a result, what draws you to the role. A
+blank fills once, then everywhere. Optional personalization adapts the
+preparation to a specific job offer; that is the only path that calls a
+language model, and its output is verified against what the person wrote.
 
 SwiftUI, iOS 26.2+, French only. Free, with no account and no in-app purchase.
 
@@ -17,26 +18,25 @@ The backend lives in a separate repository and is documented in
 ## How it fits together
 
 ```
-WelcomeScreen ──▶ LeanOnboardingScreen ──▶ LeanResultScreen
-                   (career text, CV import)   (the full analysis)
-                                                    │
-                                    PremiumKickoffScreen ── shown once
-                                    (first defensible answer)
-                                                    │
-                                    PremiumInterviewEntryScreen
-                                    (questionnaire → guided preparation)
+InterviewTypeEntryScreen ──▶ BankPreparationScreen ──▶ PDF export
+(type, date, métier,          (8 questions, blanks,
+ "j'encadre une équipe")       comfort marks, action plan)
+                                       │
+                              PersonalizationSheet — optional
+                              (job offer, achievement, CV →
+                               questions specific to the role)
 ```
 
 Everything the user writes and everything the backend returns is stored on the
 device, in Application Support, as JSON written with
 `completeFileProtectionUntilFirstUserAuthentication`. There is no account, no
-sync and no server-side storage of user work. Closing the app mid-questionnaire
-and coming back a week later resumes where it stopped, including the step.
+sync and no server-side storage of user work. Closing the app mid-preparation
+and coming back a week later resumes where it stopped, marks included.
 
 | Layer | Where |
 | --- | --- |
 | Screens | `legitima-frontend/Views/` |
-| View models | `legitima-frontend/ViewModels/` |
+| Navigation | `legitima-frontend/Navigation/` |
 | Models and local stores | `legitima-frontend/Models/` |
 | Backend calls | `legitima-frontend/Services/` |
 | Design tokens, colours, motion | `legitima-frontend/Theme/` |
@@ -88,12 +88,13 @@ built.
 
 One deployed service: `https://legitima-backend-ocr.onrender.com`.
 
-The client calls four routes, all documented in
+The client calls five routes, all documented in
 [docs/api-contract.md](docs/api-contract.md):
 
 | Route | Used for |
 | --- | --- |
 | `GET /v3/interview/bank` | the hand-written question bank — no model call |
+| `GET /v3/interview/metiers` | the job-vertical catalog behind the entry-screen chips |
 | `GET /v3/interview/use-cases` | the personalization questionnaire catalog |
 | `POST /v3/interview/questions` | personalized answers, verified against what the person wrote |
 | `POST /cv/parse` | experience rows and raw text from a CV, PDF or photo |
@@ -131,7 +132,7 @@ honest users is worse than no limit. The real one is per IP on the backend.
 
 **The loading indicator is calibrated against measurements, not guesses.** It
 was tuned when the backend slept between requests and paid a 32-second cold
-start. On a warm service `/analyze` answers in 8–9 s, so the old settings made
+start. On a warm service a generation answers in 8–9 s, so the old settings made
 every normal wait look stalled and announced "this is taking longer than usual"
 at 12 seconds — before a normal request had even finished. See
 `LoadingProgressEstimate`.
@@ -144,18 +145,18 @@ disagree.
 
 ## Sensitive data
 
-CV content, career history, sensitive periods, interview answers and generated
-analysis are all sensitive. The app never logs them — there is no `print`,
-`NSLog` or `debugPrint` anywhere in the target — and never stores more than it
-needs.
+CV content, career history, filled-in answers and personalized results are all
+sensitive. The app never logs them — there is no `print`, `NSLog` or
+`debugPrint` anywhere in the target — and never stores more than it needs.
 
-The free-text field asking what a user needs to explain in an interview
-deliberately gives employment examples and not health ones. It is the only
-channel for a difficulty a timeline cannot show, so it stays; but inviting
-health data into it would be inviting a GDPR special category.
+The free-text fields deliberately give employment examples and not health
+ones. Inviting health data into them would be inviting a GDPR special
+category.
 
-What the user writes is sent to the backend and from there to OpenAI. The
-welcome screen says so before anything is typed.
+The main path sends nothing the user wrote: fetching the bank transmits only
+the interview type, the métier and the encadrement flag. What the user typed
+leaves the device only when they ask for personalization — and the entry
+screen says so before anything is typed.
 
 ## Conventions
 

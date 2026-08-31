@@ -1,27 +1,39 @@
 # Legitima
 
-**Défendez un parcours atypique en entretien.**
+**Préparez l'entretien qui vous attend.**
 
-Vous avez une transition, une période sans emploi, une reconversion, un bench —
-quelque chose qui se voit dans votre chronologie et qu'il faudra expliquer.
-Legitima vous aide à le raconter, avec vos mots, sans vous excuser.
+Recrutement, mobilité interne, évolution de poste, entretien annuel, de
+mi-année ou de performance : un entretien approche, et c'est un moment
+stressant. Legitima vous y prépare — pas avec des conseils généraux, mais avec
+les questions qu'on va probablement vous poser et des réponses que vous pouvez
+dire à voix haute.
 
 ## Comment ça marche
 
-Vous décrivez votre parcours en quelques lignes. L'application vous renvoie :
+Vous indiquez le type d'entretien — c'est la seule réponse obligatoire.
+L'application vous présente :
 
-- **une lecture stratégique** de votre trajectoire — la logique que vous ne
-  voyez plus parce que vous êtes dedans ;
-- **l'objection probable** de votre interlocuteur, formulée telle qu'elle
-  risque d'être posée ;
-- **la réponse défendable** qui va avec, que vous pouvez dire à voix haute.
+- **huit questions probables**, tirées d'une banque écrite à la main, de la
+  plus probable à la moins ;
+- **des réponses rédigées à compléter** : quelques blancs attendent vos
+  informations — une réalisation, un résultat, ce qui vous attire. Un blanc
+  se remplit une fois, puis partout ;
+- **trois gestes pour le moment d'entrer**, adaptés au type d'entretien.
 
-Puis une préparation guidée adapte cette matière à l'entretien qui vous attend :
-recrutement, mobilité interne, évolution de poste, entretien annuel, mi-année,
-entretien de performance.
+Ajoutez si vous voulez votre métier — dix domaines, du développement à la
+logistique — pour que trois questions de votre spécialité passent en tête. Si
+vous encadrez une équipe, les questions qui ne se posent qu'à qui encadre
+s'ajoutent. Et quand une question ne vous inquiète pas, marquez « Je suis à
+l'aise » : elle se replie et sort de votre document final.
 
-Ce n'est pas du conseil générique. Le mécanisme est **récit → réponses** :
-tout part de ce que vous avez écrit.
+Si vous le souhaitez, allez plus loin : collez l'offre d'emploi, racontez une
+réalisation, joignez votre CV. Legitima prépare alors des questions propres à
+ce poste, avec un plan d'action. Rien n'est affirmé sur vous qui ne vienne de
+ce que vous avez écrit.
+
+Au bout : un **PDF clair et en couleurs** — ce qui est à dire, ce qui est à
+éviter, les relances probables, vos points déjà acquis — et un rappel local si
+vous avez renseigné la date.
 
 ## Ce que l'application ne fait pas
 
@@ -29,22 +41,24 @@ tout part de ce que vous avez écrit.
 - Elle ne cache pas une période difficile — elle vous aide à en parler.
 - Elle ne promet ni entretien, ni embauche.
 
-L'analyse est produite par un modèle de langage, qui peut se tromper. Vous
+Les questions du parcours principal sont écrites à la main, pas générées. Seule
+la personnalisation facultative passe par un modèle de langage, qui peut se
+tromper : ses réponses sont vérifiées contre ce que vous avez écrit, et vous
 restez seul juge de ce que vous direz.
 
 ## Confidentialité
 
 Pas de compte. Pas de publicité. Pas de traceur. Aucune bibliothèque tierce.
 
-Votre préparation reste sur votre téléphone. Ce que vous écrivez est transmis à
-notre serveur puis à OpenAI, le temps de produire l'analyse, et n'est conservé
-nulle part ensuite.
+Votre préparation reste sur votre téléphone. Ce que vous écrivez n'est transmis
+à notre serveur, puis à OpenAI, que si vous demandez la personnalisation — le
+temps de préparer vos réponses, sans être conservé nulle part ensuite.
 
 → [Politique de confidentialité](privacy-policy.md)
 
 ## Support
 
-Une question, un problème, une remarque sur une analyse qui vous semble à côté :
+Une question, un problème, une réponse proposée qui vous semble à côté :
 
 **contact@milehanajoseph.com**
 
