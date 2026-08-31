@@ -38,7 +38,14 @@ enum LegitimaColors {
 
     static let surface = Color(light: .rgb(255, 255, 255, alpha: 0.92), dark: .rgb(36, 43, 44))
     static let surfaceStrong = Color(light: .white, dark: .rgb(41, 48, 49))
-    static let field = Color(light: .white, dark: .rgb(46, 54, 55))
+    // Un champ blanc posé sur une carte blanche disparaissait en mode jour :
+    // le ton gris-sarcelle le fait lire comme une zone de saisie en creux.
+    static let field = Color(light: .rgb(240, 244, 243), dark: .rgb(46, 54, 55))
+    /// Border of input fields — stronger than `hairline`, which vanishes on white.
+    static let fieldBorder = Color(
+        light: UIColor.black.withAlphaComponent(0.12),
+        dark: UIColor.white.withAlphaComponent(0.09)
+    )
     static let chip = Color(light: .rgb(226, 244, 240), dark: .rgb(33, 47, 44))
     static let hairline = Color(
         light: UIColor.black.withAlphaComponent(0.06),
