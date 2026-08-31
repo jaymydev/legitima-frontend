@@ -13,6 +13,7 @@ struct LocalStateTests {
         try testCVMaterialSurvivesRelaunch()
         testPersonalizationPrefillOnlyRepeatsWhatWasTyped()
         testExportCarriesThePersonalizedAnswers()
+        testComfortMarksLeaveTheReport()
         print("Local state tests passed")
     }
 
@@ -156,6 +157,65 @@ struct LocalStateTests {
 
         // Sans personnalisation, le document est celui d'avant.
         precondition(PreparationExportContent(page: page, filled: [:]).blocks.count == 1)
+    }
+
+    /// Le filtre de confort : ce sur quoi la personne se sait à l'aise sort du
+    /// rapport final — c'est lui qu'on relit en cinq minutes dans le couloir.
+    private static func testComfortMarksLeaveTheReport() {
+        let page = BankPage(
+            useCaseID: "recruitment",
+            questions: [
+                BankQuestion(id: "q1", question: "Parlez-moi de vous", answer: "Je suis <MÉTIER>."),
+                BankQuestion(id: "q2", question: "Vos prétentions ?", answer: "Entre <PRÉTENTION_BASSE> et <PRÉTENTION_HAUTE>."),
+            ]
+        )
+        let personalized = PreparedInterview(
+            useCaseID: "recruitment",
+            title: "Votre entretien",
+            questions: [
+                PreparedQuestion(question: "Pourquoi nous ?", intent: "", answer: "Je vise ce poste.", kind: "sentence"),
+                PreparedQuestion(question: "Vos outils ?", intent: "", answer: "Citez un outil.", kind: "guidance"),
+            ],
+            actionPlan: ["Relire l'annonce"]
+        )
+
+        // La banque se filtre par identifiant, le personnalisé par son texte —
+        // il n'a pas d'identifiant, et « Refaire » le remplace.
+        let content = PreparationExportContent(
+            page: page,
+            filled: [:],
+            personalized: personalized,
+            comfortable: ["q1", "Pourquoi nous ?"]
+        )
+
+        precondition(content.blocks.count == 3)
+        // La numérotation se resserre : un document qui saute du 2 au 5 se lit
+        // comme un document auquel il manque des pages.
+        precondition(content.blocks[0].title == "1. Vos prétentions ?")
+        precondition(content.blocks[1].title == "2. Vos outils ?")
+        // Le plan d'action reste : être à l'aise sur une question ne dispense
+        // pas des gestes d'avant d'entrer.
+        precondition(content.blocks[2].title == "Avant d'entrer")
+
+        // Une marque qui ne correspond plus à rien — question remplacée par
+        // « Refaire », page de banque différente — ne retire rien.
+        let stale = PreparationExportContent(
+            page: page,
+            filled: [:],
+            personalized: personalized,
+            comfortable: ["q99", "Une question disparue ?"]
+        )
+        precondition(stale.blocks.count == 5)
+
+        // Tout marquer vide le rapport des questions ; c'est le choix de la
+        // personne, pas une erreur à rattraper dans son dos.
+        let all = PreparationExportContent(
+            page: page,
+            filled: [:],
+            personalized: personalized,
+            comfortable: ["q1", "q2", "Pourquoi nous ?", "Vos outils ?"]
+        )
+        precondition(all.blocks.map(\.title) == ["Avant d'entrer"])
     }
 
     /// The orphaned file held a copy of the analysis — the user's career
