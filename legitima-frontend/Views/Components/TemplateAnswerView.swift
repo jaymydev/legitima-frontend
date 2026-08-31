@@ -113,7 +113,7 @@ struct SlotEditorSheet: View {
                 .textInputAutocapitalization(.never)
                 .overlay(
                     RoundedRectangle(cornerRadius: LegitimaRadius.control)
-                        .stroke(LegitimaColors.hairline, lineWidth: 1)
+                        .stroke(LegitimaColors.fieldBorder, lineWidth: 1)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
@@ -227,7 +227,7 @@ struct OfferMissionPicker: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: LegitimaRadius.control)
-                            .stroke(LegitimaColors.hairline, lineWidth: 1)
+                            .stroke(LegitimaColors.fieldBorder, lineWidth: 1)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
 
