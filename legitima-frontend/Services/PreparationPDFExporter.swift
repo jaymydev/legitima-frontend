@@ -47,18 +47,47 @@ enum PreparationPDFExporter {
         return data as Data
     }
 
-    private static func attributedDocument(for content: PreparationExportContent) -> NSAttributedString {
-        let ink = UIColor(red: 47 / 255, green: 49 / 255, blue: 49 / 255, alpha: 1)
-        let accent = UIColor(red: 43 / 255, green: 111 / 255, blue: 113 / 255, alpha: 1)
-        let body = UIColor(red: 62 / 255, green: 67 / 255, blue: 67 / 255, alpha: 1)
+    /// La palette d'impression. Fixe et claire : un PDF se lit sur papier ou
+    /// sur fond blanc, jamais en mode sombre.
+    ///
+    /// Le code couleur vient du retour testeur : rouge les points sensibles,
+    /// bleu ce qui porte la légitimité — les phrases qu'on peut dire — vert ce
+    /// qui est acquis. Le vert était resté vide chez le testeur ; il a
+    /// désormais sa donnée, les questions marquées « à l'aise ».
+    private enum Palette {
+        static let ink = UIColor(red: 47 / 255, green: 49 / 255, blue: 49 / 255, alpha: 1)
+        static let accent = UIColor(red: 43 / 255, green: 111 / 255, blue: 113 / 255, alpha: 1)
+        static let body = UIColor(red: 62 / 255, green: 67 / 255, blue: 67 / 255, alpha: 1)
+        static let muted = UIColor(red: 118 / 255, green: 124 / 255, blue: 124 / 255, alpha: 1)
+        static let blue = UIColor(red: 42 / 255, green: 89 / 255, blue: 140 / 255, alpha: 1)
+        static let red = UIColor(red: 169 / 255, green: 67 / 255, blue: 46 / 255, alpha: 1)
+        static let green = UIColor(red: 62 / 255, green: 122 / 255, blue: 80 / 255, alpha: 1)
+    }
 
+    /// Ce qu'un ton devient à l'impression : une étiquette colorée qui annonce
+    /// la nature du paragraphe avant sa lecture — comme à l'écran, où « À
+    /// dire » et « Comment répondre » se lisent avant la réponse.
+    private static func rendering(
+        for tone: PreparationExportContent.Tone
+    ) -> (label: String?, color: UIColor, text: UIColor) {
+        switch tone {
+        case .say: return ("À DIRE", Palette.blue, Palette.ink)
+        case .guidance: return ("COMMENT RÉPONDRE", Palette.accent, Palette.body)
+        case .followUp: return ("RELANCE PROBABLE", Palette.muted, Palette.muted)
+        case .avoid: return ("À ÉVITER", Palette.red, Palette.red)
+        case .acquired: return (nil, Palette.green, Palette.green)
+        case .plain: return (nil, Palette.accent, Palette.body)
+        }
+    }
+
+    private static func attributedDocument(for content: PreparationExportContent) -> NSAttributedString {
         let document = NSMutableAttributedString()
 
         document.append(NSAttributedString(
             string: "LEGITIMA — SYNTHÈSE DE PRÉPARATION\n",
             attributes: [
                 .font: UIFont.systemFont(ofSize: 10, weight: .bold),
-                .foregroundColor: accent,
+                .foregroundColor: Palette.accent,
                 .kern: 1.2,
             ]
         ))
@@ -67,7 +96,7 @@ enum PreparationPDFExporter {
             string: content.title + "\n",
             attributes: [
                 .font: UIFont.systemFont(ofSize: 22, weight: .bold),
-                .foregroundColor: ink,
+                .foregroundColor: Palette.ink,
                 .paragraphStyle: paragraphStyle(spacingBefore: 4, spacingAfter: 14),
             ]
         ))
@@ -77,19 +106,72 @@ enum PreparationPDFExporter {
                 string: block.title + "\n",
                 attributes: [
                     .font: UIFont.systemFont(ofSize: 14, weight: .semibold),
-                    .foregroundColor: accent,
-                    .paragraphStyle: paragraphStyle(spacingBefore: 12, spacingAfter: 5),
+                    .foregroundColor: block.titleTone == .acquired ? Palette.green : Palette.ink,
+                    .paragraphStyle: paragraphStyle(spacingBefore: 14, spacingAfter: 5),
                 ]
             ))
 
             for (index, paragraph) in block.paragraphs.enumerated() {
-                let text = block.numbered ? "\(index + 1). \(paragraph)\n" : paragraph + "\n"
+                let style = rendering(for: paragraph.tone)
+
+                if let label = style.label {
+                    // L'étiquette en chip : le fond teinté vient de l'attribut
+                    // de fond du run, les espaces font le rembourrage.
+                    document.append(NSAttributedString(
+                        string: "  \(label)  \n",
+                        attributes: [
+                            .font: UIFont.systemFont(ofSize: 8, weight: .bold),
+                            .foregroundColor: style.color,
+                            .backgroundColor: style.color.withAlphaComponent(0.12),
+                            .kern: 1.0,
+                            .paragraphStyle: paragraphStyle(spacingBefore: 4, spacingAfter: 3),
+                        ]
+                    ))
+                }
+
+                let prefix = block.numbered ? "\(index + 1). " : (paragraph.tone == .acquired ? "✓ " : "")
+                let bodyStyle = paragraphStyle(spacingBefore: 0, spacingAfter: 6, lineSpacing: 3)
+                if !prefix.isEmpty {
+                    document.append(NSAttributedString(
+                        string: prefix,
+                        attributes: [
+                            .font: UIFont.systemFont(ofSize: 12),
+                            .foregroundColor: style.text,
+                            .paragraphStyle: bodyStyle,
+                        ]
+                    ))
+                }
+
+                for segment in paragraph.segments {
+                    // La même convention qu'à l'écran : un blanc rempli se lit
+                    // comme le reste, en gras ; un blanc vide se voit comme un
+                    // trou — souligné et coloré — c'est à la personne de le
+                    // compléter, à l'oral s'il le faut. Fondu dans la phrase,
+                    // il se lirait comme du texte à dire tel quel.
+                    var attributes: [NSAttributedString.Key: Any] = [
+                        .font: UIFont.systemFont(ofSize: 12),
+                        .foregroundColor: style.text,
+                        .paragraphStyle: bodyStyle,
+                    ]
+                    switch segment.kind {
+                    case .literal:
+                        break
+                    case .filled:
+                        attributes[.font] = UIFont.systemFont(ofSize: 12, weight: .semibold)
+                    case .empty:
+                        attributes[.foregroundColor] = Palette.accent
+                        attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
+                        attributes[.underlineColor] = Palette.accent
+                    }
+                    document.append(NSAttributedString(string: segment.text, attributes: attributes))
+                }
+
                 document.append(NSAttributedString(
-                    string: text,
+                    string: "\n",
                     attributes: [
                         .font: UIFont.systemFont(ofSize: 12),
-                        .foregroundColor: body,
-                        .paragraphStyle: paragraphStyle(spacingBefore: 0, spacingAfter: 6, lineSpacing: 3),
+                        .foregroundColor: style.text,
+                        .paragraphStyle: bodyStyle,
                     ]
                 ))
             }

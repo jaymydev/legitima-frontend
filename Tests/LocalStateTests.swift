@@ -146,12 +146,15 @@ struct LocalStateTests {
 
         // La numérotation continue celle de la banque : un seul document.
         precondition(content.blocks.count == 4)
-        precondition(content.blocks[0].paragraphs[0] == "Je suis développeur.")
+        precondition(content.blocks[0].paragraphs[0].text == "Je suis développeur.")
+        // Le code couleur du rapport est une donnée du contenu : bleu ce qui
+        // se dit, jamais une consigne peinte en phrase.
+        precondition(content.blocks[0].paragraphs[0].tone == .say)
         precondition(content.blocks[1].title == "2. Pourquoi nous ?")
-        precondition(content.blocks[1].paragraphs == ["Je vise ce poste."])
+        precondition(content.blocks[1].paragraphs == [.init("Je vise ce poste.", tone: .say)])
         // Une consigne est marquée comme telle : imprimée nue, elle se lirait
         // comme une phrase à dire.
-        precondition(content.blocks[2].paragraphs[0].hasPrefix("Comment répondre : "))
+        precondition(content.blocks[2].paragraphs[0].tone == .guidance)
         precondition(content.blocks[3].title == "Avant d'entrer")
         precondition(content.blocks[3].numbered)
 
@@ -188,17 +191,26 @@ struct LocalStateTests {
             comfortable: ["q1", "Pourquoi nous ?"]
         )
 
-        precondition(content.blocks.count == 3)
+        precondition(content.blocks.count == 4)
         // La numérotation se resserre : un document qui saute du 2 au 5 se lit
         // comme un document auquel il manque des pages.
         precondition(content.blocks[0].title == "1. Vos prétentions ?")
         precondition(content.blocks[1].title == "2. Vos outils ?")
+        // Le vert du code couleur : ce qui est marqué à l'aise est cité — pas
+        // traité — dans un bloc « Déjà acquis ».
+        precondition(content.blocks[2].title == "Déjà acquis")
+        precondition(content.blocks[2].titleTone == .acquired)
+        precondition(content.blocks[2].paragraphs == [
+            .init("Parlez-moi de vous", tone: .acquired),
+            .init("Pourquoi nous ?", tone: .acquired),
+        ])
         // Le plan d'action reste : être à l'aise sur une question ne dispense
         // pas des gestes d'avant d'entrer.
-        precondition(content.blocks[2].title == "Avant d'entrer")
+        precondition(content.blocks[3].title == "Avant d'entrer")
 
         // Une marque qui ne correspond plus à rien — question remplacée par
-        // « Refaire », page de banque différente — ne retire rien.
+        // « Refaire », page de banque différente — ne retire rien, et ne
+        // s'invente pas non plus un acquis.
         let stale = PreparationExportContent(
             page: page,
             filled: [:],
@@ -206,6 +218,7 @@ struct LocalStateTests {
             comfortable: ["q99", "Une question disparue ?"]
         )
         precondition(stale.blocks.count == 5)
+        precondition(!stale.blocks.contains { $0.title == "Déjà acquis" })
 
         // Tout marquer vide le rapport des questions ; c'est le choix de la
         // personne, pas une erreur à rattraper dans son dos.
@@ -215,7 +228,37 @@ struct LocalStateTests {
             personalized: personalized,
             comfortable: ["q1", "q2", "Pourquoi nous ?", "Vos outils ?"]
         )
-        precondition(all.blocks.map(\.title) == ["Avant d'entrer"])
+        precondition(all.blocks.map(\.title) == ["Déjà acquis", "Avant d'entrer"])
+
+        // Le rouge et la relance : le point sensible porte son ton, et la
+        // relance part remplie — brute, elle imprimait « <PRÉTENTION_BASSE> »
+        // dans un document relu sans l'app sous la main.
+        let salary = BankPage(
+            useCaseID: "recruitment",
+            questions: [BankQuestion(
+                id: "q3",
+                question: "Vos prétentions ?",
+                answer: "Entre <PRÉTENTION_BASSE> et <PRÉTENTION_HAUTE>.",
+                followUp: "Et si on vous propose <PRÉTENTION_BASSE> ?",
+                avoid: "ne donnez jamais votre plancher."
+            )]
+        )
+        let colored = PreparationExportContent(page: salary, filled: ["PRÉTENTION_BASSE": "42 000 €"])
+        precondition(colored.blocks[0].paragraphs[1].text == "Et si on vous propose 42 000 € ?")
+        precondition(colored.blocks[0].paragraphs[1].tone == .followUp)
+        precondition(colored.blocks[0].paragraphs[2] == .init("Ne donnez jamais votre plancher.", tone: .avoid))
+
+        // Un trou reste un trou jusque dans le document : le blanc rempli est
+        // marqué rempli, le blanc vide est marqué vide — c'est ce qui permet
+        // au PDF de le peindre comme quelque chose à compléter à l'oral, et
+        // non comme du texte à dire tel quel.
+        precondition(colored.blocks[0].paragraphs[0].segments == [
+            .init(text: "Entre ", kind: .literal),
+            .init(text: "42 000 €", kind: .filled),
+            .init(text: " et ", kind: .literal),
+            .init(text: "le haut de votre fourchette", kind: .empty),
+            .init(text: ".", kind: .literal),
+        ])
     }
 
     /// The orphaned file held a copy of the analysis — the user's career
