@@ -72,6 +72,8 @@ SRC=(legitima-frontend/Models/LocalPreparationStore.swift \
      legitima-frontend/Models/CVExperienceRow.swift \
      legitima-frontend/Models/SlotAutofill.swift \
      legitima-frontend/Models/PreparationExportContent.swift \
+     legitima-frontend/Models/PersonalizedPreparation.swift \
+     legitima-frontend/Models/InterviewPreparation.swift \
      legitima-frontend/Navigation/AppRouter.swift)
 
 rm -f /tmp/lst
@@ -84,21 +86,19 @@ built.
 
 ## Backend
 
-One deployed service: `https://legitima-backend.onrender.com`.
+One deployed service: `https://legitima-backend-ocr.onrender.com`.
 
-The client calls five routes, all documented in
+The client calls four routes, all documented in
 [docs/api-contract.md](docs/api-contract.md):
 
 | Route | Used for |
 | --- | --- |
-| `POST /analyze` | the strategic reading of a career path |
-| `POST /cv/parse` | extracting experience from a CV, PDF or photo |
-| `GET /v2/interview-preparation/use-cases` | the questionnaire catalog |
-| `POST /v2/interview-preparation/kickoff` | the first defensible answer |
-| `POST /v2/interview-preparation/analyze` | the guided preparation |
+| `GET /v3/interview/bank` | the hand-written question bank — no model call |
+| `GET /v3/interview/use-cases` | the personalization questionnaire catalog |
+| `POST /v3/interview/questions` | personalized answers, verified against what the person wrote |
+| `POST /cv/parse` | experience rows and raw text from a CV, PDF or photo |
 
-Output is French only: `input.meta.language` must be `"fr"`, and the backend
-rejects anything else. Update the contract before changing endpoint usage.
+Output is French only. Update the contract before changing endpoint usage.
 
 Rate limiting is per IP on the backend. It is deliberately not in the client —
 see below.
