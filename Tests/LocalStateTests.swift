@@ -14,6 +14,7 @@ struct LocalStateTests {
         testPersonalizationPrefillOnlyRepeatsWhatWasTyped()
         testExportCarriesThePersonalizedAnswers()
         testComfortMarksLeaveTheReport()
+        try testTheBankPlanReachesTheReportUntilABetterOneExists()
         print("Local state tests passed")
     }
 
@@ -259,6 +260,52 @@ struct LocalStateTests {
             .init(text: "le haut de votre fourchette", kind: .empty),
             .init(text: ".", kind: .literal),
         ])
+    }
+
+    /// « J'ai 5 minutes pour réviser » : le chemin banque a son « Avant
+    /// d'entrer », et le plan personnalisé — plus spécifique — le remplace.
+    /// Jamais les deux : six gestes ne sont plus un plan, c'est une révision.
+    private static func testTheBankPlanReachesTheReportUntilABetterOneExists() throws {
+        // Le champ vient d'un backend qui peut ne pas encore le servir : une
+        // page sans plan vaut mieux que pas de page.
+        let legacy = try JSONDecoder().decode(
+            BankPage.self,
+            from: Data(#"{"use_case_id":"recruitment","questions":[]}"#.utf8)
+        )
+        precondition(legacy.actionPlan.isEmpty)
+
+        let served = try JSONDecoder().decode(
+            BankPage.self,
+            from: Data("""
+            {"use_case_id":"recruitment","questions":[],
+             "action_plan":["Relisez l'annonce.","Gardez une question à poser."]}
+            """.utf8)
+        )
+        precondition(served.actionPlan.count == 2)
+
+        let page = BankPage(
+            useCaseID: "recruitment",
+            questions: [BankQuestion(id: "q1", question: "Parlez-moi de vous", answer: "Je suis <MÉTIER>.")],
+            actionPlan: ["Relisez l'annonce.", "Gardez une question à poser."]
+        )
+
+        // Banque seule : son plan part dans le document.
+        let bankOnly = PreparationExportContent(page: page, filled: [:])
+        precondition(bankOnly.blocks.map(\.title) == ["1. Parlez-moi de vous", "Avant d'entrer"])
+        precondition(bankOnly.blocks[1].paragraphs.map(\.text) == page.actionPlan)
+        precondition(bankOnly.blocks[1].numbered)
+
+        // Une personnalisation existe : son plan prend la place, seul.
+        let personalized = PreparedInterview(
+            useCaseID: "recruitment",
+            title: "Votre entretien",
+            questions: [PreparedQuestion(question: "Pourquoi nous ?", intent: "", answer: "Citez l'annonce.", kind: "guidance")],
+            actionPlan: ["Relire votre réalisation."]
+        )
+        let both = PreparationExportContent(page: page, filled: [:], personalized: personalized)
+        let plans = both.blocks.filter { $0.title == "Avant d'entrer" }
+        precondition(plans.count == 1)
+        precondition(plans[0].paragraphs.map(\.text) == ["Relire votre réalisation."])
     }
 
     /// The orphaned file held a copy of the analysis — the user's career

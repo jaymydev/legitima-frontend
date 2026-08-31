@@ -131,10 +131,16 @@ struct PreparationExportContent {
             ))
         }
 
-        if let personalized, !personalized.actionPlan.isEmpty {
+        // Un seul « Avant d'entrer » : celui de la personnalisation quand elle
+        // existe — il est plus spécifique — sinon celui de la banque, écrit à
+        // la main. Les deux à la fois feraient six gestes, donc une révision.
+        let plan = personalized?.actionPlan.isEmpty == false
+            ? personalized?.actionPlan ?? []
+            : page.actionPlan
+        if !plan.isEmpty {
             assembled.append(Block(
                 title: "Avant d'entrer",
-                paragraphs: personalized.actionPlan.map { Paragraph($0) },
+                paragraphs: plan.map { Paragraph($0) },
                 numbered: true
             ))
         }
