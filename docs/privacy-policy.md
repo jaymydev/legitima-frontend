@@ -1,6 +1,6 @@
 # Politique de confidentialité — Legitima
 
-**Dernière mise à jour : 3 août 2026**
+**Dernière mise à jour : 31 août 2026**
 
 > ⚠️ Ce document est une rédaction de départ, pas un avis juridique :
 > faites-le relire si l'enjeu le justifie.
@@ -8,9 +8,11 @@
 ## En résumé
 
 Legitima n'a pas de compte, pas de publicité, pas de traceur et aucune
-bibliothèque tierce. Ce que vous écrivez reste sur votre téléphone. Il est
-transmis à nos serveurs, puis à OpenAI, uniquement le temps de produire votre
-analyse — puis effacé de la mémoire, sans être conservé.
+bibliothèque tierce. Ce que vous écrivez reste sur votre téléphone. Le parcours
+principal — les questions probables et leurs réponses à compléter — ne transmet
+rien de ce que vous avez écrit. Seule la personnalisation facultative, si vous
+la demandez, envoie votre texte à nos serveurs puis à OpenAI, le temps de
+préparer vos réponses — puis il est effacé de la mémoire, sans être conservé.
 
 ## 1. Responsable du traitement
 
@@ -30,19 +32,20 @@ inscription n'est possible, ni nécessaire.
 
 Les seules données traitées sont celles que vous saisissez vous-même :
 
-| Donnée | Nécessaire ? |
-| --- | --- |
-| Le poste que vous visez | Nécessaire à l'analyse |
-| Les étapes de votre parcours professionnel | Nécessaire à l'analyse |
-| Le point à expliquer en entretien | Facultatif |
-| La date de votre entretien | Facultatif — sert aux rappels |
-| Vos réponses au questionnaire de préparation | Nécessaires à la préparation guidée ; certaines questions sont elles-mêmes facultatives et signalées comme telles |
-| Le contenu d'un CV importé | Facultatif — c'est un raccourci de saisie |
+| Donnée | Nécessaire ? | Quitte votre appareil ? |
+| --- | --- | --- |
+| Le type d'entretien préparé | Nécessaire — c'est la seule réponse obligatoire | Oui, pour demander les bonnes questions ; ce n'est pas un texte de vous |
+| Votre métier et le fait d'encadrer une équipe | Facultatif | Oui, comme paramètres de la même demande |
+| Ce que vous écrivez dans les blancs des réponses | Facultatif | **Non** — cela reste sur l'appareil |
+| La date de votre entretien | Facultatif — sert aux rappels locaux | **Non** |
+| L'offre d'emploi collée, une réalisation racontée | Facultatifs — servent à la personnalisation | Seulement si vous demandez la personnalisation |
+| Le contenu d'un CV importé | Facultatif — c'est un raccourci de saisie | Au moment de l'import pour en extraire le texte, puis seulement si vous demandez la personnalisation |
 
-Sans les deux premières, aucune analyse n'est possible : c'est la matière même
-du service. Tout le reste peut rester vide, et l'application fonctionne.
+Sans le type d'entretien, aucune préparation n'est possible : c'est la matière
+même du service. Tout le reste peut rester vide, et l'application fonctionne.
 
-S'y ajoutent les textes produits par l'analyse à partir de ces éléments.
+S'y ajoutent, si vous demandez la personnalisation, les textes produits à
+partir de ces éléments.
 
 L'application ne collecte aucune donnée de localisation, aucun identifiant
 publicitaire, aucune statistique d'usage et aucun rapport de plantage.
@@ -60,15 +63,22 @@ réglages de votre appareil, qui relèvent de vous et d'Apple.
 
 ## 4. Ce qui est transmis, et à qui
 
-Pour produire une analyse, le texte que vous avez saisi est transmis :
+Le parcours principal ne transmet aucun texte de vous : la demande des
+questions porte le type d'entretien, le métier choisi et le fait d'encadrer —
+rien d'autre.
+
+Si vous importez un CV, ou si vous demandez la personnalisation, le texte
+concerné est transmis :
 
 1. à **Cloudflare, Inc.**, qui assure la protection et la distribution en
    frontal. La connexion depuis votre appareil est reçue par un point de
    présence proche de vous — Paris pour la France ;
 2. puis à notre serveur, hébergé par **Render Services, Inc.** dans la région
    **Oregon (`us-west1`), aux États-Unis** ;
-3. puis à **OpenAI, L.L.C.**, aux **États-Unis**, qui exécute le modèle de
-   langage produisant l'analyse.
+3. puis, pour la personnalisation seulement, à **OpenAI, L.L.C.**, aux
+   **États-Unis**, qui exécute le modèle de langage préparant vos réponses.
+   L'extraction du texte d'un CV se fait sur notre serveur, sans modèle de
+   langage.
 
 **Vos données quittent donc l'Union européenne dès la deuxième étape**, et non
 seulement au moment de l'appel au modèle.
@@ -90,12 +100,15 @@ Les transferts vers Cloudflare, Render et OpenAI, tous établis aux États-Unis,
 s'appuient sur les clauses contractuelles types de la Commission européenne
 prévues à l'article 46 du RGPD.
 
-## 5. Analyse automatisée de votre parcours
+## 5. Personnalisation automatisée
 
-Le cœur du service est une analyse produite par un modèle de langage, sans
-intervention humaine. Elle évalue des éléments relatifs à votre vie
-professionnelle — cohérence du parcours, fragilités probables, points d'appui —
-ce qui constitue un **profilage** au sens de l'article 4(4) du RGPD.
+Les questions du parcours principal sont écrites à la main : aucun traitement
+automatisé n'évalue votre situation pour vous les présenter.
+
+Si vous demandez la personnalisation, un modèle de langage produit, sans
+intervention humaine, des questions et des réponses à partir de ce que vous
+avez écrit — ce qui touche à des éléments de votre vie professionnelle et peut
+constituer un **profilage** au sens de l'article 4(4) du RGPD.
 
 Deux précisions importantes :
 
@@ -103,9 +116,9 @@ Deux précisions importantes :
   vous, pour vous préparer. Il n'est transmis à aucun employeur, recruteur ou
   tiers, et ne produit aucun effet juridique. L'article 22, qui encadre les
   décisions automatisées, ne trouve donc pas à s'appliquer.
-- **Le résultat est un point de vue, pas un verdict.** Un modèle de langage
-  peut se tromper, ou formuler une lecture que vous jugerez inexacte. Vous
-  restez seul juge de ce que vous direz en entretien.
+- **Le résultat est une proposition, pas un verdict.** Un modèle de langage
+  peut se tromper ; ses réponses sont vérifiées contre ce que vous avez écrit,
+  et vous restez seul juge de ce que vous direz en entretien.
 
 ## 6. Données sensibles
 
@@ -116,16 +129,18 @@ l'article 9 du RGPD — un problème de santé, par exemple.
 Les exemples proposés dans l'application portent volontairement sur des faits
 d'emploi, jamais sur la santé. **Nous vous invitons à ne pas saisir
 d'information de santé.** Décrire une interruption professionnelle sans en
-donner la cause médicale suffit à l'analyse.
+donner la cause médicale suffit à la préparation.
 
 Si vous en saisissez malgré tout, elles suivent le même chemin que le reste :
-transmises pour produire l'analyse, jamais conservées côté serveur.
+conservées sur votre appareil, transmises seulement si vous demandez la
+personnalisation, jamais conservées côté serveur.
 
 ## 7. Base légale
 
 Le traitement repose sur l'exécution du service que vous demandez
-(article 6.1.b du RGPD) : sans le texte que vous saisissez, aucune analyse
-n'est possible.
+(article 6.1.b du RGPD) : sans le type d'entretien, aucune préparation n'est
+possible, et sans le texte que vous choisissez d'envoyer, aucune
+personnalisation ne l'est.
 
 Pour les informations relevant de l'article 9 que vous choisiriez d'ajouter, le
 traitement repose sur votre consentement explicite (article 9.2.a), donné par
@@ -135,7 +150,7 @@ avertissement.
 **Vous pouvez le retirer à tout moment**, et sans démarche auprès de nous :
 effacez le texte concerné dans l'application. Il disparaît de votre appareil,
 et il n'en existe aucune copie chez nous à supprimer. Le retrait ne remet pas
-en cause les analyses déjà produites à partir de ce texte, que vous pouvez
+en cause les réponses déjà produites à partir de ce texte, que vous pouvez
 également effacer.
 
 ## 8. Durées de conservation
@@ -143,9 +158,9 @@ en cause les analyses déjà produites à partir de ce texte, que vous pouvez
 | Donnée | Durée |
 | --- | --- |
 | Votre préparation, sur l'appareil | Jusqu'à ce que vous l'effaciez ou désinstalliez l'application |
-| Contenu transmis à notre serveur | Le temps de la requête, jamais enregistré |
+| Contenu transmis à notre serveur (CV, personnalisation) | Le temps de la requête, jamais enregistré |
 | Journaux techniques (sans contenu) | 30 jours |
-| Données côté OpenAI | Jusqu'à 30 jours, selon sa politique API |
+| Données côté OpenAI (personnalisation seulement) | Jusqu'à 30 jours, selon sa politique API |
 
 ## 9. Autorisations demandées
 
