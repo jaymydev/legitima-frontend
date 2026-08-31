@@ -201,13 +201,6 @@ extension String: @retroactive Identifiable {
     public var id: String { self }
 }
 
-extension String {
-    var capitalizedFirst: String {
-        guard let first else { return self }
-        return first.uppercased() + dropFirst()
-    }
-}
-
 /// Coller une annonce, puis choisir la mission qui compte.
 ///
 /// Le découpage est fait sur l'appareil et la personne choisit : rien n'est

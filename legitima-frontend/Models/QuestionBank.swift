@@ -45,6 +45,15 @@ struct BankPage: Codable, Equatable {
     }
 }
 
+// Ici et pas dans un fichier de vue : l'export PDF s'en sert aussi, et les
+// tests compilent les modèles sans les vues.
+extension String {
+    var capitalizedFirst: String {
+        guard let first else { return self }
+        return first.uppercased() + dropFirst()
+    }
+}
+
 /// Le vocabulaire arrêté des balises, et ce qu'on montre à leur place.
 ///
 /// Fermé volontairement : une balise inventée ne pourrait jamais se remplir,
