@@ -8,11 +8,46 @@ struct LocalStateTests {
         testInterviewCountdown()
         testInterviewRemindersNeverFireLateOrIntoThePast()
         try testOrphanedStorageIsDeleted()
+        try testCatalogContractStillDecodes()
         try testPersonalizationContractRoundTrip()
         try testCVMaterialSurvivesRelaunch()
         testPersonalizationPrefillOnlyRepeatsWhatWasTyped()
         testExportCarriesThePersonalizedAnswers()
         print("Local state tests passed")
+    }
+
+    /// Le catalogue est ce que le formulaire de personnalisation affiche : ses
+    /// questions, leur caractère obligatoire, et la version du questionnaire
+    /// que la requête doit renvoyer. Porté depuis les tests d'avant le pivot —
+    /// le contrat a survécu, lui.
+    private static func testCatalogContractStillDecodes() throws {
+        let data = Data(
+            """
+            {"use_cases": [
+              {"id": "recruitment", "title": "Entretien de recrutement",
+               "short_title": "Recrutement", "description": "Face au recruteur.",
+               "questionnaire_version": "2.1",
+               "questions": [
+                 {"id": "job_offer", "title": "Collez l'offre", "helper": "Le texte.",
+                  "required": true, "input_type": "long_text"},
+                 {"id": "achievement", "title": "Une réalisation", "helper": "Facultatif.",
+                  "required": false, "input_type": "long_text"}
+               ]}
+            ]}
+            """.utf8
+        )
+
+        let catalog = try JSONDecoder().decode(InterviewUseCaseCatalog.self, from: data)
+        let useCase = catalog.useCases.first
+        precondition(useCase?.id == "recruitment")
+        precondition(useCase?.questionnaireVersion == "2.1")
+        precondition(useCase?.questions.first?.required == true)
+
+        // C'est ce qui verrouille le bouton « Écrire mes réponses » : seule
+        // l'absence d'une réponse obligatoire doit bloquer.
+        precondition(useCase?.hasAllRequiredAnswers(["job_offer": "Annonce"]) == true)
+        precondition(useCase?.hasAllRequiredAnswers(["job_offer": "  "]) == false)
+        precondition(useCase?.hasAllRequiredAnswers(["achievement": "Sans l'annonce"]) == false)
     }
 
     /// Le contrat V3 de personnalisation : les clés partent en snake_case et la
