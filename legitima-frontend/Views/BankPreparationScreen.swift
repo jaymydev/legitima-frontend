@@ -100,6 +100,13 @@ struct BankPreparationScreen: View {
                 if let personalized {
                     personalizedSection(personalized, startIndex: page.questions.count)
                 } else {
+                    // Le plan de la banque, écrit à la main : le chemin
+                    // principal a lui aussi ses cinq minutes de couloir. Quand
+                    // une personnalisation existe, son plan — plus spécifique —
+                    // prend la place, dans sa section.
+                    if !page.actionPlan.isEmpty {
+                        actionPlanCard(page.actionPlan)
+                    }
                     personalizationInvitation
                 }
 

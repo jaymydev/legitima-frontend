@@ -38,10 +38,30 @@ struct BankQuestion: Codable, Equatable, Identifiable {
 struct BankPage: Codable, Equatable {
     let useCaseID: String
     let questions: [BankQuestion]
+    /// « Avant d'entrer », écrit à la main par type d'entretien. Se lit tel
+    /// quel — aucune balise. Le plan d'une personnalisation, plus spécifique,
+    /// le remplace quand il existe.
+    let actionPlan: [String]
 
     private enum CodingKeys: String, CodingKey {
         case questions
         case useCaseID = "use_case_id"
+        case actionPlan = "action_plan"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        useCaseID = try container.decode(String.self, forKey: .useCaseID)
+        questions = try container.decode([BankQuestion].self, forKey: .questions)
+        // Absent d'un backend antérieur : une page sans plan vaut mieux que
+        // pas de page.
+        actionPlan = try container.decodeIfPresent([String].self, forKey: .actionPlan) ?? []
+    }
+
+    init(useCaseID: String, questions: [BankQuestion], actionPlan: [String] = []) {
+        self.useCaseID = useCaseID
+        self.questions = questions
+        self.actionPlan = actionPlan
     }
 }
 
