@@ -35,10 +35,10 @@ Les seules données traitées sont celles que vous saisissez vous-même :
 | Donnée | Nécessaire ? | Quitte votre appareil ? |
 | --- | --- | --- |
 | Le type d'entretien préparé | Nécessaire — c'est la seule réponse obligatoire | Oui, pour demander les bonnes questions ; ce n'est pas un texte de vous |
-| Votre métier et le fait d'encadrer une équipe | Facultatif | Oui, comme paramètres de la même demande |
+| Votre métier et le fait d'encadrer une équipe | Facultatifs | Oui, comme paramètres de la même demande |
 | Ce que vous écrivez dans les blancs des réponses | Facultatif | **Non** — cela reste sur l'appareil |
-| La date de votre entretien | Facultatif — sert aux rappels locaux | **Non** |
-| L'offre d'emploi collée, une réalisation racontée | Facultatifs — servent à la personnalisation | Seulement si vous demandez la personnalisation |
+| La date de votre entretien | Facultative — sert aux rappels locaux | **Non** |
+| L'offre d'emploi collée, une réalisation racontée | Facultatives — servent à la personnalisation | Seulement si vous demandez la personnalisation |
 | Le contenu d'un CV importé | Facultatif — c'est un raccourci de saisie | Au moment de l'import pour en extraire le texte, puis seulement si vous demandez la personnalisation |
 
 Sans le type d'entretien, aucune préparation n'est possible : c'est la matière

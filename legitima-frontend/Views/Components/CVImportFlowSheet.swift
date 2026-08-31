@@ -129,7 +129,7 @@ struct CVImportFlowSheet: View {
                     .foregroundColor(LegitimaColors.muted)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("Vous pouvez importer un PDF, prendre une photo du CV ou choisir une image depuis votre phototheque. Nous extrairons ensuite les experiences avant que vous puissiez les corriger.")
+                Text("Vous pouvez importer un PDF, prendre une photo du CV ou choisir une image depuis votre photothèque. Nous extrairons ensuite les expériences avant que vous puissiez les corriger.")
                     .font(.footnote)
                     .foregroundColor(LegitimaColors.muted)
                     .fixedSize(horizontal: false, vertical: true)
