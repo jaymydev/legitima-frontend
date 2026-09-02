@@ -76,19 +76,28 @@ struct MetierChoice: Codable, Equatable, Identifiable {
 
 struct MetierCatalog: Codable, Equatable {
     let catalog: [MetierChoice]
+    /// Les types d'entretien où choisir un métier change la page. Servi par le
+    /// serveur, qui détient la banque : les questions de spécialité sont
+    /// écrites pour évaluer une compétence en vue d'un poste, et n'ont pas
+    /// cours dans un bilan. Coder cette liste ici en ferait une seconde source
+    /// de vérité, qui se tromperait au premier changement côté banque.
+    let appliesTo: [String]
 
-    init(catalog: [MetierChoice]) {
+    init(catalog: [MetierChoice], appliesTo: [String] = []) {
         self.catalog = catalog
+        self.appliesTo = appliesTo
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         // Absente d'un backend antérieur : pas de choix vaut mieux qu'une erreur.
         catalog = try container.decodeIfPresent([MetierChoice].self, forKey: .catalog) ?? []
+        appliesTo = try container.decodeIfPresent([String].self, forKey: .appliesTo) ?? []
     }
 
     private enum CodingKeys: String, CodingKey {
         case catalog
+        case appliesTo = "applies_to"
     }
 }
 

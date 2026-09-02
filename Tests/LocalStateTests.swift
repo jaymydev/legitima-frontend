@@ -450,11 +450,18 @@ struct LocalStateTests {
             from: Data(#"{"metiers":["commerce"]}"#.utf8)
         )
         precondition(emptyCatalog.catalog.isEmpty)
+        // Sans `applies_to` non plus : un backend antérieur ne dit pas où le
+        // métier s'applique, et l'écran n'en propose alors aucun plutôt que
+        // d'en promettre l'effet à tort.
+        precondition(emptyCatalog.appliesTo.isEmpty)
         let catalog = try JSONDecoder().decode(
             MetierCatalog.self,
-            from: Data(#"{"metiers":["data"],"catalog":[{"id":"data","label":"Data"}]}"#.utf8)
+            from: Data(
+                #"{"metiers":["data"],"catalog":[{"id":"data","label":"Data"}],"applies_to":["recruitment","role_evolution"]}"#.utf8
+            )
         )
         precondition(catalog.catalog == [MetierChoice(id: "data", label: "Data")])
+        precondition(catalog.appliesTo == ["recruitment", "role_evolution"])
 
         try? FileManager.default.removeItem(at: directory)
     }
