@@ -26,6 +26,10 @@ struct InterviewTypeEntryScreen: View {
     /// Les verticales servies par le catalogue. Vide tant que le réseau n'a
     /// pas répondu — et l'écran reste entier sans elles.
     @State private var metiers: [MetierChoice] = []
+    /// Les types où choisir un métier change la page, servis avec le catalogue.
+    /// Vide tant que le réseau n'a pas répondu : on n'affiche alors pas de
+    /// pastilles, faute de pouvoir affirmer qu'elles serviraient.
+    @State private var metierAppliesTo: Set<String> = []
     @State private var selectedMetier: String?
     @State private var encadrement = false
 
@@ -80,34 +84,51 @@ struct InterviewTypeEntryScreen: View {
         .task {
             // Silencieux en échec : l'écran d'entrée doit rester utilisable
             // sans réseau, le métier est un plus, pas un préalable.
-            metiers = (try? await service.fetchMetiers()) ?? []
+            guard let catalog = try? await service.fetchMetiers() else { return }
+            metiers = catalog.catalog
+            metierAppliesTo = Set(catalog.appliesTo)
         }
+    }
+
+    /// Le métier ne vaut que pour les entretiens qui évaluent une compétence en
+    /// vue d'un poste — le serveur dit lesquels. Les questions de spécialité
+    /// sont écrites pour ça (« vendez-moi ce stylo ») : dans un bilan, face à
+    /// quelqu'un qui a suivi le travail toute l'année, aucune ne serait posée.
+    /// Proposer le choix là aurait été promettre un effet qui n'existe pas.
+    private var metierApplies: Bool {
+        guard let selection else { return false }
+        return metierAppliesTo.contains(selection.rawValue)
     }
 
     /// Facultatif, comme la date. Choisir son métier met trois questions de
     /// sa spécialité en tête de page ; dire qu'on encadre débloque celles qui
     /// ne valent que pour l'encadrement. Rien n'est exigé : la page existe
     /// sans ces réponses.
+    ///
+    /// L'encadrement, lui, reste proposé partout : on peut avoir une équipe
+    /// quel que soit l'entretien qu'on prépare.
     private var metierSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("Votre métier")
-                    .font(.headline)
-                    .foregroundColor(LegitimaColors.ink)
-                Text("Facultatif")
-                    .font(.caption.weight(.semibold))
+            if metierApplies {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("Votre métier")
+                        .font(.headline)
+                        .foregroundColor(LegitimaColors.ink)
+                    Text("Facultatif")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(LegitimaColors.muted)
+                }
+
+                Text("Trois questions de votre spécialité passeront en tête de vos préparations.")
+                    .font(.subheadline)
                     .foregroundColor(LegitimaColors.muted)
-            }
+                    .fixedSize(horizontal: false, vertical: true)
 
-            Text("Trois questions de votre spécialité passeront en tête de vos préparations.")
-                .font(.subheadline)
-                .foregroundColor(LegitimaColors.muted)
-                .fixedSize(horizontal: false, vertical: true)
-
-            if !metiers.isEmpty {
-                RecruitmentFlowLayout(spacing: 8) {
-                    ForEach(metiers) { metier in
-                        metierChip(metier)
+                if !metiers.isEmpty {
+                    RecruitmentFlowLayout(spacing: 8) {
+                        ForEach(metiers) { metier in
+                            metierChip(metier)
+                        }
                     }
                 }
             }

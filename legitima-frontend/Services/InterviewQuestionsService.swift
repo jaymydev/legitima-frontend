@@ -31,9 +31,8 @@ final class InterviewQuestionsService {
     /// Les verticales métier disponibles, avec leurs libellés. Récupérées
     /// plutôt que codées : une verticale ajoutée à la banque apparaît dans
     /// l'app sans nouvelle version.
-    func fetchMetiers() async throws -> [MetierChoice] {
-        let catalog: MetierCatalog = try await request(path: "/v3/interview/metiers", method: "GET")
-        return catalog.catalog
+    func fetchMetiers() async throws -> MetierCatalog {
+        try await request(path: "/v3/interview/metiers", method: "GET")
     }
 
     /// Le catalogue, pour connaître les questions et la version du
