@@ -1,6 +1,6 @@
 # Politique de confidentialité — Legitima
 
-**Dernière mise à jour : 31 août 2026**
+**Dernière mise à jour : 3 septembre 2026**
 
 > ⚠️ Ce document est une rédaction de départ, pas un avis juridique :
 > faites-le relire si l'enjeu le justifie.
@@ -39,7 +39,7 @@ Les seules données traitées sont celles que vous saisissez vous-même :
 | Ce que vous écrivez dans les blancs des réponses | Facultatif | **Non** — cela reste sur l'appareil |
 | La date de votre entretien | Facultative — sert aux rappels locaux | **Non** |
 | L'offre d'emploi collée, une réalisation racontée | Facultatives — servent à la personnalisation | Seulement si vous demandez la personnalisation |
-| Le contenu d'un CV importé | Facultatif — c'est un raccourci de saisie | Au moment de l'import pour en extraire le texte, puis seulement si vous demandez la personnalisation |
+| Le contenu d'un CV importé | Facultatif — c'est un raccourci de saisie | Au moment de l'import pour en extraire le texte, puis seulement si vous demandez une personnalisation **et** qu'il s'agit d'un entretien de recrutement ou de mobilité interne |
 
 Sans le type d'entretien, aucune préparation n'est possible : c'est la matière
 même du service. Tout le reste peut rester vide, et l'application fonctionne.
@@ -67,8 +67,15 @@ Le parcours principal ne transmet aucun texte de vous : la demande des
 questions porte le type d'entretien, le métier choisi et le fait d'encadrer —
 rien d'autre.
 
-Si vous importez un CV, ou si vous demandez la personnalisation, le texte
-concerné est transmis :
+Deux gestes, et deux seulement, font sortir du texte de votre appareil :
+importer un CV, et demander une personnalisation. Le contenu de votre CV n'est
+d'ailleurs joint à une demande de personnalisation que pour un **entretien de
+recrutement ou de mobilité interne** — les deux seuls où il change quelque
+chose à ce qui vous est proposé. Ailleurs, l'application ne vous le propose
+même pas, et ne l'envoie pas : une donnée qui ne servirait à rien n'a pas à
+voyager.
+
+Le texte concerné est alors transmis :
 
 1. à **Cloudflare, Inc.**, qui assure la protection et la distribution en
    frontal. La connexion depuis votre appareil est reçue par un point de
