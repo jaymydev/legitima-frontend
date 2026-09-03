@@ -41,11 +41,30 @@ struct InterviewUseCase: Codable, Equatable, Identifiable {
     let description: String
     let questionnaireVersion: String
     let questions: [InterviewQuestion]
+    /// Whether attaching a CV changes anything for this interview. The server
+    /// decides: it drops the CV before the prompt for the three reviews and for
+    /// a role evolution, where the person across the table has watched the work
+    /// all year. Offering the attachment there sent a career across the
+    /// Atlantic to be discarded — absent from an older backend, so a missing
+    /// value means "do not offer it", the choice that transmits nothing.
+    let acceptsCV: Bool
 
     private enum CodingKeys: String, CodingKey {
         case id, title, description, questions
         case shortTitle = "short_title"
         case questionnaireVersion = "questionnaire_version"
+        case acceptsCV = "accepts_cv"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        shortTitle = try container.decode(String.self, forKey: .shortTitle)
+        description = try container.decode(String.self, forKey: .description)
+        questionnaireVersion = try container.decode(String.self, forKey: .questionnaireVersion)
+        questions = try container.decode([InterviewQuestion].self, forKey: .questions)
+        acceptsCV = try container.decodeIfPresent(Bool.self, forKey: .acceptsCV) ?? false
     }
 
     func hasAllRequiredAnswers(_ answers: [String: String]) -> Bool {
