@@ -293,8 +293,13 @@ struct InterviewTypeEntryScreen: View {
         .opacity(selection == nil ? 0.5 : 1)
     }
 
+    /// Ce qui part d'ici, c'est le type d'entretien, le métier et l'encadrement
+    /// — de quoi demander les bonnes questions, rien de ce que la personne
+    /// écrira. La note promettait pourtant l'inverse, dans la phrase suivant
+    /// « reste sur cet appareil ». Le seul chemin qui envoie du texte est la
+    /// personnalisation, et elle le redit au moment de la demander.
     private var privacyNote: some View {
-        Text("Votre préparation reste sur cet appareil. Ce que vous écrivez est envoyé à notre serveur puis à OpenAI, le temps de préparer vos réponses.")
+        Text("Votre préparation reste sur cet appareil. Rien de ce que vous écrivez n'en sort, sauf si vous demandez une personnalisation.")
             .font(.footnote)
             .foregroundColor(LegitimaColors.muted)
             .multilineTextAlignment(.center)
