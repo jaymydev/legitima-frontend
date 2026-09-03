@@ -19,7 +19,13 @@ struct PersonalizationSheet: View {
     @State private var material = CVMaterial()
     /// Le CV importé reste joignable sans être obligatoire : la matière
     /// appartient à la personne, y compris le droit de ne pas l'envoyer.
-    @State private var attachCV = true
+    /// Faux par défaut : joindre son parcours est un geste, pas un réglage
+    /// qu'on subit. Un CV importé l'a été pour remplir des blancs sur
+    /// l'appareil — rien ne dit que la personne veut aussi l'envoyer. Elle le
+    /// dira en activant l'interrupteur, ou en important son CV ici même, ce qui
+    /// vaut consentement puisque c'est ce formulaire qu'elle est en train de
+    /// remplir.
+    @State private var attachCV = false
     @State private var isImportingCV = false
     @State private var errorMessage: String?
 
@@ -195,7 +201,7 @@ struct PersonalizationSheet: View {
                         Text("Joindre mon CV")
                             .font(.headline)
                             .foregroundColor(LegitimaColors.ink)
-                        Text("Celui importé pour remplir vos blancs. Il nourrit vos réponses sans quitter votre téléphone autrement.")
+                        Text("Celui importé pour remplir vos blancs. Joint, ses détails — projets, chiffres, outils — nourrissent vos réponses. Sinon il ne quitte pas votre téléphone.")
                             .font(.footnote)
                             .foregroundColor(LegitimaColors.muted)
                             .fixedSize(horizontal: false, vertical: true)
