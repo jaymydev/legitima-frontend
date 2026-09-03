@@ -57,11 +57,33 @@ struct BackendDetail: Decodable {
 /// dans lequel les appels échouent.
 enum IAService {
 
-    enum IAServiceError: Error {
+    /// `LocalizedError`, et pas seulement `Error` : sans ça, Swift compose
+    /// lui-même « The operation couldn't be completed. (…IAServiceError
+    /// error 2.) » et jette le message que l'appelant avait pris soin
+    /// d'écrire. Le serveur rédige ses erreurs en français pour être lues
+    /// telles quelles ; les envelopper dans un type muet les perdait toutes,
+    /// et faisait ressembler chaque panne à la même panne.
+    enum IAServiceError: LocalizedError {
         case invalidURL
         case invalidRequestBody
         case requestFailed(Error)
         case decodingFailed(Error)
+
+        var errorDescription: String? {
+            switch self {
+            case .requestFailed(let underlying):
+                // C'est ici que tout se joue : `underlying` porte soit le texte
+                // français du serveur, soit le message système d'une panne
+                // réseau — déjà traduit par iOS. Dans les deux cas il est
+                // écrit pour être lu.
+                return underlying.localizedDescription
+            case .invalidURL, .invalidRequestBody, .decodingFailed:
+                // Trois pannes internes : rien à dire d'utile à quelqu'un qui
+                // prépare un entretien, et le détail technique l'inquiéterait
+                // sans l'aider.
+                return "La préparation n'a pas pu être écrite. Réessayez dans quelques instants."
+            }
+        }
     }
 
 }
