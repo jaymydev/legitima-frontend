@@ -59,6 +59,28 @@ final class InterviewQuestionsService {
         )
     }
 
+    /// Le message quand le serveur n'en fournit pas de rédigé.
+    ///
+    /// Le 429 vient de slowapi, qui répond « Rate limit exceeded » en anglais
+    /// et hors du format `detail` : sans ce cas, on affichait « réessayez dans
+    /// quelques instants » à quelqu'un qui doit attendre une heure, et qui
+    /// réessayait donc en boucle pour échouer à chaque fois.
+    private static func fallbackMessage(for response: HTTPURLResponse) -> String {
+        guard response.statusCode == 429 else {
+            return "Le service est momentanément indisponible. Réessayez dans quelques instants."
+        }
+
+        let retryAfter = (response.value(forHTTPHeaderField: "Retry-After"))
+            .flatMap(Int.init)
+            .map { max(1, Int(ceil(Double($0) / 60))) }
+
+        if let minutes = retryAfter {
+            return "Vous avez demandé plusieurs préparations coup sur coup. "
+                + "Réessayez dans \(minutes) minute\(minutes > 1 ? "s" : "")."
+        }
+        return "Vous avez demandé plusieurs préparations coup sur coup. Réessayez dans une heure."
+    }
+
     private func request<Response: Decodable>(
         path: String,
         method: String,
@@ -96,7 +118,7 @@ final class InterviewQuestionsService {
             let backendError = try? JSONDecoder().decode(BackendError.self, from: data)
             let message = backendError?.detail?.first?.msg
                 ?? backendError?.detailMessage
-                ?? "Le service est momentanément indisponible. Réessayez dans quelques instants."
+                ?? Self.fallbackMessage(for: httpResponse)
             throw IAService.IAServiceError.requestFailed(
                 NSError(
                     domain: "LegitimaInterviewQuestions",

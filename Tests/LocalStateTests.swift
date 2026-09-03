@@ -15,6 +15,7 @@ struct LocalStateTests {
         testExportCarriesThePersonalizedAnswers()
         testComfortMarksLeaveTheReport()
         try testTheBankPlanReachesTheReportUntilABetterOneExists()
+        testServiceErrorsAreReadableBySomeonePreparingAnInterview()
         print("Local state tests passed")
     }
 
@@ -478,6 +479,41 @@ struct LocalStateTests {
         precondition(avecChamp.acceptsCV == true)
 
         try? FileManager.default.removeItem(at: directory)
+    }
+
+    /// Une erreur illisible fait passer toute panne pour la même panne.
+    ///
+    /// `IAServiceError` ne conformait qu'à `Error` : Swift composait alors
+    /// « The operation couldn't be completed. (…IAServiceError error 2.) » et
+    /// jetait le message français que le service venait d'écrire. C'est ce
+    /// qu'un utilisateur a vu au lieu de savoir qu'il avait atteint la limite
+    /// horaire.
+    private static func testServiceErrorsAreReadableBySomeonePreparingAnInterview() {
+        let duServeur = NSError(
+            domain: "LegitimaInterviewQuestions",
+            code: 429,
+            userInfo: [NSLocalizedDescriptionKey: "Réessayez dans 42 minutes."]
+        )
+        let enveloppee = IAService.IAServiceError.requestFailed(duServeur)
+
+        // Le message du serveur remonte tel quel, c'est tout l'objet du contrat.
+        precondition(enveloppee.localizedDescription == "Réessayez dans 42 minutes.",
+                     "le message du serveur est perdu : \(enveloppee.localizedDescription)")
+
+        // Et aucune panne ne doit exposer de jargon Swift à quelqu'un qui
+        // prépare un entretien.
+        let toutes: [IAService.IAServiceError] = [
+            .invalidURL,
+            .invalidRequestBody,
+            .decodingFailed(URLError(.cannotParseResponse)),
+            enveloppee,
+        ]
+        for panne in toutes {
+            let texte = panne.localizedDescription
+            precondition(!texte.contains("IAServiceError"), "jargon exposé : \(texte)")
+            precondition(!texte.contains("couldn\'t be completed"), "message générique : \(texte)")
+            precondition(!texte.isEmpty)
+        }
     }
 
     private static func testInterviewCountdown() {
