@@ -99,7 +99,9 @@ struct PersonalizationSheet: View {
                 questionField(question)
             }
 
-            cvCard
+            if useCase.acceptsCV {
+                cvCard
+            }
 
             if let errorMessage {
                 Text(errorMessage)
@@ -276,6 +278,13 @@ struct PersonalizationSheet: View {
         }
     }
 
+    /// Le CV ne part que là où il sert. Le serveur l'écarte avant le prompt
+    /// pour les trois bilans et l'évolution de poste : l'envoyer y ferait
+    /// traverser l'Atlantique à un parcours pour qu'il finisse à la poubelle.
+    private func joindLeCV(_ useCase: InterviewUseCase) -> Bool {
+        useCase.acceptsCV && attachCV
+    }
+
     private func generate(_ useCase: InterviewUseCase) {
         errorMessage = nil
         stage = .generating(useCase)
@@ -288,8 +297,11 @@ struct PersonalizationSheet: View {
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 return answer.isEmpty ? nil : InterviewAnswer(questionID: question.id, answer: answer)
             },
-            experiences: attachCV ? material.experiences : [],
-            cvText: attachCV ? material.rawText : ""
+            // Deux conditions, pas une. Masquer la carte sans couper l'envoi
+            // aurait corrigé l'apparence en laissant le parcours partir quand
+            // même — c'est la transmission qu'on veut éviter, pas son affichage.
+            experiences: joindLeCV(useCase) ? material.experiences : [],
+            cvText: joindLeCV(useCase) ? material.rawText : ""
         )
 
         Task {

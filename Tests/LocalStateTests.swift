@@ -463,6 +463,20 @@ struct LocalStateTests {
         precondition(catalog.catalog == [MetierChoice(id: "data", label: "Data")])
         precondition(catalog.appliesTo == ["recruitment", "role_evolution"])
 
+        // Le catalogue dit désormais où un CV sert. Absent d'un backend
+        // antérieur, il vaut faux : on ne propose pas la pièce jointe, donc on
+        // ne transmet rien — le choix qui ne peut pas nuire.
+        let sansChamp = try JSONDecoder().decode(
+            InterviewUseCase.self,
+            from: Data(#"{"id":"annual_review","title":"T","short_title":"S","description":"D","questionnaire_version":"2.1","questions":[]}"#.utf8)
+        )
+        precondition(sansChamp.acceptsCV == false)
+        let avecChamp = try JSONDecoder().decode(
+            InterviewUseCase.self,
+            from: Data(#"{"id":"recruitment","title":"T","short_title":"S","description":"D","questionnaire_version":"2.1","questions":[],"accepts_cv":true}"#.utf8)
+        )
+        precondition(avecChamp.acceptsCV == true)
+
         try? FileManager.default.removeItem(at: directory)
     }
 
