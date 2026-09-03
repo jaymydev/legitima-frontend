@@ -75,6 +75,12 @@ chose à ce qui vous est proposé. Ailleurs, l'application ne vous le propose
 même pas, et ne l'envoie pas : une donnée qui ne servirait à rien n'a pas à
 voyager.
 
+Ce qui est joint n'est jamais le fichier, mais le texte qui en a été extrait,
+**borné à 6 000 caractères** — de quoi couvrir un CV ordinaire, et une limite
+au-delà de laquelle le reste est écarté plutôt que transmis. S'y ajoutent les
+quelques lignes d'expérience que vous avez vues et pu corriger à l'import :
+intitulé, employeur, période.
+
 Le texte concerné est alors transmis :
 
 1. à **Cloudflare, Inc.**, qui assure la protection et la distribution en
