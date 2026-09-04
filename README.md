@@ -74,7 +74,8 @@ SRC=(legitima-frontend/Models/LocalPreparationStore.swift \
      legitima-frontend/Models/PreparationExportContent.swift \
      legitima-frontend/Models/PersonalizedPreparation.swift \
      legitima-frontend/Models/InterviewPreparation.swift \
-     legitima-frontend/Navigation/AppRouter.swift)
+     legitima-frontend/Navigation/AppRouter.swift \
+     legitima-frontend/Services/IAService.swift)
 
 rm -f /tmp/lst
 swiftc -parse-as-library -o /tmp/lst Tests/LocalStateTests.swift "${SRC[@]}" && /tmp/lst
