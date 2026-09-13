@@ -19,6 +19,8 @@ struct LocalStateTests {
         try testTheScreenAndTheReportNameTheBlocksIdentically()
         try testEveryOptionalFieldSaysItIsOptional()
         try testTheNextStepIsNeverBuriedInTheScroll()
+        testTheShortIntroStaysShort()
+        testBeatsNeverOverlapAndHaveTimeToBeRead()
         print("Local state tests passed")
     }
 
@@ -642,5 +644,72 @@ struct LocalStateTests {
             screen[inset.lowerBound...].contains("continueButton"),
             "l'ancrage ne contient pas le bouton"
         )
+    }
+
+    /// Ce qui explique se lit une fois ; ce qui identifie se revoit.
+    ///
+    /// Au deuxième lancement, le slogan seul reste sous le logo. Refaire
+    /// défiler les trois phrases à chaque ouverture ferait payer l'explication
+    /// à quelqu'un qui l'a déjà lue — et un écran de lancement qu'on subit est
+    /// pire que pas d'écran du tout.
+    private static func testTheShortIntroStaysShort() {
+        let retour = LaunchIntro(hasLaunchedBefore: true)
+        precondition(retour.pace == .returning)
+        precondition(retour.beats.count == 1, "la cadence brève défile encore")
+        precondition(retour.beats[0].text == LaunchIntro.slogan)
+        precondition(retour.beats[0].start == 0, "au retour, rien ne se fait attendre")
+        precondition(retour.beats[0].end == nil, "le slogan doit rester jusqu'au bout")
+        precondition(retour.duration < 2, "l'écran bref dure \(retour.duration) s")
+
+        let premier = LaunchIntro(hasLaunchedBefore: false)
+        precondition(premier.pace == .first)
+        precondition(premier.beats.count == LaunchIntro.lines.count + 1)
+        precondition(premier.beats.last?.end == nil, "le slogan doit rester jusqu'au bout")
+        precondition(premier.duration > retour.duration)
+    }
+
+    /// Deux temps ne se chevauchent jamais, et chacun a le temps d'être lu.
+    ///
+    /// Le texte défile sous un logo fixe : si un temps commence avant que le
+    /// précédent ne soit sorti, deux phrases se superposent au même endroit et
+    /// l'écran devient illisible. Et une phrase qui paraît puis disparaît trop
+    /// vite ne se lit pas, elle se devine.
+    private static func testBeatsNeverOverlapAndHaveTimeToBeRead() {
+        for intro in [LaunchIntro(hasLaunchedBefore: false), LaunchIntro(hasLaunchedBefore: true)] {
+            for (precedent, suivant) in zip(intro.beats, intro.beats.dropFirst()) {
+                guard let fin = precedent.end else {
+                    preconditionFailure("un temps qui ne finit jamais en précède un autre")
+                }
+                // Il ne suffit pas que le temps précédent soit fini : son
+                // fondu de sortie doit l'être aussi, sinon les deux phrases
+                // se superposent pendant la durée du fondu.
+                precondition(
+                    fin + LaunchIntro.fade <= suivant.start,
+                    "fondus superposés : l'un finit à \(fin) + \(LaunchIntro.fade), l'autre part à \(suivant.start)"
+                )
+            }
+
+            for beat in intro.beats {
+                let fin = beat.end ?? intro.exitStart
+                precondition(
+                    fin - beat.start >= LaunchIntro.minimumBeat,
+                    "« \(beat.text.prefix(28))… » tient \(fin - beat.start) s, minimum \(LaunchIntro.minimumBeat) s"
+                )
+            }
+
+            // Le premier temps attend la fin de l'arrivée du logo : deux
+            // mouvements simultanés se gênent.
+            if let premier = intro.beats.first, intro.pace == .first {
+                precondition(
+                    premier.start >= LaunchIntro.entrance,
+                    "le texte démarre à \(premier.start) s, avant la fin de l'arrivée du logo"
+                )
+            }
+        }
+
+        // Le plafond n'est pas une élégance : c'est le temps qu'on impose à
+        // quelqu'un qui a ouvert l'app pour préparer un entretien.
+        let complet = LaunchIntro(hasLaunchedBefore: false)
+        precondition(complet.duration <= 8, "l'écran de lancement dure \(complet.duration) s")
     }
 }
