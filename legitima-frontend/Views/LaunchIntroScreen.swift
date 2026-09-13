@@ -31,6 +31,18 @@ struct LaunchIntroScreen: View {
             // Centré verticalement, le fondu croisait deux badges à deux
             // hauteurs et deux textes superposés : on voyait la couture.
             VStack(alignment: .leading, spacing: 0) {
+                // L'icône n'a pas de canal alpha : ses coins sont blancs et
+                // trancheraient sur le dégradé. Découpée à la forme d'icône
+                // iOS, elle se lit comme ce qu'elle est — l'app elle-même.
+                Image(LaunchIntro.markAsset)
+                    .resizable()
+                    .frame(width: 84, height: 84)
+                    .clipShape(RoundedRectangle(cornerRadius: 84 * 0.2237, style: .continuous))
+                    .shadow(color: .black.opacity(0.10), radius: 14, y: 6)
+                    .padding(.bottom, 24)
+                    .revealed(shown.contains(0))
+                    .accessibilityHidden(true)
+
                 Text(LaunchIntro.wordmark)
                     .font(.caption.weight(.bold))
                     .foregroundColor(LegitimaColors.accent)
@@ -38,14 +50,14 @@ struct LaunchIntroScreen: View {
                     .padding(.vertical, 7)
                     .background(LegitimaColors.surface)
                     .clipShape(Capsule())
-                    .revealed(shown.contains(0))
+                    .revealed(shown.contains(1))
 
                 Text(LaunchIntro.slogan)
                     .font(.system(.largeTitle, design: .rounded).weight(.heavy))
                     .foregroundColor(LegitimaColors.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 10)
-                    .revealed(shown.contains(1))
+                    .revealed(shown.contains(2))
 
                 if intro.pace == .first {
                     VStack(alignment: .leading, spacing: 14) {
@@ -54,7 +66,7 @@ struct LaunchIntroScreen: View {
                                 .font(.title3)
                                 .foregroundColor(LegitimaColors.body)
                                 .fixedSize(horizontal: false, vertical: true)
-                                .revealed(shown.contains(index + 2))
+                                .revealed(shown.contains(index + 3))
                         }
                     }
                     .padding(.top, 26)

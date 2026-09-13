@@ -21,6 +21,10 @@ struct LaunchIntro: Equatable {
         case returning
     }
 
+    /// Le jeu d'images tiré de l'icône d'app. Un `AppIcon.appiconset` n'est pas
+    /// chargeable à l'exécution — iOS le compile à part — d'où cette copie
+    /// redimensionnée, qui pèse 232 Ko contre 1,3 Mo pour l'originale seule.
+    static let markAsset = "LegitimaMark"
     static let wordmark = "LEGITIMA"
     static let slogan = "Vous avez votre place dans cette pièce."
 
@@ -47,13 +51,20 @@ struct LaunchIntro: Equatable {
     /// Le nom d'abord, la promesse ensuite — puis, au premier lancement
     /// seulement, les trois phrases.
     var timeline: [(text: String, delay: Double)] {
+        // Au retour, l'identité ne s'explique plus : elle se reconnaît. Les
+        // trois éléments arrivent ensemble, en un seul temps, et l'écran
+        // s'efface. Une révélation par étapes serait une explication qu'on
+        // impose une deuxième fois.
+        guard pace == .first else {
+            return [(Self.markAsset, 0), (Self.wordmark, 0), (Self.slogan, 0)]
+        }
         var items: [(String, Double)] = [
-            (Self.wordmark, 0),
-            (Self.slogan, 0.55),
+            (Self.markAsset, 0),
+            (Self.wordmark, 0.55),
+            (Self.slogan, 1.10),
         ]
-        guard pace == .first else { return items }
         for (index, line) in Self.lines.enumerated() {
-            items.append((line, 1.45 + Double(index) * 0.95))
+            items.append((line, 2.00 + Double(index) * 0.95))
         }
         return items
     }

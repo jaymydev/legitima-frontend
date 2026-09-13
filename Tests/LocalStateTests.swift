@@ -655,7 +655,11 @@ struct LocalStateTests {
     private static func testTheShortIntroStaysShort() {
         let retour = LaunchIntro(hasLaunchedBefore: true)
         precondition(retour.pace == .returning)
-        precondition(retour.timeline.count == 2, "la cadence brève montre plus que le nom et la promesse")
+        precondition(retour.timeline.count == 3, "la cadence brève montre plus que la marque, le nom et la promesse")
+        precondition(
+            Set(retour.timeline.map(\.delay)) == [0],
+            "au retour, tout doit arriver en un seul temps"
+        )
         for phrase in LaunchIntro.lines {
             precondition(
                 !retour.timeline.contains(where: { $0.text == phrase }),
@@ -666,7 +670,7 @@ struct LocalStateTests {
 
         let premier = LaunchIntro(hasLaunchedBefore: false)
         precondition(premier.pace == .first)
-        precondition(premier.timeline.count == 2 + LaunchIntro.lines.count)
+        precondition(premier.timeline.count == 3 + LaunchIntro.lines.count)
         precondition(premier.duration > retour.duration)
     }
 
@@ -678,14 +682,18 @@ struct LocalStateTests {
     /// c'est l'app entière qu'on fait attendre.
     private static func testEveryIntroLineHasTimeToBeReadBeforeTheNext() {
         let intro = LaunchIntro(hasLaunchedBefore: false)
-        let apparitions = intro.timeline.map(\.delay)
 
-        for (precedente, suivante) in zip(apparitions, apparitions.dropFirst()) {
+        // Plusieurs éléments au même instant forment un seul temps — la marque
+        // et le nom peuvent arriver ensemble. La règle porte sur l'écart entre
+        // deux temps successifs, pas entre deux éléments.
+        let temps = Set(intro.timeline.map(\.delay)).sorted()
+        for (precedent, suivant) in zip(temps, temps.dropFirst()) {
             precondition(
-                suivante - precedente >= LaunchIntro.fade,
-                "deux apparitions séparées de \(suivante - precedente) s, fondu de \(LaunchIntro.fade) s"
+                suivant - precedent >= LaunchIntro.fade,
+                "deux temps séparés de \(suivant - precedent) s, fondu de \(LaunchIntro.fade) s"
             )
         }
+        let apparitions = intro.timeline.map(\.delay)
 
         let derniere = apparitions.max() ?? 0
         precondition(
