@@ -65,13 +65,29 @@ struct InterviewTypeEntryScreen: View {
                             .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
 
-                    continueButton
-
                     privacyNote
                 }
                 .frame(maxWidth: 720)
                 .padding(22)
                 .frame(maxWidth: .infinity)
+            }
+            // Choisir un type ne menait visiblement nulle part : le bouton
+            // était en bas du défilement, sous la date et le métier, donc hors
+            // écran. Un testeur est resté devant sa sélection sans savoir s'il
+            // fallait faire défiler ou faire autre chose — la carte teintée
+            // était le seul retour, et elle n'annonçait aucune suite.
+            //
+            // Ancré, le pas suivant est toujours visible, et il s'allume à
+            // l'instant du choix. Le défilement automatique aurait traité le
+            // symptôme une fois ; celui-ci retire la question à chaque usage.
+            .safeAreaInset(edge: .bottom) {
+                continueButton
+                    .frame(maxWidth: 720)
+                    .padding(.horizontal, 22)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(.ultraThinMaterial)
             }
         }
         .animation(LegitimaMotion.reveal, value: selection)
