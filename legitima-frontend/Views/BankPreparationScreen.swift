@@ -302,19 +302,31 @@ struct BankPreparationScreen: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            TemplateAnswerView(template: question.answer)
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(LegitimaColors.chip)
-                .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
+            // Les trois blocs portent les intitulés du PDF, mot pour mot.
+            // L'exportateur les pose depuis toujours « comme à l'écran » — ce
+            // qui n'était vrai que de la carte personnalisée. Sur la carte de
+            // la banque, une boîte teintée, une flèche et un triangle
+            // portaient seuls tout le sens, et un testeur l'a dit : rien ne
+            // se comprenait à l'écran, tout se comprenait au PDF.
+            VStack(alignment: .leading, spacing: 6) {
+                Label("À dire", systemImage: "text.quote")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(LegitimaColors.accent)
+
+                TemplateAnswerView(template: question.answer)
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(LegitimaColors.chip)
+                    .clipShape(RoundedRectangle(cornerRadius: LegitimaRadius.control))
+            }
 
             // La relance porte les mêmes balises que le gabarit. Affichée telle
             // quelle, elle montrait « je suis à <SALAIRE_ACTUEL> » — ce qui se lit
             // comme une variable non remplacée, pas comme un blanc à remplir.
             if !question.followUp.isEmpty {
-                HStack(alignment: .top, spacing: 6) {
-                    Image(systemName: "arrow.turn.down.right")
-                        .font(.footnote)
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("Relance probable", systemImage: "arrow.turn.down.right")
+                        .font(.caption.weight(.bold))
                         .foregroundColor(LegitimaColors.muted)
                     Text(TemplateFilling.plainText(question.followUp, filled: slots.values))
                         .font(.footnote)
@@ -324,10 +336,15 @@ struct BankPreparationScreen: View {
             }
 
             if !question.avoid.isEmpty {
-                Label(question.avoid.capitalizedFirst, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
-                    .foregroundColor(LegitimaColors.gold)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("À éviter", systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(LegitimaColors.gold)
+                    Text(question.avoid.capitalizedFirst)
+                        .font(.footnote)
+                        .foregroundColor(LegitimaColors.gold)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
 
             comfortButton(key: question.id)
