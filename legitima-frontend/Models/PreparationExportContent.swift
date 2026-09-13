@@ -24,6 +24,26 @@ struct PreparationExportContent {
         /// Ce qui est acquis — les questions marquées « à l'aise ». Vert.
         case acquired
         case plain
+
+        /// Le mot qui annonce le bloc avant sa lecture.
+        ///
+        /// Il vit ici parce que l'écran et le PDF doivent dire la même chose :
+        /// tant que chacun portait ses propres littéraux, ils pouvaient
+        /// diverger — et ils ont divergé. Le PDF nommait ses trois blocs, la
+        /// carte de la banque n'en nommait aucun, et un testeur a compris le
+        /// rapport sans comprendre l'écran.
+        ///
+        /// Le PDF met la sienne en capitales à l'impression ; la casse est une
+        /// affaire de rendu, pas de vocabulaire.
+        var label: String? {
+            switch self {
+            case .say: return "À dire"
+            case .guidance: return "Comment répondre"
+            case .followUp: return "Relance probable"
+            case .avoid: return "À éviter"
+            case .acquired, .plain: return nil
+            }
+        }
     }
 
     /// Un paragraphe est fait de segments : le rendu peut ainsi peindre un

@@ -70,11 +70,14 @@ enum PreparationPDFExporter {
     private static func rendering(
         for tone: PreparationExportContent.Tone
     ) -> (label: String?, color: UIColor, text: UIColor) {
+        // Le mot vient de `Tone.label`, partagé avec l'écran. Seules les
+        // couleurs et la casse appartiennent à l'impression.
+        let label = tone.label?.uppercased()
         switch tone {
-        case .say: return ("À DIRE", Palette.blue, Palette.ink)
-        case .guidance: return ("COMMENT RÉPONDRE", Palette.accent, Palette.body)
-        case .followUp: return ("RELANCE PROBABLE", Palette.muted, Palette.muted)
-        case .avoid: return ("À ÉVITER", Palette.red, Palette.red)
+        case .say: return (label, Palette.blue, Palette.ink)
+        case .guidance: return (label, Palette.accent, Palette.body)
+        case .followUp: return (label, Palette.muted, Palette.muted)
+        case .avoid: return (label, Palette.red, Palette.red)
         case .acquired: return (nil, Palette.green, Palette.green)
         case .plain: return (nil, Palette.accent, Palette.body)
         }

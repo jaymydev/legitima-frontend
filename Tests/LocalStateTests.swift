@@ -16,6 +16,8 @@ struct LocalStateTests {
         testComfortMarksLeaveTheReport()
         try testTheBankPlanReachesTheReportUntilABetterOneExists()
         testServiceErrorsAreReadableBySomeonePreparingAnInterview()
+        try testTheScreenAndTheReportNameTheBlocksIdentically()
+        try testEveryOptionalFieldSaysItIsOptional()
         print("Local state tests passed")
     }
 
@@ -535,5 +537,78 @@ struct LocalStateTests {
         precondition(InterviewCountdown.label(daysUntil: 0) == "Votre entretien a lieu aujourd'hui")
         precondition(InterviewCountdown.label(daysUntil: 1) == "Votre entretien a lieu demain")
         precondition(InterviewCountdown.label(daysUntil: 5) == "Votre entretien a lieu dans 5 jours")
+    }
+
+    // MARK: - Ce que les vues promettent
+    //
+    // Le harnais ne compile pas les Views : il ne verra jamais un bouton ni une
+    // étiquette à l'écran. Ce qu'il peut faire, c'est lire la source et refuser
+    // qu'une règle déjà payée soit défaite — le dépôt backend fait déjà ça avec
+    // son test AST sur `store=False`. C'est plus faible qu'un test d'interface :
+    // ça prouve que le code le dit, pas que l'écran le montre.
+
+    private static func sourceFile(_ relative: String) throws -> String {
+        let root = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()   // Tests/
+            .deletingLastPathComponent()   // racine du dépôt
+        return try String(contentsOf: root.appendingPathComponent(relative), encoding: .utf8)
+    }
+
+    /// L'écran et le PDF nomment les blocs avec les mêmes mots.
+    ///
+    /// Tant que chacun portait ses littéraux, ils pouvaient diverger — et ils
+    /// ont divergé : le PDF nommait ses trois blocs, la carte de la banque n'en
+    /// nommait aucun. Un testeur a compris le rapport et pas l'écran. Le
+    /// vocabulaire vit maintenant dans `Tone.label`, et ce test refuse qu'une
+    /// des deux surfaces reprenne le sien.
+    private static func testTheScreenAndTheReportNameTheBlocksIdentically() throws {
+        typealias Tone = PreparationExportContent.Tone
+        precondition(Tone.say.label == "À dire")
+        precondition(Tone.guidance.label == "Comment répondre")
+        precondition(Tone.followUp.label == "Relance probable")
+        precondition(Tone.avoid.label == "À éviter")
+        // Les tons sans étiquette sont ceux qui n'annoncent rien.
+        precondition(Tone.acquired.label == nil && Tone.plain.label == nil)
+
+        let screen = try sourceFile("legitima-frontend/Views/BankPreparationScreen.swift")
+        for ton in ["say", "guidance", "followUp", "avoid"] {
+            precondition(
+                screen.contains("Tone.\(ton).label"),
+                "l'écran n'utilise pas l'étiquette partagée pour .\(ton)"
+            )
+        }
+
+        let pdf = try sourceFile("legitima-frontend/Services/PreparationPDFExporter.swift")
+        precondition(pdf.contains("tone.label"), "le PDF n'utilise plus l'étiquette partagée")
+
+        // Aucune des deux surfaces ne réécrit un des mots en dur.
+        for texte in [screen, pdf] {
+            for mot in ["À dire", "Comment répondre", "Relance probable", "À éviter"] {
+                precondition(
+                    !texte.contains("\"\(mot)\"") && !texte.contains("\"\(mot.uppercased())\""),
+                    "étiquette réécrite en dur : \(mot)"
+                )
+            }
+        }
+    }
+
+    /// Une entrée facultative le dit.
+    ///
+    /// Le métier portait « Facultatif », la date non — alors que le commentaire
+    /// juste au-dessus disait « facultatif, comme la date ». L'information
+    /// existait dans le code et jamais à l'écran, et un testeur a cru la date
+    /// obligatoire. Ce test compte les entrées facultatives de l'écran d'entrée
+    /// et exige autant d'étiquettes : en ajouter une troisième sans son
+    /// étiquette fait tomber le test.
+    private static func testEveryOptionalFieldSaysItIsOptional() throws {
+        let screen = try sourceFile("legitima-frontend/Views/InterviewTypeEntryScreen.swift")
+        precondition(screen.contains("Quand a lieu cet entretien ?"), "section date introuvable")
+        precondition(screen.contains("Text(\"Votre métier\")"), "section métier introuvable")
+
+        let etiquettes = screen.components(separatedBy: "Text(\"Facultatif\")").count - 1
+        precondition(
+            etiquettes == 2,
+            "deux entrées facultatives sur cet écran, \(etiquettes) étiquette(s) « Facultatif »"
+        )
     }
 }

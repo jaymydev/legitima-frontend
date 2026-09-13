@@ -236,9 +236,16 @@ struct InterviewTypeEntryScreen: View {
     /// not be stopped here — the date only buys a reminder.
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Quand a lieu cet entretien ?")
-                .font(.headline)
-                .foregroundColor(LegitimaColors.ink)
+            // Le commentaire de `metierSection` dit « facultatif, comme la
+            // date » depuis toujours. La date le savait, elle ne le disait pas.
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("Quand a lieu cet entretien ?")
+                    .font(.headline)
+                    .foregroundColor(LegitimaColors.ink)
+                Text("Facultatif")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(LegitimaColors.muted)
+            }
 
             Text("Nous vous enverrons un rappel avant, pour réviser au bon moment.")
                 .font(.subheadline)
