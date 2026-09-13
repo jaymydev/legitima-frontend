@@ -20,7 +20,7 @@ struct LocalStateTests {
         try testEveryOptionalFieldSaysItIsOptional()
         try testTheNextStepIsNeverBuriedInTheScroll()
         testTheShortIntroStaysShort()
-        testEveryIntroLineHasTimeToBeReadBeforeTheNext()
+        testBeatsNeverOverlapAndHaveTimeToBeRead()
         print("Local state tests passed")
     }
 
@@ -648,60 +648,68 @@ struct LocalStateTests {
 
     /// Ce qui explique se lit une fois ; ce qui identifie se revoit.
     ///
-    /// Au deuxième lancement, seuls le nom et la promesse restent. Réafficher
-    /// les trois phrases à chaque ouverture ferait payer l'explication à
-    /// quelqu'un qui l'a déjà lue — et un écran de lancement qu'on subit est
+    /// Au deuxième lancement, le slogan seul reste sous le logo. Refaire
+    /// défiler les trois phrases à chaque ouverture ferait payer l'explication
+    /// à quelqu'un qui l'a déjà lue — et un écran de lancement qu'on subit est
     /// pire que pas d'écran du tout.
     private static func testTheShortIntroStaysShort() {
         let retour = LaunchIntro(hasLaunchedBefore: true)
         precondition(retour.pace == .returning)
-        precondition(retour.timeline.count == 3, "la cadence brève montre plus que la marque, le nom et la promesse")
-        precondition(
-            Set(retour.timeline.map(\.delay)) == [0],
-            "au retour, tout doit arriver en un seul temps"
-        )
-        for phrase in LaunchIntro.lines {
-            precondition(
-                !retour.timeline.contains(where: { $0.text == phrase }),
-                "une phrase d'explication revient à chaque lancement"
-            )
-        }
+        precondition(retour.beats.count == 1, "la cadence brève défile encore")
+        precondition(retour.beats[0].text == LaunchIntro.slogan)
+        precondition(retour.beats[0].start == 0, "au retour, rien ne se fait attendre")
+        precondition(retour.beats[0].end == nil, "le slogan doit rester jusqu'au bout")
         precondition(retour.duration < 2, "l'écran bref dure \(retour.duration) s")
 
         let premier = LaunchIntro(hasLaunchedBefore: false)
         precondition(premier.pace == .first)
-        precondition(premier.timeline.count == 3 + LaunchIntro.lines.count)
+        precondition(premier.beats.count == LaunchIntro.lines.count + 1)
+        precondition(premier.beats.last?.end == nil, "le slogan doit rester jusqu'au bout")
         precondition(premier.duration > retour.duration)
     }
 
-    /// Une phrase qui n'a pas le temps d'apparaître ne sert à rien.
+    /// Deux temps ne se chevauchent jamais, et chacun a le temps d'être lu.
     ///
-    /// Les apparitions s'enchaînent : si l'écart entre deux devient plus court
-    /// que le fondu, la seconde démarre avant que la première ne soit lisible
-    /// et l'écran clignote. Et si la séquence s'allonge sans qu'on y pense,
-    /// c'est l'app entière qu'on fait attendre.
-    private static func testEveryIntroLineHasTimeToBeReadBeforeTheNext() {
-        let intro = LaunchIntro(hasLaunchedBefore: false)
+    /// Le texte défile sous un logo fixe : si un temps commence avant que le
+    /// précédent ne soit sorti, deux phrases se superposent au même endroit et
+    /// l'écran devient illisible. Et une phrase qui paraît puis disparaît trop
+    /// vite ne se lit pas, elle se devine.
+    private static func testBeatsNeverOverlapAndHaveTimeToBeRead() {
+        for intro in [LaunchIntro(hasLaunchedBefore: false), LaunchIntro(hasLaunchedBefore: true)] {
+            for (precedent, suivant) in zip(intro.beats, intro.beats.dropFirst()) {
+                guard let fin = precedent.end else {
+                    preconditionFailure("un temps qui ne finit jamais en précède un autre")
+                }
+                // Il ne suffit pas que le temps précédent soit fini : son
+                // fondu de sortie doit l'être aussi, sinon les deux phrases
+                // se superposent pendant la durée du fondu.
+                precondition(
+                    fin + LaunchIntro.fade <= suivant.start,
+                    "fondus superposés : l'un finit à \(fin) + \(LaunchIntro.fade), l'autre part à \(suivant.start)"
+                )
+            }
 
-        // Plusieurs éléments au même instant forment un seul temps — la marque
-        // et le nom peuvent arriver ensemble. La règle porte sur l'écart entre
-        // deux temps successifs, pas entre deux éléments.
-        let temps = Set(intro.timeline.map(\.delay)).sorted()
-        for (precedent, suivant) in zip(temps, temps.dropFirst()) {
-            precondition(
-                suivant - precedent >= LaunchIntro.fade,
-                "deux temps séparés de \(suivant - precedent) s, fondu de \(LaunchIntro.fade) s"
-            )
+            for beat in intro.beats {
+                let fin = beat.end ?? intro.exitStart
+                precondition(
+                    fin - beat.start >= LaunchIntro.minimumBeat,
+                    "« \(beat.text.prefix(28))… » tient \(fin - beat.start) s, minimum \(LaunchIntro.minimumBeat) s"
+                )
+            }
+
+            // Le premier temps attend la fin de l'arrivée du logo : deux
+            // mouvements simultanés se gênent.
+            if let premier = intro.beats.first, intro.pace == .first {
+                precondition(
+                    premier.start >= LaunchIntro.entrance,
+                    "le texte démarre à \(premier.start) s, avant la fin de l'arrivée du logo"
+                )
+            }
         }
-        let apparitions = intro.timeline.map(\.delay)
 
-        let derniere = apparitions.max() ?? 0
-        precondition(
-            derniere + LaunchIntro.fade <= intro.duration,
-            "la dernière phrase finit son fondu après la fin de l'écran"
-        )
         // Le plafond n'est pas une élégance : c'est le temps qu'on impose à
         // quelqu'un qui a ouvert l'app pour préparer un entretien.
-        precondition(intro.duration <= 6, "l'écran de lancement dure \(intro.duration) s")
+        let complet = LaunchIntro(hasLaunchedBefore: false)
+        precondition(complet.duration <= 8, "l'écran de lancement dure \(complet.duration) s")
     }
 }

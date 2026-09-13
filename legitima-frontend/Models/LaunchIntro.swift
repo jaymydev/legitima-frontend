@@ -2,20 +2,19 @@ import Foundation
 
 /// Ce que l'app dit d'elle-même avant que la personne n'ait rien fait.
 ///
-/// Un testeur extérieur a ouvert l'app et s'est trouvé devant une liste de six
-/// types d'entretien, sans savoir ce que Legitima était ni pourquoi le nom
-/// disait ça. L'écran de lancement est le seul moment où le nom peut vouloir
-/// dire quelque chose : ailleurs, il n'y a plus d'occasion.
+/// La forme vient d'une référence choisie : un logo posé au centre, un fond
+/// calme, rien autour. Sous lui, les phrases se succèdent — chacune paraît,
+/// tient le temps d'être lue, cède la place. La dernière est le slogan, et
+/// celle-là reste : c'est elle qu'on emporte dans l'écran suivant.
 ///
 /// La cadence vit ici, hors de la vue, pour deux raisons. Le harnais de test ne
 /// compile pas les Views : une durée écrite dans un `@State` ne serait vérifiée
-/// par rien. Et une phrase programmée après la fin de l'écran ne s'afficherait
-/// jamais — c'est le genre de défaut qu'on ne voit pas en relisant, seulement
-/// en comptant.
+/// par rien. Et deux temps qui se chevauchent superposeraient deux phrases —
+/// un défaut qu'on ne voit pas en relisant, seulement en comptant.
 struct LaunchIntro: Equatable {
-    /// Au premier lancement, la séquence complète. Ensuite, le nom et la
-    /// promesse seulement : ce qui explique se lit une fois, ce qui identifie
-    /// se revoit à chaque ouverture.
+    /// Au premier lancement, la séquence complète. Ensuite, le logo et le
+    /// slogan seulement : ce qui explique se lit une fois, ce qui identifie se
+    /// revoit à chaque ouverture.
     enum Pace: Equatable {
         case first
         case returning
@@ -38,7 +37,29 @@ struct LaunchIntro: Equatable {
     ]
 
     /// Un fondu se lit s'il a le temps de finir. En deçà, il clignote.
-    static let fade: Double = 0.55
+    static let fade: Double = 0.38
+    /// Le temps de lecture minimal d'un temps, fondus compris. Une phrase qui
+    /// paraît et disparaît plus vite ne se lit pas, elle se devine.
+    static let minimumBeat: Double = 1.1
+
+    /// L'arrivée du logo : il monte à sa taille en dépassant un peu, comme un
+    /// objet qui se pose. C'est le seul endroit de l'app où le mouvement a le
+    /// droit d'être démonstratif — ailleurs, il explique.
+    static let entrance: Double = 0.66
+    /// La sortie : le logo s'ouvre et se dissout, ce qui lit comme un passage
+    /// *dans* l'app plutôt que comme un écran qu'on retire.
+    static let exit: Double = 0.52
+    /// Ce que le logo vaut au départ et à l'arrivée, en proportion.
+    static let entranceScale: Double = 0.72
+    static let exitScale: Double = 1.22
+
+    /// Un temps de la séquence : un texte qui paraît, puis cède la place.
+    /// `end` à `nil` veut dire qu'il reste jusqu'au bout.
+    struct Beat: Equatable {
+        let text: String
+        let start: Double
+        let end: Double?
+    }
 
     let pace: Pace
 
@@ -46,36 +67,41 @@ struct LaunchIntro: Equatable {
         pace = hasLaunchedBefore ? .returning : .first
     }
 
-    /// Ce qui apparaît, et quand.
-    ///
-    /// Le nom d'abord, la promesse ensuite — puis, au premier lancement
-    /// seulement, les trois phrases.
-    var timeline: [(text: String, delay: Double)] {
-        // Au retour, l'identité ne s'explique plus : elle se reconnaît. Les
-        // trois éléments arrivent ensemble, en un seul temps, et l'écran
-        // s'efface. Une révélation par étapes serait une explication qu'on
-        // impose une deuxième fois.
+    /// Le logo et le mot-symbole ne sont pas des temps : ils sont là d'un bout
+    /// à l'autre, et c'est ce qui tient la composition pendant que le texte
+    /// défile dessous.
+    var beats: [Beat] {
         guard pace == .first else {
-            return [(Self.markAsset, 0), (Self.wordmark, 0), (Self.slogan, 0)]
+            return [Beat(text: Self.slogan, start: 0, end: nil)]
         }
-        var items: [(String, Double)] = [
-            (Self.markAsset, 0),
-            (Self.wordmark, 0.55),
-            (Self.slogan, 1.10),
-        ]
-        for (index, line) in Self.lines.enumerated() {
-            items.append((line, 2.00 + Double(index) * 0.95))
+        var items: [Beat] = []
+        // Le premier temps attend que le logo ait fini d'arriver : deux
+        // mouvements simultanés se gênent, et c'est le logo qu'on veut voir.
+        var t = Self.entrance + 0.25
+        // L'écart entre deux temps dépasse la durée du fondu. En deçà, la
+        // phrase sortante est encore visible quand la suivante paraît : les
+        // deux se superposent au même endroit et l'écran devient illisible.
+        // Vu à la capture avant d'être écrit ici.
+        let tenue = 1.25
+        let ecart = Self.fade + 0.07
+        for line in Self.lines {
+            items.append(Beat(text: line, start: t, end: t + tenue))
+            t += tenue + ecart
         }
+        items.append(Beat(text: Self.slogan, start: t, end: nil))
         return items
     }
 
-    /// Quand l'écran s'efface de lui-même.
+    /// Quand la sortie commence.
     ///
-    /// Toujours après la dernière apparition, fondu compris : une phrase qu'on
-    /// n'a pas le temps de lire ne sert à rien, et une phrase programmée après
-    /// la fin ne s'affiche pas du tout.
-    var duration: Double {
-        let last = timeline.map(\.delay).max() ?? 0
-        return last + Self.fade + (pace == .first ? 0.9 : 0.35)
+    /// Le dernier temps est le slogan, et il doit tenir au moins aussi
+    /// longtemps que les autres : au retour, il est la seule chose à lire, et
+    /// une version trop pressée l'affichait sans laisser le temps de le voir.
+    var exitStart: Double {
+        let dernier = beats.last?.start ?? 0
+        return dernier + max(Self.minimumBeat, pace == .first ? 1.45 : 1.25)
     }
+
+    /// Quand l'écran a fini de céder la place.
+    var duration: Double { exitStart + Self.exit }
 }
