@@ -18,6 +18,7 @@ struct LocalStateTests {
         testServiceErrorsAreReadableBySomeonePreparingAnInterview()
         try testTheScreenAndTheReportNameTheBlocksIdentically()
         try testEveryOptionalFieldSaysItIsOptional()
+        try testTheNextStepIsNeverBuriedInTheScroll()
         print("Local state tests passed")
     }
 
@@ -609,6 +610,37 @@ struct LocalStateTests {
         precondition(
             etiquettes == 2,
             "deux entrées facultatives sur cet écran, \(etiquettes) étiquette(s) « Facultatif »"
+        )
+    }
+
+    /// Le pas suivant reste hors du défilement.
+    ///
+    /// « Continuer » était dans la pile qui défile, sous la date et le métier —
+    /// deux sections qui n'apparaissent qu'une fois le type choisi et qui le
+    /// repoussaient donc d'autant. Un testeur a choisi un type et n'a rien vu
+    /// se passer : le seul retour était la carte qui se teinte, et une carte
+    /// teintée n'annonce aucune suite.
+    ///
+    /// Le remettre dans le `ScrollView` suffirait à refaire le défaut sans que
+    /// rien ne casse. Ce test refuse les deux moitiés de la règle : le bouton
+    /// doit être ancré, et il ne doit plus être dans ce qui défile.
+    private static func testTheNextStepIsNeverBuriedInTheScroll() throws {
+        let screen = try sourceFile("legitima-frontend/Views/InterviewTypeEntryScreen.swift")
+
+        guard let scroll = screen.range(of: "ScrollView {"),
+              let inset = screen.range(of: ".safeAreaInset(edge: .bottom)") else {
+            preconditionFailure("« Continuer » n'est plus ancré sous le défilement")
+        }
+        precondition(scroll.lowerBound < inset.lowerBound, "structure de l'écran inattendue")
+
+        let defilement = screen[scroll.upperBound..<inset.lowerBound]
+        precondition(
+            !defilement.contains("continueButton"),
+            "« Continuer » est de nouveau dans le défilement : il redeviendra invisible"
+        )
+        precondition(
+            screen[inset.lowerBound...].contains("continueButton"),
+            "l'ancrage ne contient pas le bouton"
         )
     }
 }
