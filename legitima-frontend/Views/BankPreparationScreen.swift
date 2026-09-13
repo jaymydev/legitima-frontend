@@ -239,7 +239,9 @@ struct BankPreparationScreen: View {
                 // Une phrase se dit, une consigne se suit : le libellé le dit
                 // avant la lecture, pour qu'on sache ce qu'on tient.
                 Label(
-                    question.isSentence ? "À dire" : "Comment répondre",
+                    (question.isSentence
+                        ? PreparationExportContent.Tone.say.label
+                        : PreparationExportContent.Tone.guidance.label) ?? "",
                     systemImage: question.isSentence ? "text.quote" : "list.bullet"
                 )
                 .font(.caption.weight(.bold))
@@ -309,7 +311,7 @@ struct BankPreparationScreen: View {
             // portaient seuls tout le sens, et un testeur l'a dit : rien ne
             // se comprenait à l'écran, tout se comprenait au PDF.
             VStack(alignment: .leading, spacing: 6) {
-                Label("À dire", systemImage: "text.quote")
+                Label(PreparationExportContent.Tone.say.label ?? "", systemImage: "text.quote")
                     .font(.caption.weight(.bold))
                     .foregroundColor(LegitimaColors.accent)
 
@@ -325,7 +327,7 @@ struct BankPreparationScreen: View {
             // comme une variable non remplacée, pas comme un blanc à remplir.
             if !question.followUp.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Label("Relance probable", systemImage: "arrow.turn.down.right")
+                    Label(PreparationExportContent.Tone.followUp.label ?? "", systemImage: "arrow.turn.down.right")
                         .font(.caption.weight(.bold))
                         .foregroundColor(LegitimaColors.muted)
                     Text(TemplateFilling.plainText(question.followUp, filled: slots.values))
@@ -337,7 +339,7 @@ struct BankPreparationScreen: View {
 
             if !question.avoid.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Label("À éviter", systemImage: "exclamationmark.triangle.fill")
+                    Label(PreparationExportContent.Tone.avoid.label ?? "", systemImage: "exclamationmark.triangle.fill")
                         .font(.caption.weight(.bold))
                         .foregroundColor(LegitimaColors.gold)
                     Text(question.avoid.capitalizedFirst)
