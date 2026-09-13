@@ -19,6 +19,8 @@ struct LocalStateTests {
         try testTheScreenAndTheReportNameTheBlocksIdentically()
         try testEveryOptionalFieldSaysItIsOptional()
         try testTheNextStepIsNeverBuriedInTheScroll()
+        testTheShortIntroStaysShort()
+        testEveryIntroLineHasTimeToBeReadBeforeTheNext()
         print("Local state tests passed")
     }
 
@@ -642,5 +644,56 @@ struct LocalStateTests {
             screen[inset.lowerBound...].contains("continueButton"),
             "l'ancrage ne contient pas le bouton"
         )
+    }
+
+    /// Ce qui explique se lit une fois ; ce qui identifie se revoit.
+    ///
+    /// Au deuxième lancement, seuls le nom et la promesse restent. Réafficher
+    /// les trois phrases à chaque ouverture ferait payer l'explication à
+    /// quelqu'un qui l'a déjà lue — et un écran de lancement qu'on subit est
+    /// pire que pas d'écran du tout.
+    private static func testTheShortIntroStaysShort() {
+        let retour = LaunchIntro(hasLaunchedBefore: true)
+        precondition(retour.pace == .returning)
+        precondition(retour.timeline.count == 2, "la cadence brève montre plus que le nom et la promesse")
+        for phrase in LaunchIntro.lines {
+            precondition(
+                !retour.timeline.contains(where: { $0.text == phrase }),
+                "une phrase d'explication revient à chaque lancement"
+            )
+        }
+        precondition(retour.duration < 2, "l'écran bref dure \(retour.duration) s")
+
+        let premier = LaunchIntro(hasLaunchedBefore: false)
+        precondition(premier.pace == .first)
+        precondition(premier.timeline.count == 2 + LaunchIntro.lines.count)
+        precondition(premier.duration > retour.duration)
+    }
+
+    /// Une phrase qui n'a pas le temps d'apparaître ne sert à rien.
+    ///
+    /// Les apparitions s'enchaînent : si l'écart entre deux devient plus court
+    /// que le fondu, la seconde démarre avant que la première ne soit lisible
+    /// et l'écran clignote. Et si la séquence s'allonge sans qu'on y pense,
+    /// c'est l'app entière qu'on fait attendre.
+    private static func testEveryIntroLineHasTimeToBeReadBeforeTheNext() {
+        let intro = LaunchIntro(hasLaunchedBefore: false)
+        let apparitions = intro.timeline.map(\.delay)
+
+        for (precedente, suivante) in zip(apparitions, apparitions.dropFirst()) {
+            precondition(
+                suivante - precedente >= LaunchIntro.fade,
+                "deux apparitions séparées de \(suivante - precedente) s, fondu de \(LaunchIntro.fade) s"
+            )
+        }
+
+        let derniere = apparitions.max() ?? 0
+        precondition(
+            derniere + LaunchIntro.fade <= intro.duration,
+            "la dernière phrase finit son fondu après la fin de l'écran"
+        )
+        // Le plafond n'est pas une élégance : c'est le temps qu'on impose à
+        // quelqu'un qui a ouvert l'app pour préparer un entretien.
+        precondition(intro.duration <= 6, "l'écran de lancement dure \(intro.duration) s")
     }
 }

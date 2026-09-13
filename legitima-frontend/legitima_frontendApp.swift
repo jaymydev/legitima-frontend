@@ -14,24 +14,46 @@ struct legitima_frontendApp: App {
     @StateObject private var slotStore = SlotStore()
     private let reminderScheduler = InterviewReminderScheduler()
 
+    /// L'écran de lancement passe une fois, puis se retire pour la session.
+    @State private var introFinished = false
+    /// Séquence complète au premier lancement, nom et promesse ensuite. Le
+    /// drapeau vit dans les préférences : il ne décrit pas une préparation, il
+    /// ne relève donc pas du stockage protégé qu'`OrphanedStorage` nettoie.
+    private let intro = LaunchIntro(
+        hasLaunchedBefore: UserDefaults.standard.bool(forKey: legitima_frontendApp.introSeenKey)
+    )
+    private static let introSeenKey = "legitima.intro.seen"
+
     init() {
         OrphanedStorage.removeAll()
     }
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack(path: $router.path) {
-                rootView
-                    .navigationDestination(for: AppRouter.Route.self) { route in
-                        switch route {
-                        case let .preparedQuestions(useCaseID):
-                            BankPreparationScreen(useCaseID: useCaseID)
+            ZStack {
+                NavigationStack(path: $router.path) {
+                    rootView
+                        .navigationDestination(for: AppRouter.Route.self) { route in
+                            switch route {
+                            case let .preparedQuestions(useCaseID):
+                                BankPreparationScreen(useCaseID: useCaseID)
+                            }
                         }
+                }
+                .environmentObject(preparationStore)
+                .environmentObject(slotStore)
+                .environmentObject(router)
+
+                if !introFinished {
+                    LaunchIntroScreen(intro: intro) {
+                        UserDefaults.standard.set(true, forKey: Self.introSeenKey)
+                        introFinished = true
                     }
+                    .transition(.opacity)
+                    .zIndex(1)
+                }
             }
-            .environmentObject(preparationStore)
-            .environmentObject(slotStore)
-            .environmentObject(router)
+            .animation(LegitimaMotion.reveal, value: introFinished)
         }
     }
 

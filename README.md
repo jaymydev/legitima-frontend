@@ -67,6 +67,7 @@ standalone executable compiled directly:
 
 ```sh
 SRC=(legitima-frontend/Models/LocalPreparationStore.swift \
+     legitima-frontend/Models/LaunchIntro.swift \
      legitima-frontend/Models/InterviewReminderPlan.swift \
      legitima-frontend/Models/QuestionBank.swift \
      legitima-frontend/Models/CVExperienceRow.swift \
