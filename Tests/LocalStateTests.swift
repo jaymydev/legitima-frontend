@@ -21,6 +21,7 @@ struct LocalStateTests {
         try testTheNextStepIsNeverBuriedInTheScroll()
         testTheShortIntroStaysShort()
         testBeatsNeverOverlapAndHaveTimeToBeRead()
+        try testTheGuideExplainsExactlyTheBlocksTheCardShows()
         print("Local state tests passed")
     }
 
@@ -711,5 +712,64 @@ struct LocalStateTests {
         // quelqu'un qui a ouvert l'app pour préparer un entretien.
         let complet = LaunchIntro(hasLaunchedBefore: false)
         precondition(complet.duration <= 8, "l'écran de lancement dure \(complet.duration) s")
+    }
+
+    /// L'introduction explique exactement les blocs que la carte montre.
+    ///
+    /// Nommer les blocs avait réglé la moitié du problème : on savait *que*
+    /// c'étaient trois choses différentes, pas *lesquelles*. L'introduction dit
+    /// lesquelles — mais une explication qui ne suit pas la carte est pire que
+    /// pas d'explication : elle apprend un vocabulaire faux.
+    ///
+    /// Les deux se construisent donc depuis `Tone.bankCard`. Ce test refuse
+    /// qu'elles s'écartent : un bloc ajouté à la carte sans explication, une
+    /// explication sans bloc, un ordre qui diverge, ou un pictogramme réécrit
+    /// en dur dans l'une des deux vues.
+    private static func testTheGuideExplainsExactlyTheBlocksTheCardShows() throws {
+        typealias Tone = PreparationExportContent.Tone
+
+        // Comparer `entries` à `bankCard` ne prouverait rien : les entrées se
+        // construisent depuis cette liste. Le référent est l'ordre réel dans
+        // le corps de `card(index:question:)` — vu en mutant la liste, ce qui
+        // laissait le test au vert.
+        precondition(
+            BlockGuide.entries.map(\.tone) == Tone.bankCard,
+            "l'introduction ne couvre pas les blocs de la carte"
+        )
+
+        for entree in BlockGuide.entries {
+            precondition(!entree.label.isEmpty, "\(entree.tone) n'a pas d'étiquette")
+            precondition(!entree.symbol.isEmpty, "\(entree.tone) n'a pas de pictogramme")
+            precondition(
+                !entree.explanation.isEmpty,
+                "\(entree.tone) est montré sans être expliqué"
+            )
+        }
+
+        // Le pictogramme vient du modèle, des deux côtés. Réécrit en dur dans
+        // l'introduction, il pourrait cesser de correspondre à ce que la carte
+        // montre.
+        let ecran = try sourceFile("legitima-frontend/Views/BankPreparationScreen.swift")
+        let intro = try sourceFile("legitima-frontend/Views/BlockGuideSheet.swift")
+
+        // Seulement le corps de la carte de la banque : `personalizedCard`, plus
+        // haut dans le fichier, emploie deux des mêmes pictogrammes.
+        guard let debut = ecran.range(of: "private func card(index: Int, question: BankQuestion)") else {
+            preconditionFailure("corps de la carte introuvable")
+        }
+        let corps = ecran[debut.upperBound...]
+
+        var precedent = corps.startIndex
+        for tone in Tone.bankCard {
+            guard let symbole = tone.symbol else { preconditionFailure("pictogramme manquant") }
+            guard let trouve = corps.range(of: "systemImage: \"\(symbole)\"", range: precedent..<corps.endIndex) else {
+                preconditionFailure("la carte n'affiche pas le pictogramme de \(tone), ou pas dans l'ordre annoncé")
+            }
+            precedent = trouve.upperBound
+            precondition(
+                !intro.contains("\"\(symbole)\""),
+                "pictogramme réécrit en dur dans l'introduction : \(symbole)"
+            )
+        }
     }
 }

@@ -18,6 +18,9 @@ struct BankPreparationScreen: View {
     /// d'identifiant et « Refaire » la remplace, donc une marque orpheline ne
     /// fait que dormir dans le fichier.
     @State private var comfortable: Set<String> = []
+    /// L'introduction des blocs : une fois, au premier passage, puis rejouable.
+    @State private var showsBlockGuide = false
+    private static let guideSeenKey = "legitima.blocks.seen"
 
     private let service = InterviewQuestionsService()
     private let seenStore = ProtectedJSONStore<[String]>.seenQuestions
@@ -65,6 +68,15 @@ struct BankPreparationScreen: View {
             }
         }
         .task { await load() }
+        .onAppear {
+            // Au premier passage seulement : l'explication s'impose une fois,
+            // puis se demande. La décision permanente veut que rien ne
+            // s'interpose avant les questions — elle arrive donc *avec* elles,
+            // pas avant le choix du type.
+            guard !UserDefaults.standard.bool(forKey: Self.guideSeenKey) else { return }
+            UserDefaults.standard.set(true, forKey: Self.guideSeenKey)
+            showsBlockGuide = true
+        }
     }
 
     private func content(_ page: BankPage) -> some View {
@@ -88,6 +100,18 @@ struct BankPreparationScreen: View {
                         .font(.subheadline)
                         .foregroundColor(LegitimaColors.muted)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    // Le rappel reste après la première fois : quelqu'un qui
+                    // revient trois semaines plus tard a oublié, et n'a aucune
+                    // raison de deviner qu'une explication a existé.
+                    Button {
+                        showsBlockGuide = true
+                    } label: {
+                        Label("À quoi servent les trois blocs ?", systemImage: "questionmark.circle")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundColor(LegitimaColors.accent)
+                    }
+                    .padding(.top, 2)
                 }
 
                 ForEach(Array(page.questions.enumerated()), id: \.element.id) { index, question in
@@ -130,6 +154,9 @@ struct BankPreparationScreen: View {
             .frame(maxWidth: 720)
             .padding(22)
             .frame(maxWidth: .infinity)
+        }
+        .sheet(isPresented: $showsBlockGuide) {
+            BlockGuideSheet { showsBlockGuide = false }
         }
         .sheet(isPresented: $isPersonalizing) {
             PersonalizationSheet(useCaseID: useCaseID) { prepared in

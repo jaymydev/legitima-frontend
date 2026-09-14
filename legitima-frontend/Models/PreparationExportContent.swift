@@ -44,6 +44,24 @@ struct PreparationExportContent {
             case .acquired, .plain: return nil
             }
         }
+
+        /// Le pictogramme qui accompagne l'étiquette. Il vit ici pour la même
+        /// raison qu'elle : l'écran et l'introduction qui l'explique doivent
+        /// montrer le même signe, sinon l'explication porte à faux.
+        var symbol: String? {
+            switch self {
+            case .say: return "text.quote"
+            case .guidance: return "list.bullet"
+            case .followUp: return "arrow.turn.down.right"
+            case .avoid: return "exclamationmark.triangle.fill"
+            case .acquired, .plain: return nil
+            }
+        }
+
+        /// Les trois blocs d'une carte de la banque, dans l'ordre où ils se
+        /// lisent. C'est cette liste que l'introduction parcourt : ajouter un
+        /// bloc à la carte sans l'expliquer, ou l'inverse, fait tomber un test.
+        static let bankCard: [Tone] = [.say, .followUp, .avoid]
     }
 
     /// Un paragraphe est fait de segments : le rendu peut ainsi peindre un
