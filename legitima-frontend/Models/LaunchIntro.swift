@@ -7,19 +7,21 @@ import Foundation
 /// tient le temps d'être lue, cède la place. La dernière est le slogan, et
 /// celle-là reste : c'est elle qu'on emporte dans l'écran suivant.
 ///
+/// **La séquence joue en entier à chaque ouverture.** Une version précédente
+/// l'abrégeait dès le deuxième lancement, au motif qu'une explication se lit
+/// une fois. Décision inversée le 15 septembre 2026 : c'est le seul endroit où
+/// l'app se présente, et l'abréger revenait à ne la montrer qu'une fois dans
+/// la vie de l'installation.
+///
+/// Le prix est réel — huit secondes à chaque ouverture, pour quelqu'un qui
+/// prépare un entretien et ouvre parfois l'app dans un couloir. Il est payé par
+/// le tap : l'écran entier abrège, et le dit au bout de trois secondes.
+///
 /// La cadence vit ici, hors de la vue, pour deux raisons. Le harnais de test ne
 /// compile pas les Views : une durée écrite dans un `@State` ne serait vérifiée
 /// par rien. Et deux temps qui se chevauchent superposeraient deux phrases —
 /// un défaut qu'on ne voit pas en relisant, seulement en comptant.
 struct LaunchIntro: Equatable {
-    /// Au premier lancement, la séquence complète. Ensuite, le logo et le
-    /// slogan seulement : ce qui explique se lit une fois, ce qui identifie se
-    /// revoit à chaque ouverture.
-    enum Pace: Equatable {
-        case first
-        case returning
-    }
-
     /// Le jeu d'images tiré de l'icône d'app. Un `AppIcon.appiconset` n'est pas
     /// chargeable à l'exécution — iOS le compile à part — d'où cette copie
     /// redimensionnée, qui pèse 232 Ko contre 1,3 Mo pour l'originale seule.
@@ -61,23 +63,22 @@ struct LaunchIntro: Equatable {
         let end: Double?
     }
 
-    let pace: Pace
+    /// Au bout de combien de temps l'écran dit qu'on peut l'abréger. Assez tard
+    /// pour ne pas proposer la sortie avant d'avoir rien montré, assez tôt pour
+    /// que la deuxième ouverture n'oblige à rien.
+    static let skipHint: Double = 3.0
 
-    init(hasLaunchedBefore: Bool) {
-        pace = hasLaunchedBefore ? .returning : .first
-    }
+    init() {}
 
     /// Le logo et le mot-symbole ne sont pas des temps : ils sont là d'un bout
     /// à l'autre, et c'est ce qui tient la composition pendant que le texte
     /// défile dessous.
     var beats: [Beat] {
-        guard pace == .first else {
-            return [Beat(text: Self.slogan, start: 0, end: nil)]
-        }
         var items: [Beat] = []
         // Le premier temps attend que le logo ait fini d'arriver : deux
         // mouvements simultanés se gênent, et c'est le logo qu'on veut voir.
         var t = Self.entrance + 0.25
+
         // L'écart entre deux temps dépasse la durée du fondu. En deçà, la
         // phrase sortante est encore visible quand la suivante paraît : les
         // deux se superposent au même endroit et l'écran devient illisible.
@@ -99,7 +100,7 @@ struct LaunchIntro: Equatable {
     /// une version trop pressée l'affichait sans laisser le temps de le voir.
     var exitStart: Double {
         let dernier = beats.last?.start ?? 0
-        return dernier + max(Self.minimumBeat, pace == .first ? 1.45 : 1.25)
+        return dernier + max(Self.minimumBeat, 1.45)
     }
 
     /// Quand l'écran a fini de céder la place.

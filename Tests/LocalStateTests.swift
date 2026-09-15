@@ -19,8 +19,9 @@ struct LocalStateTests {
         try testTheScreenAndTheReportNameTheBlocksIdentically()
         try testEveryOptionalFieldSaysItIsOptional()
         try testTheNextStepIsNeverBuriedInTheScroll()
-        testTheShortIntroStaysShort()
+        testTheIntroPlaysWholeAndEndsOnTheSlogan()
         testBeatsNeverOverlapAndHaveTimeToBeRead()
+        try testTheIntroAlwaysSaysItCanBeSkipped()
         try testTheGuideExplainsExactlyTheBlocksTheCardShows()
         print("Local state tests passed")
     }
@@ -647,26 +648,42 @@ struct LocalStateTests {
         )
     }
 
-    /// Ce qui explique se lit une fois ; ce qui identifie se revoit.
+    /// La séquence joue en entier, et finit sur le slogan.
     ///
-    /// Au deuxième lancement, le slogan seul reste sous le logo. Refaire
-    /// défiler les trois phrases à chaque ouverture ferait payer l'explication
-    /// à quelqu'un qui l'a déjà lue — et un écran de lancement qu'on subit est
-    /// pire que pas d'écran du tout.
-    private static func testTheShortIntroStaysShort() {
-        let retour = LaunchIntro(hasLaunchedBefore: true)
-        precondition(retour.pace == .returning)
-        precondition(retour.beats.count == 1, "la cadence brève défile encore")
-        precondition(retour.beats[0].text == LaunchIntro.slogan)
-        precondition(retour.beats[0].start == 0, "au retour, rien ne se fait attendre")
-        precondition(retour.beats[0].end == nil, "le slogan doit rester jusqu'au bout")
-        precondition(retour.duration < 2, "l'écran bref dure \(retour.duration) s")
+    /// Une version précédente l'abrégeait dès le deuxième lancement. La
+    /// décision a été inversée : c'est le seul endroit où l'app se présente, et
+    /// l'abréger revenait à ne la montrer qu'une fois par installation.
+    ///
+    /// Ce test refuse le retour d'une cadence à deux vitesses : deux instances
+    /// construites séparément doivent produire exactement la même séquence.
+    private static func testTheIntroPlaysWholeAndEndsOnTheSlogan() {
+        let a = LaunchIntro()
+        let b = LaunchIntro()
+        precondition(a.beats == b.beats, "deux ouvertures ne jouent pas la même chose")
+        precondition(a.duration == b.duration)
 
-        let premier = LaunchIntro(hasLaunchedBefore: false)
-        precondition(premier.pace == .first)
-        precondition(premier.beats.count == LaunchIntro.lines.count + 1)
-        precondition(premier.beats.last?.end == nil, "le slogan doit rester jusqu'au bout")
-        precondition(premier.duration > retour.duration)
+        // Compter les temps contre `lines.count` ne prouverait rien : les deux
+        // rétrécissent ensemble. Ce qui se verrouille est la décision
+        // éditoriale — trois phrases, une inquiétude retirée par phrase : ce
+        // n'est pas un examen, on vous demande ce que vous savez déjà, et les
+        // mots resteront les vôtres. En retirer une laisse une explication
+        // incomplète, et rien dans le code ne le signalerait.
+        precondition(
+            LaunchIntro.lines.count >= 3,
+            "la séquence n'explique plus que \(LaunchIntro.lines.count) chose(s)"
+        )
+        precondition(
+            a.beats.count == LaunchIntro.lines.count + 1,
+            "un temps manque ou dépasse : \(a.beats.count) pour \(LaunchIntro.lines.count) phrases"
+        )
+        for phrase in LaunchIntro.lines {
+            precondition(
+                a.beats.contains(where: { $0.text == phrase }),
+                "phrase absente de la séquence : \(phrase)"
+            )
+        }
+        precondition(a.beats.last?.text == LaunchIntro.slogan, "la séquence ne finit pas sur le slogan")
+        precondition(a.beats.last?.end == nil, "le slogan doit rester jusqu'au bout")
     }
 
     /// Deux temps ne se chevauchent jamais, et chacun a le temps d'être lu.
@@ -676,7 +693,8 @@ struct LocalStateTests {
     /// l'écran devient illisible. Et une phrase qui paraît puis disparaît trop
     /// vite ne se lit pas, elle se devine.
     private static func testBeatsNeverOverlapAndHaveTimeToBeRead() {
-        for intro in [LaunchIntro(hasLaunchedBefore: false), LaunchIntro(hasLaunchedBefore: true)] {
+        do {
+            let intro = LaunchIntro()
             for (precedent, suivant) in zip(intro.beats, intro.beats.dropFirst()) {
                 guard let fin = precedent.end else {
                     preconditionFailure("un temps qui ne finit jamais en précède un autre")
@@ -700,7 +718,7 @@ struct LocalStateTests {
 
             // Le premier temps attend la fin de l'arrivée du logo : deux
             // mouvements simultanés se gênent.
-            if let premier = intro.beats.first, intro.pace == .first {
+            if let premier = intro.beats.first {
                 precondition(
                     premier.start >= LaunchIntro.entrance,
                     "le texte démarre à \(premier.start) s, avant la fin de l'arrivée du logo"
@@ -708,10 +726,40 @@ struct LocalStateTests {
             }
         }
 
-        // Le plafond n'est pas une élégance : c'est le temps qu'on impose à
-        // quelqu'un qui a ouvert l'app pour préparer un entretien.
-        let complet = LaunchIntro(hasLaunchedBefore: false)
-        precondition(complet.duration <= 8, "l'écran de lancement dure \(complet.duration) s")
+        // Le plafond compte double depuis que la séquence joue à chaque
+        // ouverture : ce n'est plus un coût payé une fois, c'est le temps
+        // imposé à chaque fois que quelqu'un ouvre l'app pour préparer un
+        // entretien.
+        precondition(LaunchIntro().duration <= 8, "l'écran de lancement dure \(LaunchIntro().duration) s")
+    }
+
+    /// L'écran dit qu'on peut l'abréger, et le permet.
+    ///
+    /// Tant que la séquence ne jouait qu'une fois, le tap était une commodité.
+    /// Elle joue maintenant à chaque ouverture : c'est devenu la sortie. La
+    /// retirer, ou cesser de l'annoncer, imposerait huit secondes sans recours
+    /// — et rien dans le code ne casserait.
+    private static func testTheIntroAlwaysSaysItCanBeSkipped() throws {
+        precondition(
+            LaunchIntro.skipHint < LaunchIntro().duration,
+            "l'indice de sortie paraîtrait après la fin de l'écran"
+        )
+        let ecran = try sourceFile("legitima-frontend/Views/LaunchIntroScreen.swift")
+        precondition(
+            ecran.contains(".onTapGesture(perform: onFinished)"),
+            "l'écran ne s'abrège plus au tap"
+        )
+        precondition(
+            ecran.contains(".contentShape(Rectangle())"),
+            "la cible du tap ne couvre plus l'écran entier"
+        )
+        // Chercher la chaîne n'importe où trouverait l'indice d'accessibilité,
+        // qui la porte aussi — vu en la remplaçant par du vide dans le `Text`,
+        // ce qui laissait le test au vert. C'est le libellé visible qui compte.
+        precondition(
+            ecran.contains("Text(\"Touchez pour passer\")"),
+            "l'écran n'affiche plus qu'on peut l'abréger"
+        )
     }
 
     /// L'introduction explique exactement les blocs que la carte montre.

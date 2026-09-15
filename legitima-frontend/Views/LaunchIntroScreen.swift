@@ -16,6 +16,7 @@ struct LaunchIntroScreen: View {
     @State private var tempsVisible: Int?
     @State private var echelle: Double = LaunchIntro.entranceScale
     @State private var sortie = false
+    @State private var indiceVisible = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -70,6 +71,17 @@ struct LaunchIntroScreen: View {
                 .padding(.horizontal, 8)
 
                 Spacer(minLength: 0)
+
+                // La séquence joue à chaque ouverture : le tap n'est plus une
+                // commodité, c'est la sortie. Elle se dit — mais tard, et
+                // discrètement, pour ne pas proposer de partir avant d'avoir
+                // montré quoi que ce soit.
+                Text("Touchez pour passer")
+                    .font(.footnote)
+                    .foregroundColor(LegitimaColors.muted)
+                    .opacity(indiceVisible ? 1 : 0)
+                    .padding(.bottom, 8)
+                    .accessibilityHidden(true)
             }
             .opacity(identiteVisible && !sortie ? 1 : 0)
             .frame(maxWidth: 460)
@@ -97,6 +109,7 @@ struct LaunchIntroScreen: View {
             // et l'écran cède la place au même moment qu'il l'aurait fait.
             identiteVisible = true
             echelle = 1
+            indiceVisible = true
             tempsVisible = intro.beats.indices.last
             DispatchQueue.main.asyncAfter(deadline: .now() + intro.duration, execute: onFinished)
             return
@@ -124,6 +137,10 @@ struct LaunchIntroScreen: View {
                 }
             }
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + LaunchIntro.skipHint) {
+            withAnimation(.easeOut(duration: LaunchIntro.fade)) { indiceVisible = true }
+        }
+
         // La sortie : le logo s'ouvre et se dissout. L'écran ne se retire pas,
         // on entre dedans.
         DispatchQueue.main.asyncAfter(deadline: .now() + intro.exitStart) {

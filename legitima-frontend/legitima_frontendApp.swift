@@ -16,13 +16,10 @@ struct legitima_frontendApp: App {
 
     /// L'écran de lancement passe une fois, puis se retire pour la session.
     @State private var introFinished = false
-    /// Séquence complète au premier lancement, nom et promesse ensuite. Le
-    /// drapeau vit dans les préférences : il ne décrit pas une préparation, il
-    /// ne relève donc pas du stockage protégé qu'`OrphanedStorage` nettoie.
-    private let intro = LaunchIntro(
-        hasLaunchedBefore: UserDefaults.standard.bool(forKey: legitima_frontendApp.introSeenKey)
-    )
-    private static let introSeenKey = "legitima.intro.seen"
+    /// La séquence joue en entier à chaque ouverture. Le drapeau « déjà vu » qui
+    /// l'abrégeait a été retiré avec la décision : garder une préférence que
+    /// plus rien ne lit, c'est laisser croire qu'un réglage existe.
+    private let intro = LaunchIntro()
 
     init() {
         OrphanedStorage.removeAll()
@@ -45,10 +42,7 @@ struct legitima_frontendApp: App {
                 .environmentObject(router)
 
                 if !introFinished {
-                    LaunchIntroScreen(intro: intro) {
-                        UserDefaults.standard.set(true, forKey: Self.introSeenKey)
-                        introFinished = true
-                    }
+                    LaunchIntroScreen(intro: intro) { introFinished = true }
                     .transition(.opacity)
                     .zIndex(1)
                 }
