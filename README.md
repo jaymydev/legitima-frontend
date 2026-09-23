@@ -89,7 +89,12 @@ built.
 
 ## Backend
 
-One deployed service: `https://legitima-backend-ocr.onrender.com`.
+One deployed service, reached through a domain we own:
+`https://api.milehanajoseph.com` — a CNAME onto `legitima-backend-ocr.onrender.com`.
+
+The Render URL stays live and still answers; builds shipped before the switch
+are unaffected. Pointing the client at the domain is what lets the host change
+later without another App Store submission.
 
 The client calls five routes, all documented in
 [docs/api-contract.md](docs/api-contract.md):

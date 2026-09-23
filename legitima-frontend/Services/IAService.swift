@@ -15,10 +15,17 @@ enum BackendConfiguration {
     /// move the `onrender.com` subdomain, so the fix has to come from the
     /// client.
     ///
-    /// The name is misleading for a primary backend. Moving to a domain we own
-    /// would let the host change without another App Store submission; until
-    /// then, this string is the one that works.
-    static let baseURLString = "https://legitima-backend-ocr.onrender.com"
+    /// That fix shipped as a client-side constant pointing at `onrender.com`,
+    /// with a note saying a domain we own would let the host change without
+    /// another App Store submission. This is that domain.
+    ///
+    /// `api.milehanajoseph.com` is a CNAME onto the same service — verified the
+    /// 23 September 2026 as serving a byte-identical `/health`. What it buys is
+    /// not speed but freedom: the next time the host has to change, it changes
+    /// in DNS, and a binary already on the App Store keeps working. The
+    /// `onrender.com` URL stays live, so builds shipped before this one are
+    /// unaffected.
+    static let baseURLString = "https://api.milehanajoseph.com"
 
     static let maxCVFileSizeBytes = 10 * 1024 * 1024
 
