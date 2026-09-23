@@ -18,9 +18,14 @@ It is not the long-term target architecture and should be treated as a temporary
 
 One backend, for every route:
 
-- `https://legitima-backend-ocr.onrender.com`
+- `https://api.milehanajoseph.com`
 
-**The name is misleading and the reason matters.** Two Render services run the
+A CNAME onto `legitima-backend-ocr.onrender.com`, in place since the
+23 September 2026. The Render URL still answers — clients shipped before the
+switch keep working — but the client points at the domain, so the next host
+change happens in DNS instead of in an App Store release.
+
+**The Render name is misleading and the reason matters.** Two Render services run the
 backend repository. `legitima-backend` was created on the native Python
 runtime, `legitima-backend-ocr` from the Dockerfile — and only the Dockerfile
 installs the `tesseract` binary that `POST /cv/parse` needs for photos. Both
